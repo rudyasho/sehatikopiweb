@@ -76,12 +76,12 @@ export function LoginDialog({ onLoginSuccess, isMobile = false }: LoginDialogPro
 
   const TriggerButton = isMobile ? (
     <Button className="w-full justify-start text-lg p-6">
-      <LogIn className="mr-3 h-5 w-5" />
+      <LogIn />
       Login
     </Button>
   ) : (
     <Button>
-      <LogIn className="mr-2" />
+      <LogIn />
       Login
     </Button>
   );

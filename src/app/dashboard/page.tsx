@@ -641,7 +641,7 @@ const ManageProductsView = ({ onProductsChanged }: { onProductsChanged: () => vo
                                         <Dialog>
                                             <DialogTrigger asChild>
                                                 <Button variant="outline" size="icon">
-                                                    <Edit className="h-4 w-4" />
+                                                    <Edit />
                                                 </Button>
                                             </DialogTrigger>
                                             <DialogContent className="sm:max-w-4xl">
@@ -655,7 +655,7 @@ const ManageProductsView = ({ onProductsChanged }: { onProductsChanged: () => vo
                                         <AlertDialog>
                                             <AlertDialogTrigger asChild>
                                                 <Button variant="destructive" size="icon">
-                                                    <Trash2 className="h-4 w-4" />
+                                                    <Trash2 />
                                                 </Button>
                                             </AlertDialogTrigger>
                                             <AlertDialogContent>
@@ -873,7 +873,7 @@ const ManageBlogPostsView = ({ onPostsChanged }: { onPostsChanged: () => void })
                                         <Dialog>
                                             <DialogTrigger asChild>
                                                 <Button variant="outline" size="icon">
-                                                    <Edit className="h-4 w-4" />
+                                                    <Edit />
                                                 </Button>
                                             </DialogTrigger>
                                             <DialogContent className="sm:max-w-4xl">
@@ -887,7 +887,7 @@ const ManageBlogPostsView = ({ onPostsChanged }: { onPostsChanged: () => void })
                                         <AlertDialog>
                                             <AlertDialogTrigger asChild>
                                                 <Button variant="destructive" size="icon">
-                                                    <Trash2 className="h-4 w-4" />
+                                                    <Trash2 />
                                                 </Button>
                                             </AlertDialogTrigger>
                                             <AlertDialogContent>

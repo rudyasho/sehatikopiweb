@@ -114,7 +114,7 @@ function FeaturedProducts() {
                 <Link href={`/products/${product.slug}`}>View</Link>
               </Button>
               <Button onClick={() => handleAddToCart(product)} disabled={addedProducts[product.slug]} className="flex-1">
-                {addedProducts[product.slug] ? <Check className="h-4 w-4" /> : <ShoppingCart className="h-4 w-4" />}
+                {addedProducts[product.slug] ? <Check /> : <ShoppingCart />}
               </Button>
             </div>
           </CardFooter>

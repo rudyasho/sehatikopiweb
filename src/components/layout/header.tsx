@@ -99,19 +99,19 @@ export function Header() {
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <Link href="/profile">
-                <User className="mr-2 h-4 w-4" />
+                <User />
                 <span>Profile</span>
               </Link>
             </DropdownMenuItem>
              <DropdownMenuItem asChild>
               <Link href="/dashboard">
-                <LayoutDashboard className="mr-2 h-4 w-4" />
+                <LayoutDashboard />
                 <span>Dashboard</span>
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={logout}>
-              <LogOut className="mr-2 h-4 w-4" />
+              <LogOut />
               <span>Log out</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -135,7 +135,7 @@ export function Header() {
               setIsMobileMenuOpen(false);
           }}
         >
-          <LogOut className="mr-3 h-5 w-5"/>
+          <LogOut />
           Logout
         </Button>
       );
@@ -173,13 +173,13 @@ export function Header() {
           <div className="flex items-center gap-2">
              <Button asChild variant="ghost" size="icon">
                 <Link href="/search">
-                    <Search className="h-5 w-5" />
+                    <Search />
                     <span className="sr-only">Search</span>
                 </Link>
             </Button>
              <Button asChild variant="ghost" size="icon" className="relative">
               <Link href="/cart">
-                <ShoppingCart className="h-5 w-5" />
+                <ShoppingCart />
                 {isClient && itemCount > 0 && (
                   <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
                     {itemCount}
@@ -197,7 +197,7 @@ export function Header() {
           <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
             <SheetTrigger asChild className="md:hidden">
               <Button variant="ghost" size="icon">
-                <Menu className="h-5 w-5" />
+                <Menu />
                 <span className="sr-only">Toggle Menu</span>
               </Button>
             </SheetTrigger>
@@ -214,7 +214,7 @@ export function Header() {
                   <span className="font-bold font-headline text-lg">Sehati Kopi</span>
                 </Link>
                 <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(false)}>
-                   <X className="h-5 w-5" />
+                   <X />
                    <span className="sr-only">Close Menu</span>
                 </Button>
               </div>
@@ -229,7 +229,7 @@ export function Header() {
                       pathname === href ? 'bg-secondary text-primary' : 'text-foreground/80'
                     )}
                   >
-                    <Icon className="h-5 w-5" />
+                    <Icon />
                     <span>{label}</span>
                   </Link>
                 ))}
@@ -245,7 +245,7 @@ export function Header() {
                       pathname === '/profile' ? 'bg-secondary text-primary' : 'text-foreground/80'
                     )}
                   >
-                    <User className="h-5 w-5" />
+                    <User />
                     <span>Profile</span>
                   </Link>
                    <Link
@@ -256,20 +256,20 @@ export function Header() {
                       pathname === '/dashboard' ? 'bg-secondary text-primary' : 'text-foreground/80'
                     )}
                   >
-                    <LayoutDashboard className="h-5 w-5" />
+                    <LayoutDashboard />
                     <span>Dashboard</span>
                   </Link>
                   </>
                 )}
                  <Button asChild className="w-full relative justify-start text-lg p-6">
                   <Link href="/search" onClick={() => setIsMobileMenuOpen(false)}>
-                    <Search className="mr-3 h-5 w-5" />
+                    <Search />
                     Search
                   </Link>
                 </Button>
                 <Button asChild className="w-full relative justify-start text-lg p-6">
                   <Link href="/cart" onClick={() => setIsMobileMenuOpen(false)}>
-                    <ShoppingCart className="mr-3 h-5 w-5" />
+                    <ShoppingCart />
                     Shopping Cart
                     {isClient && itemCount > 0 && (
                       <span className="absolute right-4 flex h-6 w-6 items-center justify-center rounded-full bg-primary-foreground text-sm text-primary">

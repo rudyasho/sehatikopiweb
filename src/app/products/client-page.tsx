@@ -174,9 +174,9 @@ export function ProductsClientPage() {
                       className="flex-1"
                     >
                       {addedProducts[product.slug] ? (
-                        <Check className="h-4 w-4"/>
+                        <Check />
                       ) : (
-                        <ShoppingCart className="h-4 w-4"/>
+                        <ShoppingCart />
                       )}
                     </Button>
                   </div>
