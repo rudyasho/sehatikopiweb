@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { ProductsClientPage } from './client-page';
+import { ProductsClientPage } from './products-client';
 
 export const metadata: Metadata = {
   title: 'Our Coffee Collection',

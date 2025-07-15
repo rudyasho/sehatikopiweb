@@ -1,4 +1,5 @@
-import { HomeClient } from './client-page';
+
+import { HomeClient } from './home-client';
 import type { Metadata } from 'next';
 
 
