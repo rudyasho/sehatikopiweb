@@ -1,3 +1,4 @@
+
 // src/app/blog/[slug]/client-page.tsx
 'use client';
 
@@ -22,31 +23,38 @@ const ShareButtons = ({ title, slug }: { title: string, slug: string }) => {
   }, [slug]);
 
   if (!url) return null;
-
-  const encodedUrl = encodeURIComponent(url);
-  const encodedTitle = encodeURIComponent(`Check out this article from Sehati Kopi: ${title}`);
-
-  const shareLinks = [
-    { name: 'Twitter', icon: Twitter, href: `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}` },
-    { name: 'Facebook', icon: Facebook, href: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}` },
-    { name: 'WhatsApp', icon: MessageCircle, href: `https://api.whatsapp.com/send?text=${encodedTitle}%20${encodedUrl}` }
-  ];
   
   const handleCopyLink = () => {
     navigator.clipboard.writeText(url);
     toast({ title: "Link Copied!", description: "You can now share it with your friends." });
   };
 
+  const twitterUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`;
+  const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+  const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(title + " " + url)}`;
+
   return (
     <div className="flex items-center gap-2 mt-4">
       <span className="text-sm font-semibold text-foreground/80">Share:</span>
-      {shareLinks.map(link => (
-        <Button key={link.name} variant="outline" size="icon" asChild>
-          <a href={link.href} target="_blank" rel="noopener noreferrer" aria-label={`Share on ${link.name}`}>
-            <link.icon className="h-4 w-4" />
-          </a>
-        </Button>
-      ))}
+      
+      <Button asChild variant="outline" size="icon" aria-label="Share on Twitter">
+        <a href={twitterUrl} target="_blank" rel="noopener noreferrer">
+          <Twitter className="h-4 w-4" />
+        </a>
+      </Button>
+
+      <Button asChild variant="outline" size="icon" aria-label="Share on Facebook">
+         <a href={facebookUrl} target="_blank" rel="noopener noreferrer">
+          <Facebook className="h-4 w-4" />
+        </a>
+      </Button>
+
+      <Button asChild variant="outline" size="icon" aria-label="Share on WhatsApp">
+         <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+          <MessageCircle className="h-4 w-4" />
+        </a>
+      </Button>
+
        <Button variant="outline" size="icon" onClick={handleCopyLink} aria-label="Copy link">
           <Link2 className="h-4 w-4" />
        </Button>
