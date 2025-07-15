@@ -47,7 +47,7 @@ const productFormSchema = z.object({
   price: z.coerce.number().min(1, "Price must be greater than 0."),
   roast: z.string().min(3, "Roast level is required."),
   tags: z.string().min(3, "Please add at least one tag, comma separated."),
-  image: z.string().url("Please provide a valid image URL."),
+  image: z.string().min(1, "Image URL is required. You can generate one with AI."),
   aiHint: z.string().min(2, "AI hint is required for image search.")
 });
 
@@ -132,7 +132,7 @@ function BlogGenerator({ currentUser, onPostPublished }: { currentUser: User, on
             aiHint: generatedPost.imagePrompt
         });
     }
-  }, [generatedPost, blogContentForm]);
+  }, [generatedPost, blogContentForm, imageState.url]);
 
   useEffect(() => {
       blogContentForm.setValue('image', imageState.url);
@@ -392,7 +392,10 @@ function BlogGenerator({ currentUser, onPostPublished }: { currentUser: User, on
 const ProductForm = ({ product, onFormSubmit, closeDialog }: { product?: Product | null, onFormSubmit: () => void, closeDialog?: () => void }) => {
     const { toast } = useToast();
     const router = useRouter();
-    const [imagePreview, setImagePreview] = useState<string | null>(product?.image || null);
+    const [imageState, setImageState] = useState({
+        url: product?.image || '',
+        isLoading: false,
+    });
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const form = useForm<ProductFormValues>({
@@ -408,14 +411,31 @@ const ProductForm = ({ product, onFormSubmit, closeDialog }: { product?: Product
             aiHint: product?.aiHint || '' 
         },
     });
+
+    useEffect(() => {
+        form.setValue('image', imageState.url);
+    }, [imageState.url, form]);
     
     const handleUrlChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const url = event.target.value;
-        if (url) {
-            setImagePreview(url);
-            form.setValue('image', url);
-        } else {
-            setImagePreview(null);
+        setImageState(prev => ({...prev, url }));
+    }
+
+    const handleGenerateImage = async () => {
+        const aiHint = form.getValues('aiHint');
+        if (!aiHint) {
+            form.setError('aiHint', { type: 'manual', message: 'Please provide a hint for the AI.' });
+            return;
+        }
+        setImageState(prev => ({...prev, isLoading: true}));
+        try {
+            const { imageDataUri } = await generateImage(aiHint);
+            setImageState(prev => ({...prev, url: imageDataUri}));
+        } catch (error) {
+            console.error('Error generating product image:', error);
+            toast({ variant: 'destructive', title: 'Image Generation Failed', description: 'Could not create image. Please try again.' });
+        } finally {
+            setImageState(prev => ({...prev, isLoading: false}));
         }
     }
 
@@ -440,7 +460,7 @@ const ProductForm = ({ product, onFormSubmit, closeDialog }: { product?: Product
                     )
                 });
                 form.reset();
-                setImagePreview(null);
+                setImageState({ url: '', isLoading: false });
             }
             onFormSubmit(); // Callback to refresh product list
             if (closeDialog) closeDialog();
@@ -514,27 +534,34 @@ const ProductForm = ({ product, onFormSubmit, closeDialog }: { product?: Product
                         <FormLabel>Product Photo</FormLabel>
                         <Card className="p-4 bg-secondary/30">
                             <div className="w-full aspect-square relative bg-muted rounded-md flex items-center justify-center overflow-hidden">
-                            {imagePreview ? (
-                                <Image src={imagePreview} alt="Product Preview" layout="fill" objectFit="cover" />
+                            {imageState.isLoading ? <Loader2 className="h-8 w-8 animate-spin text-primary" /> :
+                             imageState.url ? (
+                                <Image src={imageState.url} alt="Product Preview" layout="fill" objectFit="cover" />
                             ) : (
                                 <span className="text-sm text-muted-foreground">Image Preview</span>
                             )}
                             </div>
                         </Card>
+                         <FormField control={form.control} name="aiHint" render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>AI Image Hint</FormLabel>
+                                <FormControl>
+                                  <div className="flex gap-2">
+                                    <Input placeholder="e.g., coffee cup" {...field} />
+                                    <Button type="button" variant="outline" size="icon" onClick={handleGenerateImage} disabled={imageState.isLoading}>
+                                      <Wand2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )} />
                         <FormField control={form.control} name="image" render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Image URL</FormLabel>
                                 <FormControl>
                                     <Input type="url" placeholder="https://example.com/image.png" {...field} onChange={(e) => {field.onChange(e); handleUrlChange(e);}} />
                                 </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )} />
-                            <FormField control={form.control} name="aiHint" render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>AI Hint</FormLabel>
-                                <FormControl><Input placeholder="e.g., coffee cup" {...field} /></FormControl>
-                                <CardDescription className="text-xs pt-1">Keywords for image search.</CardDescription>
                                 <FormMessage />
                             </FormItem>
                         )} />
