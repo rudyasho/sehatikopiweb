@@ -48,24 +48,24 @@ import { useAuth } from '@/context/auth-context';
 import { LoginDialog } from './login-dialog';
 import { ThemeToggle } from './theme-toggle';
 
-
-const navLinks = [
-  { href: '/', label: 'Home', icon: Home },
-  { href: '/products', label: 'Shop', icon: ShoppingBag},
-  { href: '/menu', label: 'Menu', icon: BookOpen },
-  { href: '/recommendations', label: 'Recommendations', icon: Wand2},
-  { href: '/blog', label: 'Blog', icon: Newspaper },
-  { href: '/events', label: 'Events', icon: Calendar },
-  { href: '/about', label: 'About', icon: Info },
-  { href: '/contact', label: 'Contact', icon: Mail },
-];
-
 export function Header() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { cart } = useCart();
   const { user, loading, logout } = useAuth();
   const [isClient, setIsClient] = useState(false);
+
+  // Define navLinks inside the component to ensure consistency between server and client renders
+  const navLinks = [
+    { href: '/', label: 'Home', icon: Home },
+    { href: '/products', label: 'Shop', icon: ShoppingBag },
+    { href: '/menu', label: 'Menu', icon: BookOpen },
+    { href: '/recommendations', label: 'Recommendations', icon: Wand2 },
+    { href: '/blog', label: 'Blog', icon: Newspaper },
+    { href: '/events', label: 'Events', icon: Calendar },
+    { href: '/about', label: 'About', icon: Info },
+    { href: '/contact', label: 'Contact', icon: Mail },
+  ];
 
   useEffect(() => {
     setIsClient(true);
