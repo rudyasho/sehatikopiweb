@@ -92,7 +92,7 @@ export function ProductsClientPage() {
         <ProductFilters onFilterChange={setFilters} />
 
         {filteredAndSortedProducts.length > 0 ? (
-          <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredAndSortedProducts.map((product) => (
               <Card
                 key={product.slug}
@@ -137,9 +137,9 @@ export function ProductsClientPage() {
                       className="flex-1"
                     >
                       {addedProducts[product.slug] ? (
-                        <Check />
+                        <Check className="h-4 w-4"/>
                       ) : (
-                        <ShoppingCart />
+                        <ShoppingCart className="h-4 w-4"/>
                       )}
                     </Button>
                   </div>

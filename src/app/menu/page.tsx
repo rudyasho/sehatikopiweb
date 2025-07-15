@@ -50,11 +50,11 @@ const Page = () => {
           <p className="mt-2 text-lg text-foreground/80">Crafted with passion, served with a smile.</p>
         </div>
         <Tabs defaultValue="hot" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 mb-8">
-            <TabsTrigger value="hot">Hot Coffee</TabsTrigger>
-            <TabsTrigger value="cold">Cold Coffee</TabsTrigger>
-            <TabsTrigger value="manual">Manual Brew</TabsTrigger>
-            <TabsTrigger value="signature">Signature</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto mb-8">
+            <TabsTrigger value="hot" className="py-2">Hot Coffee</TabsTrigger>
+            <TabsTrigger value="cold" className="py-2">Cold Coffee</TabsTrigger>
+            <TabsTrigger value="manual" className="py-2">Manual Brew</TabsTrigger>
+            <TabsTrigger value="signature" className="py-2">Signature</TabsTrigger>
           </TabsList>
           {(Object.keys(menuItems) as MenuCategory[]).map((category) => (
             <TabsContent key={category} value={category}>

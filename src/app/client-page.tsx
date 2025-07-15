@@ -78,7 +78,7 @@ function FeaturedProducts() {
                 <Link href={`/products/${product.slug}`}>View</Link>
               </Button>
               <Button onClick={() => handleAddToCart(product)} disabled={addedProducts[product.slug]} className="flex-1">
-                {addedProducts[product.slug] ? <Check/> : <ShoppingCart/>}
+                {addedProducts[product.slug] ? <Check className="h-4 w-4" /> : <ShoppingCart className="h-4 w-4" />}
               </Button>
             </div>
           </CardFooter>
@@ -112,7 +112,7 @@ export function HomeClient() {
           </p>
           <Button asChild size="lg" className="mt-8 font-bold">
             <Link href="/products">
-              Explore Our Coffee <ArrowRight className="ml-2" />
+              Explore Our Coffee <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
         </div>
@@ -134,12 +134,12 @@ export function HomeClient() {
                 <span className="font-semibold">Artisanal Roasting</span>
               </div>
               <div className="flex items-center gap-2">
-                <Leaf className="text-accent h-5 w-5" />
+                <Leaf className="text-primary h-5 w-5" />
                 <span className="font-semibold">Sustainably Sourced</span>
               </div>
             </div>
             <Button asChild variant="link" className="mt-4 px-0 text-primary">
-              <Link href="/about">Learn more about our story &rarr;</Link>
+              <Link href="/about">Learn more about our story <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
           </div>
           <div className="relative h-80 rounded-lg overflow-hidden shadow-xl">
@@ -176,8 +176,8 @@ export function HomeClient() {
           <h2 className="font-headline text-3xl md:text-4xl font-semibold text-primary">What Our Customers Say</h2>
           <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
-              <Card key={index} className="p-6 text-left shadow-lg bg-secondary/50">
-                <CardHeader className="flex flex-row items-center gap-4 p-0">
+              <Card key={index} className="text-left shadow-lg bg-secondary/50">
+                <CardHeader className="flex flex-row items-center gap-4 p-6">
                   <Avatar className="h-16 w-16">
                     <AvatarImage src={testimonial.avatar} alt={testimonial.name} data-ai-hint={testimonial.aiHint} />
                     <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
@@ -189,7 +189,7 @@ export function HomeClient() {
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="p-0 pt-4">
+                <CardContent className="p-6 pt-0">
                   <p className="text-foreground/80 italic">"{testimonial.review}"</p>
                 </CardContent>
               </Card>
@@ -209,7 +209,7 @@ export function HomeClient() {
               </p>
               <Button asChild variant="outline" className="mt-6">
                 <Link href="/blog">
-                  Read Our Blog <ArrowRight className="ml-2" />
+                  Read Our Blog <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
             </div>
@@ -220,7 +220,7 @@ export function HomeClient() {
               </p>
               <Button asChild variant="secondary" className="mt-6">
                 <Link href="/recommendations">
-                  Get Recommendation <ArrowRight className="ml-2" />
+                  Get Recommendation <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
             </div>

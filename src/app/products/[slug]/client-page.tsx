@@ -51,7 +51,7 @@ export function ProductClientPage({ product }: { product: Product }) {
               <div className="flex items-center gap-2 mt-2">
                 <div className="flex text-amber-500">
                     {[...Array(5)].map((_, i) => (
-                        <Star key={i} className={`w-5 h-5 ${i < Math.round(product.rating) ? 'fill-current' : 'text-gray-400'}`} />
+                        <Star key={i} className={`w-5 h-5 ${i < Math.round(product.rating) ? 'fill-current' : 'text-gray-300 dark:text-gray-600'}`} />
                     ))}
                 </div>
                 <span className="text-foreground/60">({product.reviews} reviews)</span>
@@ -65,7 +65,7 @@ export function ProductClientPage({ product }: { product: Product }) {
               <span>{product.roast}</span>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               {product.tags.map(tag => (
                 <Badge key={tag} variant="secondary">{tag}</Badge>
               ))}
@@ -80,20 +80,20 @@ export function ProductClientPage({ product }: { product: Product }) {
                 <span className="font-semibold flex-shrink-0">Quantity:</span>
                 <div className="flex items-center border rounded-md self-start">
                     <Button variant="ghost" size="icon" className="h-10 w-10" onClick={() => setQuantity(q => Math.max(1, q-1))}><Minus className="h-4 w-4"/></Button>
-                    <span className="px-4 font-bold">{quantity}</span>
+                    <span className="px-4 font-bold text-lg">{quantity}</span>
                     <Button variant="ghost" size="icon" className="h-10 w-10" onClick={() => setQuantity(q => q+1)}><Plus className="h-4 w-4"/></Button>
                 </div>
             </div>
 
-            <Button size="lg" className="w-full" onClick={handleAddToCart} disabled={isAdded}>
+            <Button size="lg" className="w-full sm:w-auto" onClick={handleAddToCart} disabled={isAdded}>
               {isAdded ? (
                 <>
-                  <Check className="mr-2" />
+                  <Check className="mr-2 h-4 w-4" />
                   Added!
                 </>
               ) : (
                 <>
-                  <ShoppingCart className="mr-2" />
+                  <ShoppingCart className="mr-2 h-4 w-4" />
                   Add to Cart
                 </>
               )}

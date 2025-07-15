@@ -112,7 +112,7 @@ export function CartClientPage() {
                 <CardContent className="p-6">
                     <div className="space-y-6">
                     {cart.map((item) => (
-                        <div key={item.slug} className="flex flex-col md:flex-row gap-4 items-center">
+                        <div key={item.slug} className="flex flex-col sm:flex-row gap-4 items-center">
                             <div className="relative h-24 w-24 rounded-md overflow-hidden flex-shrink-0">
                                 <Image src={item.image} alt={item.name} layout="fill" objectFit="cover" data-ai-hint={item.aiHint} />
                             </div>
@@ -125,7 +125,7 @@ export function CartClientPage() {
                                 <Input type="number" value={item.quantity} readOnly className="h-8 w-12 text-center" />
                                 <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => updateQuantity(item.slug, item.quantity + 1)}><Plus className="h-4 w-4" /></Button>
                             </div>
-                            <p className="font-semibold text-lg w-28 text-right">{formatCurrency(item.price * item.quantity)}</p>
+                            <p className="font-semibold text-lg w-28 text-right hidden sm:block">{formatCurrency(item.price * item.quantity)}</p>
                             <Button variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10" onClick={() => removeFromCart(item.slug)}>
                                 <Trash2 className="h-5 w-5" />
                                 <span className="sr-only">Remove item</span>
@@ -143,8 +143,8 @@ export function CartClientPage() {
             </Card>
           </div>
           
-          <div className="lg:col-span-1">
-             <Card className="shadow-lg sticky top-24 bg-background">
+          <div className="lg:col-span-1 lg:sticky lg:top-24">
+             <Card className="shadow-lg bg-background">
                 <CardHeader>
                     <CardTitle className="font-headline text-2xl text-primary">Order Summary</CardTitle>
                 </CardHeader>

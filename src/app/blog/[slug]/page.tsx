@@ -1,11 +1,10 @@
 
-// src/app/blog/[slug]/page.tsx
 'use client';
 
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, BookAudio, Loader2, Twitter, Facebook, MessageCircle, Link2 } from 'lucide-react';
+import { ArrowLeft, BookAudio, Loader2, Twitter, Facebook, MessageCircle, Link2, Check } from 'lucide-react';
 import Link from 'next/link';
 import { getBlogPosts, type BlogPost as BlogPostType } from '../page';
 import { useEffect, useState, useMemo, useTransition } from 'react';
@@ -162,11 +161,11 @@ const RecommendedBlogs = ({ currentSlug }: { currentSlug: string }) => {
                   <Link href={`/blog/${post.slug}`}>
                     <CardTitle className="font-headline text-xl text-primary hover:underline">{post.title}</CardTitle>
                   </Link>
-                  <CardDescription className="mt-1 text-base">{post.excerpt.substring(0,80)}...</CardDescription>
+                  <CardDescription className="mt-1 text-sm">{post.excerpt.substring(0,80)}...</CardDescription>
                 </CardContent>
                  <CardFooter className="p-4 pt-0">
                    <Button asChild variant="link" className="p-0 h-auto text-primary">
-                      <Link href={`/blog/${post.slug}`}>Read More &rarr;</Link>
+                      <Link href={`/blog/${post.slug}`}>Read More <ArrowLeft className="transform rotate-180 ml-2 h-4 w-4"/></Link>
                     </Button>
                 </CardFooter>
               </Card>
@@ -273,9 +272,10 @@ export default function BlogPostPage() {
 
   if (!post) {
     return (
-        <div className="bg-secondary/50">
+        <div className="bg-background">
           <div className="container mx-auto px-4 py-8 md:py-12 text-center">
-            <p>Loading post...</p>
+            <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary"/>
+            <p className="mt-4">Loading post...</p>
           </div>
         </div>
     );
@@ -284,9 +284,9 @@ export default function BlogPostPage() {
   const storyGenerated = storyText && audioStory;
 
   return (
-    <div className="bg-secondary/50">
+    <div className="bg-background">
       <div className="container mx-auto px-4 py-8 md:py-12">
-        <article className="max-w-4xl mx-auto bg-background p-6 md:p-12 rounded-lg shadow-xl">
+        <article className="max-w-4xl mx-auto bg-card p-6 md:p-12 rounded-lg shadow-xl">
           <div className="mb-6 md:mb-8">
             <Link href="/blog" className="inline-flex items-center text-primary hover:underline">
               <ArrowLeft className="mr-2 h-4 w-4" />
@@ -306,50 +306,37 @@ export default function BlogPostPage() {
               <Alert className="mb-8">
                   <BookAudio className="h-4 w-4" />
                   <AlertTitle className="font-headline">AI Story Teller</AlertTitle>
-                  {!storyGenerated && (
+                  {!storyGenerated && !isStoryLoading && (
                     <>
                     <AlertDescription>
-                      Want an audio version of this story? Let our AI narrator read it for you.
+                      Logged in users can listen to an AI-narrated version of this story.
                     </AlertDescription>
                     <div className="mt-4">
-                        <Button variant="outline" onClick={handleGenerateStory} disabled={isStoryLoading} className="w-full">
-                        {isStoryLoading ? (
-                            <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Generating Story...
-                            </>
-                        ) : (
-                            "Listen to the Story"
-                        )}
+                        <Button variant="outline" onClick={handleGenerateStory} disabled={isStoryLoading}>
+                          Listen to the Story
                         </Button>
                     </div>
                     </>
                   )}
 
-                    {isStoryLoading && !storyText && (
-                        <div className="text-center p-4 text-sm text-muted-foreground">
-                            <p>The storyteller is clearing their throat... Please wait.</p>
-                        </div>
-                    )}
+                  {isStoryLoading && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground mt-4">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <span>The storyteller is clearing their throat... Please wait.</span>
+                      </div>
+                  )}
                     
-                    {storyText && (
+                  {storyGenerated && (
                       <Card className="mt-4 bg-background/50 animate-in fade-in-50 duration-500">
                           <CardContent className="p-4 space-y-4">
                             <p className="text-foreground/90 italic whitespace-pre-wrap">{storyText}</p>
-                            {audioStory ? (
                               <audio controls autoPlay className="w-full">
                                   <source src={audioStory} type="audio/wav" />
                                   Your browser does not support the audio element.
                               </audio>
-                            ) : (
-                               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                   <Loader2 className="h-4 w-4 animate-spin" />
-                                   <span>Preparing audio...</span>
-                               </div>
-                            )}
                           </CardContent>
                       </Card>
-                    )}
+                  )}
                 </Alert>
             )}
 

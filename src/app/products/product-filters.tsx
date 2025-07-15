@@ -1,4 +1,4 @@
-// src/app/products/product-filters.tsx
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -69,11 +69,11 @@ export function ProductFilters({ onFilterChange }: ProductFiltersProps) {
         </div>
 
         {/* Origin & Sort Filters */}
-        <div className="flex flex-col md:flex-row md:items-center gap-4 w-full md:w-auto">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 w-full md:w-auto">
             <div className="flex items-center gap-2 flex-1">
                  <h3 className="font-semibold text-sm">Origin:</h3>
                 <Select value={selectedOrigin} onValueChange={setSelectedOrigin}>
-                    <SelectTrigger className="w-full md:w-[200px]">
+                    <SelectTrigger className="w-full sm:w-[180px]">
                         <SelectValue placeholder="All Origins" />
                     </SelectTrigger>
                     <SelectContent>
@@ -87,7 +87,7 @@ export function ProductFilters({ onFilterChange }: ProductFiltersProps) {
             <div className="flex items-center gap-2 flex-1">
                  <h3 className="font-semibold text-sm">Sort by:</h3>
                 <Select value={sortOrder} onValueChange={setSortOrder}>
-                    <SelectTrigger className="w-full md:w-[200px]">
+                    <SelectTrigger className="w-full sm:w-[180px]">
                         <SelectValue placeholder="Sort by" />
                     </SelectTrigger>
                     <SelectContent>

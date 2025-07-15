@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -45,10 +46,10 @@ function RecommendedProductCard({ slug }: { slug: string }) {
   }
 
   return (
-    <Card className="mt-6 animate-in fade-in-50 duration-700">
+    <Card className="mt-6 animate-in fade-in-50 duration-700 bg-background/50">
         <CardContent className="p-4">
-            <div className="flex gap-4">
-                <div className="relative h-24 w-24 rounded-md overflow-hidden flex-shrink-0">
+            <div className="flex flex-col sm:flex-row gap-4">
+                <div className="relative h-28 w-28 rounded-md overflow-hidden flex-shrink-0 mx-auto sm:mx-0">
                     <Image src={product.image} alt={product.name} layout="fill" objectFit="cover" data-ai-hint={product.aiHint} />
                 </div>
                 <div className="flex-grow">
@@ -62,7 +63,7 @@ function RecommendedProductCard({ slug }: { slug: string }) {
         </CardContent>
         <CardFooter className="p-4 pt-0">
             <Button asChild className="w-full">
-                <Link href={`/products/${product.slug}`}>View Product Details <ArrowRight className="ml-2" /></Link>
+                <Link href={`/products/${product.slug}`}>View Product Details <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
         </CardFooter>
     </Card>
@@ -103,7 +104,7 @@ export function RecommendationForm() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 max-w-5xl mx-auto">
-      <Card className="shadow-lg">
+      <Card className="shadow-lg bg-background">
         <CardHeader>
           <CardTitle className="font-headline text-2xl text-primary">Your Preferences</CardTitle>
           <CardDescription>Help us understand your taste.</CardDescription>
@@ -235,11 +236,11 @@ export function RecommendationForm() {
       <div className="flex items-center justify-center">
         {isLoading ? (
             <div className="text-center text-foreground/60">
-                <Coffee className="h-16 w-16 mx-auto animate-bounce" />
+                <Coffee className="h-16 w-16 mx-auto text-primary animate-bounce" />
                 <p className="mt-4 font-semibold">Brewing up the perfect recommendation...</p>
             </div>
         ) : recommendation ? (
-          <Card className="w-full shadow-lg bg-secondary animate-in fade-in-50 duration-500">
+          <Card className="w-full shadow-lg bg-background animate-in fade-in-50 duration-500">
             <CardHeader>
               <CardTitle className="font-headline text-2xl text-primary">Our Recommendation For You</CardTitle>
               <CardDescription>Based on your preferences, here is our suggestion.</CardDescription>
@@ -263,8 +264,8 @@ export function RecommendationForm() {
             </CardContent>
           </Card>
         ) : (
-          <div className="text-center text-foreground/60 p-8 border-2 border-dashed rounded-lg h-full flex flex-col justify-center items-center">
-            <Wand2 className="h-12 w-12 mx-auto" />
+          <div className="text-center text-foreground/60 p-8 border-2 border-dashed rounded-lg h-full flex flex-col justify-center items-center bg-background/50">
+            <Wand2 className="h-12 w-12 mx-auto text-primary" />
             <p className="mt-4 max-w-xs">Your personalized recommendation will appear here.</p>
           </div>
         )}
