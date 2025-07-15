@@ -55,7 +55,6 @@ const navLinks = [
   { href: '/menu', label: 'Menu', icon: BookOpen },
   { href: '/events', label: 'Events', icon: Calendar },
   { href: '/blog', label: 'Blog', icon: Newspaper },
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard},
   { href: '/recommendations', label: 'Rekomendasi', icon: Wand2},
   { href: '/about', label: 'About', icon: Info },
   { href: '/contact', label: 'Contact', icon: Mail },
@@ -102,6 +101,12 @@ export function Header() {
               <Link href="/profile">
                 <User className="mr-2 h-4 w-4" />
                 <span>Profile</span>
+              </Link>
+            </DropdownMenuItem>
+             <DropdownMenuItem asChild>
+              <Link href="/dashboard">
+                <LayoutDashboard className="mr-2 h-4 w-4" />
+                <span>Dashboard</span>
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
@@ -215,6 +220,7 @@ export function Header() {
               </div>
               <nav className="flex flex-col space-y-2 pt-6 flex-grow">
                 {isClient && user && (
+                  <>
                   <Link
                     href="/profile"
                     onClick={() => setIsMobileMenuOpen(false)}
@@ -226,6 +232,18 @@ export function Header() {
                     <User className="h-5 w-5" />
                     <span>Profile</span>
                   </Link>
+                   <Link
+                    href="/dashboard"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={cn(
+                      'flex items-center gap-3 rounded-md p-3 text-lg font-medium transition-colors hover:bg-secondary',
+                      pathname === '/dashboard' ? 'bg-secondary text-primary' : 'text-foreground/80'
+                    )}
+                  >
+                    <LayoutDashboard className="h-5 w-5" />
+                    <span>Dashboard</span>
+                  </Link>
+                  </>
                 )}
                 {navLinks.map(({ href, label, icon: Icon }) => (
                   <Link
