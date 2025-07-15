@@ -11,7 +11,7 @@ This is a Next.js application for "Sehati Kopi Digital", a fictional Indonesian 
 - **Event Schedule**: Listings for coffee cuppings, workshops, and other community events.
 - **Informative Blog**: Articles on coffee culture with dedicated pages for each post.
 - **About & Contact Pages**: Static pages for company information and a functional contact form.
-- **AI Coffee Recommendations**: A Genkit-powered tool to suggest coffee based on user preferences.
+- **AI Coffee Recommendations**: A Genkit-powered tool to suggest coffee based on user preferences. The recommendation result is seamlessly integrated with the product catalog.
 - **Business Dashboard**: An analytics page showing product popularity with charts.
 - **SEO Optimized**: Includes dynamic metadata, a sitemap, and `robots.txt` for optimal search engine ranking.
 
