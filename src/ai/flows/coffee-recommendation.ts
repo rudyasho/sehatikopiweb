@@ -18,13 +18,15 @@ const RecommendCoffeeInputSchema = z.object({
       'A description of the customers flavour preferences, including sweet, bitter, acidic, etc.'
     ),
   brewingMethod: z.string().describe('The customers preferred brewing method.'),
+  caffeineLevel: z.enum(['Low', 'Medium', 'High']).describe('The preferred caffeine level.'),
+  timeOfDay: z.enum(['Morning', 'Afternoon', 'Evening']).describe('The typical time of day for drinking coffee.'),
 });
 export type RecommendCoffeeInput = z.infer<typeof RecommendCoffeeInputSchema>;
 
 const RecommendCoffeeOutputSchema = z.object({
   beanRecommendation: z.string().describe('The recommended coffee bean.'),
   roastLevel: z.string().describe('The recommended roast level.'),
-  notes: z.string().describe('Additional notes and considerations.'),
+  notes: z.string().describe('Additional notes and considerations, explaining why this coffee is a good match.'),
 });
 export type RecommendCoffeeOutput = z.infer<typeof RecommendCoffeeOutputSchema>;
 
@@ -36,18 +38,19 @@ const prompt = ai.definePrompt({
   name: 'recommendCoffeePrompt',
   input: {schema: RecommendCoffeeInputSchema},
   output: {schema: RecommendCoffeeOutputSchema},
-  prompt: `You are an expert coffee sommelier. A customer has provided their flavour preferences and brewing method. Based on this, recommend a coffee bean and roast level.
+  prompt: `You are an expert coffee sommelier for an Indonesian coffee brand called "Sehati Kopi". A customer has provided their preferences. Based on this, recommend a specific Indonesian coffee bean (like 'Aceh Gayo', 'Bali Kintamani', etc.) and a roast level. Provide a compelling reason for your choice in the notes.
 
-Flavour Preferences: {{{flavorPreferences}}}
-Brewing Method: {{{brewingMethod}}}
+Customer Preferences:
+*   Flavour: {{{flavorPreferences}}}
+*   Brewing Method: {{{brewingMethod}}}
+*   Preferred Caffeine Level: {{{caffeineLevel}}}
+*   Time of Day: {{{timeOfDay}}}
 
 Consider the following when making your recommendation:
-
-*   Origin
-*   Acidity
-*   Body
-*   Sweetness
-*   Bitterness
+*   Match the flavor profile to the user's description.
+*   Suggest a suitable roast level for the chosen bean and brewing method.
+*   If the user drinks coffee in the 'Evening', you should strongly lean towards a low-caffeine option or decaf if possible.
+*   Your notes should be encouraging and explain *why* the recommendation fits their complete profile.
 
 Return the results as JSON.`,
 });

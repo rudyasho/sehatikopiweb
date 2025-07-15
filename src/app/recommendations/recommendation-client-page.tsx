@@ -13,11 +13,18 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Wand2, Coffee } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 const recommendationSchema = z.object({
   flavorPreferences: z.string().min(10, 'Please describe your flavor preferences in more detail (e.g., "I like sweet, fruity, and not too bitter coffee").'),
   brewingMethod: z.string({
     required_error: 'Please select a brewing method.',
+  }),
+  caffeineLevel: z.enum(['Low', 'Medium', 'High'], {
+    required_error: "Please select your preferred caffeine level."
+  }),
+  timeOfDay: z.enum(['Morning', 'Afternoon', 'Evening'], {
+    required_error: "Please select a time of day."
   }),
 });
 
@@ -32,6 +39,8 @@ export function RecommendationForm() {
     resolver: zodResolver(recommendationSchema),
     defaultValues: {
       flavorPreferences: '',
+      caffeineLevel: 'Medium',
+      timeOfDay: 'Morning'
     },
   });
 
@@ -54,7 +63,7 @@ export function RecommendationForm() {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 max-w-4xl mx-auto">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 max-w-5xl mx-auto">
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="font-headline text-2xl text-primary">Your Preferences</CardTitle>
@@ -62,7 +71,7 @@ export function RecommendationForm() {
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
                 control={form.control}
                 name="flavorPreferences"
@@ -73,7 +82,7 @@ export function RecommendationForm() {
                       <Textarea
                         placeholder="e.g., sweet, fruity, chocolatey, low acidity..."
                         className="resize-none"
-                        rows={5}
+                        rows={4}
                         {...field}
                       />
                     </FormControl>
@@ -106,7 +115,67 @@ export function RecommendationForm() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" disabled={isLoading} className="w-full">
+               <FormField
+                control={form.control}
+                name="caffeineLevel"
+                render={({ field }) => (
+                  <FormItem className="space-y-3">
+                    <FormLabel>Caffeine Level</FormLabel>
+                    <FormControl>
+                      <RadioGroup
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-6"
+                      >
+                        <FormItem className="flex items-center space-x-2">
+                          <FormControl><RadioGroupItem value="Low" /></FormControl>
+                          <FormLabel className="font-normal">Low</FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-2">
+                          <FormControl><RadioGroupItem value="Medium" /></FormControl>
+                          <FormLabel className="font-normal">Medium</FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-2">
+                          <FormControl><RadioGroupItem value="High" /></FormControl>
+                          <FormLabel className="font-normal">High</FormLabel>
+                        </FormItem>
+                      </RadioGroup>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+               <FormField
+                control={form.control}
+                name="timeOfDay"
+                render={({ field }) => (
+                  <FormItem className="space-y-3">
+                    <FormLabel>When do you usually drink coffee?</FormLabel>
+                    <FormControl>
+                      <RadioGroup
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-6"
+                      >
+                        <FormItem className="flex items-center space-x-2">
+                          <FormControl><RadioGroupItem value="Morning" /></FormControl>
+                          <FormLabel className="font-normal">Morning</FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-2">
+                          <FormControl><RadioGroupItem value="Afternoon" /></FormControl>
+                          <FormLabel className="font-normal">Afternoon</FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-2">
+                          <FormControl><RadioGroupItem value="Evening" /></FormControl>
+                          <FormLabel className="font-normal">Evening</FormLabel>
+                        </FormItem>
+                      </RadioGroup>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit" disabled={isLoading} className="w-full !mt-8" size="lg">
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -139,7 +208,7 @@ export function RecommendationForm() {
             <CardContent className="space-y-4">
               <div>
                 <h4 className="font-semibold text-primary">Recommended Bean</h4>
-                <p>{recommendation.beanRecommendation}</p>
+                <p className="text-lg font-medium">{recommendation.beanRecommendation}</p>
               </div>
               <Separator />
               <div>
@@ -148,15 +217,15 @@ export function RecommendationForm() {
               </div>
               <Separator />
               <div>
-                <h4 className="font-semibold text-primary">Tasting Notes</h4>
-                <p className="italic">{recommendation.notes}</p>
+                <h4 className="font-semibold text-primary">Why You'll Love It</h4>
+                <p className="italic text-foreground/80">{recommendation.notes}</p>
               </div>
             </CardContent>
           </Card>
         ) : (
-          <div className="text-center text-foreground/60 p-8 border-2 border-dashed rounded-lg">
+          <div className="text-center text-foreground/60 p-8 border-2 border-dashed rounded-lg h-full flex flex-col justify-center items-center">
             <Wand2 className="h-12 w-12 mx-auto" />
-            <p className="mt-4">Your personalized recommendation will appear here.</p>
+            <p className="mt-4 max-w-xs">Your personalized recommendation will appear here.</p>
           </div>
         )}
       </div>
