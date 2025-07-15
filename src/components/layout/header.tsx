@@ -48,6 +48,8 @@ import { useCart } from '@/context/cart-context';
 import { useAuth } from '@/context/auth-context';
 import { ThemeToggle } from './theme-toggle';
 
+const ADMIN_EMAILS = ['dev@sidepe.com', 'rd.lapawawoi@gmail.com'];
+
 export function Header() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -71,6 +73,8 @@ export function Header() {
   ];
 
   const itemCount = cart.reduce((total, item) => total + item.quantity, 0);
+
+  const isUserAdmin = user && user.email && ADMIN_EMAILS.includes(user.email);
 
   const AuthNav = () => {
     if (loading || !isClient) return <div className="h-10 w-24 rounded-md bg-muted animate-pulse" />;
@@ -102,7 +106,7 @@ export function Header() {
                 <span>Profile</span>
               </Link>
             </DropdownMenuItem>
-            {user.email === 'dev@sidepe.com' && (
+            {isUserAdmin && (
               <DropdownMenuItem asChild>
                 <Link href="/dashboard">
                   <LayoutDashboard />
@@ -266,7 +270,7 @@ export function Header() {
                     <User />
                     <span>Profile</span>
                   </Link>
-                  {user.email === 'dev@sidepe.com' &&
+                  {isUserAdmin &&
                    <Link
                     href="/dashboard"
                     onClick={() => setIsMobileMenuOpen(false)}

@@ -83,6 +83,7 @@ const eventFormSchema = z.object({
 
 type EventFormValues = z.infer<typeof eventFormSchema>;
 
+const ADMIN_EMAILS = ['dev@sidepe.com', 'rd.lapawawoi@gmail.com'];
 
 
 const MetricCard = ({ title, value, icon: Icon, isLoading }: { title: string, value: string | number, icon: React.ElementType, isLoading?: boolean }) => {
@@ -1447,7 +1448,7 @@ const DashboardPage = () => {
   const [initialPostToEdit, setInitialPostToEdit] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!loading && (!user || user.email !== 'dev@sidepe.com')) {
+    if (!loading && (!user || !ADMIN_EMAILS.includes(user.email || ''))) {
       router.push('/');
     }
   }, [user, loading, router]);
@@ -1477,7 +1478,7 @@ const DashboardPage = () => {
     );
   }
 
-  if (user.email !== 'dev@sidepe.com') {
+  if (!ADMIN_EMAILS.includes(user.email || '')) {
     return (
         <div className="flex h-screen items-center justify-center bg-secondary/50">
             <Card className="p-8 text-center">

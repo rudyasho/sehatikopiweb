@@ -1,4 +1,3 @@
-
 // src/app/profile/page.tsx
 'use client';
 
@@ -20,6 +19,7 @@ import { Badge } from '@/components/ui/badge';
 //   description: 'View your profile information and order history.',
 // };
 
+const ADMIN_EMAILS = ['dev@sidepe.com', 'rd.lapawawoi@gmail.com'];
 
 const mockOrderHistory = [
   { id: 'ORD-2024-001', date: '2024-08-10', total: 255000, status: 'Shipped' },
@@ -63,6 +63,8 @@ const ProfilePage = () => {
     );
   }
 
+  const isUserAdmin = user && user.email && ADMIN_EMAILS.includes(user.email);
+
   return (
     <div className="bg-secondary/50">
       <div className="container mx-auto px-4 py-12 md:py-16">
@@ -80,7 +82,7 @@ const ProfilePage = () => {
                   </CardDescription>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-2">
-                  {user.email === 'dev@sidepe.com' && (
+                  {isUserAdmin && (
                     <Button variant="outline" onClick={() => router.push('/dashboard')}>
                       <LayoutDashboard /> Dashboard
                     </Button>
