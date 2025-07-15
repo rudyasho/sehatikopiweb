@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -88,7 +89,7 @@ const BlogPage = () => {
         <h3 className="font-headline text-3xl text-primary mb-8 text-center">All Articles</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {otherPosts.map((post) => (
-            <Card key={post.slug} className="flex flex-col overflow-hidden shadow-lg transform hover:-translate-y-1 transition-transform duration-300 bg-background">
+            <Card key={post.id} className="flex flex-col overflow-hidden shadow-lg transform hover:-translate-y-1 transition-transform duration-300 bg-background">
               <CardHeader className="p-0">
                 <Link href={`/blog/${post.slug}`}>
                   <div className="relative h-60 w-full">
