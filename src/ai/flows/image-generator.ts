@@ -30,9 +30,13 @@ const imageGeneratorFlow = ai.defineFlow(
     outputSchema: GenerateImageOutputSchema,
   },
   async (prompt) => {
+    if (typeof prompt !== 'string' || !prompt) {
+      throw new Error('A valid prompt string must be provided to generate an image.');
+    }
+    
     const {media} = await ai.generate({
       model: 'googleai/gemini-2.0-flash-preview-image-generation',
-      prompt: `An artistic, high-quality, professional photograph for a coffee blog. Subject: ${prompt}. Style: warm, inviting, slightly rustic.`,
+      prompt: `An artistic, high-quality, professional photograph for a coffee brand blog. Subject: ${prompt}. Style: warm, inviting, minimalist, elegant, slightly rustic.`,
       config: {
         responseModalities: ['TEXT', 'IMAGE'],
       },
