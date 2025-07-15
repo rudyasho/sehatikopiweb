@@ -6,14 +6,17 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { recommendCoffee, type RecommendCoffeeOutput } from '@/ai/flows/coffee-recommendation';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Wand2, Coffee } from 'lucide-react';
+import { Loader2, Wand2, Coffee, ArrowRight } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { products, type Product } from '@/lib/products-data';
+import Image from 'next/image';
+import Link from 'next/link';
 
 const recommendationSchema = z.object({
   flavorPreferences: z.string().min(10, 'Please describe your flavor preferences in more detail (e.g., "I like sweet, fruity, and not too bitter coffee").'),
@@ -29,6 +32,42 @@ const recommendationSchema = z.object({
 });
 
 type RecommendationFormValues = z.infer<typeof recommendationSchema>;
+
+function RecommendedProductCard({ slug }: { slug: string }) {
+  const product = products.find((p) => p.slug === slug);
+
+  if (!product) {
+    return (
+        <div className="text-center text-sm text-destructive mt-4">
+            Could not find the recommended product in our catalog.
+        </div>
+    );
+  }
+
+  return (
+    <Card className="mt-6 animate-in fade-in-50 duration-700">
+        <CardContent className="p-4">
+            <div className="flex gap-4">
+                <div className="relative h-24 w-24 rounded-md overflow-hidden flex-shrink-0">
+                    <Image src={product.image} alt={product.name} layout="fill" objectFit="cover" data-ai-hint={product.aiHint} />
+                </div>
+                <div className="flex-grow">
+                    <h5 className="font-headline text-lg font-semibold text-primary">{product.name}</h5>
+                    <p className="text-sm text-foreground/70 mt-1">{product.description.substring(0, 80)}...</p>
+                     <p className="text-lg font-bold text-primary mt-2">
+                        {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(product.price)}
+                    </p>
+                </div>
+            </div>
+        </CardContent>
+        <CardFooter className="p-4 pt-0">
+            <Button asChild className="w-full">
+                <Link href={`/products/${product.slug}`}>View Product Details <ArrowRight className="ml-2" /></Link>
+            </Button>
+        </CardFooter>
+    </Card>
+  )
+}
 
 export function RecommendationForm() {
   const [recommendation, setRecommendation] = useState<RecommendCoffeeOutput | null>(null);
@@ -220,6 +259,7 @@ export function RecommendationForm() {
                 <h4 className="font-semibold text-primary">Why You'll Love It</h4>
                 <p className="italic text-foreground/80">{recommendation.notes}</p>
               </div>
+              <RecommendedProductCard slug={recommendation.productSlug} />
             </CardContent>
           </Card>
         ) : (
