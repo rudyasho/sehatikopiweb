@@ -1,4 +1,3 @@
-
 // src/app/products/product-filters.tsx
 'use client';
 
@@ -6,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { products } from '@/lib/products-data';
-import { X, ListFilter } from 'lucide-react';
+import { X } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
 const allRoasts = [...new Set(products.map(p => p.roast))];
@@ -24,13 +23,13 @@ interface ProductFiltersProps {
 
 export function ProductFilters({ onFilterChange }: ProductFiltersProps) {
   const [selectedRoasts, setSelectedRoasts] = useState<string[]>([]);
-  const [selectedOrigin, setSelectedOrigin] = useState<string>('');
+  const [selectedOrigin, setSelectedOrigin] = useState<string>('all');
   const [sortOrder, setSortOrder] = useState('name-asc');
 
   useEffect(() => {
     onFilterChange({
       roasts: selectedRoasts,
-      origins: selectedOrigin ? [selectedOrigin] : [],
+      origins: selectedOrigin && selectedOrigin !== 'all' ? [selectedOrigin] : [],
       sort: sortOrder,
     });
   }, [selectedRoasts, selectedOrigin, sortOrder, onFilterChange]);
@@ -43,11 +42,11 @@ export function ProductFilters({ onFilterChange }: ProductFiltersProps) {
 
   const resetFilters = () => {
     setSelectedRoasts([]);
-    setSelectedOrigin('');
+    setSelectedOrigin('all');
     setSortOrder('name-asc');
   };
   
-  const hasActiveFilters = selectedRoasts.length > 0 || selectedOrigin !== '';
+  const hasActiveFilters = selectedRoasts.length > 0 || selectedOrigin !== 'all';
 
   return (
     <Card className="mb-8 shadow-md bg-background">
@@ -78,7 +77,7 @@ export function ProductFilters({ onFilterChange }: ProductFiltersProps) {
                         <SelectValue placeholder="All Origins" />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="">All Origins</SelectItem>
+                        <SelectItem value="all">All Origins</SelectItem>
                         {allOrigins.map(origin => (
                             <SelectItem key={origin} value={origin}>{origin}</SelectItem>
                         ))}
