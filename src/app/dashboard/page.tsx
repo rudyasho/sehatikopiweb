@@ -1,13 +1,12 @@
-
 // src/app/dashboard/page.tsx
 'use client';
 
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth, type User } from '@/context/auth-context';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ProductPopularityChart } from './product-popularity-chart';
-import { Coffee, Star, Calendar, Newspaper, Loader2, PlusCircle, Wand2, Edit, BarChart3, Bot, LayoutGrid, Send, Clipboard, Check, Save, ListOrdered, Trash2, BookText, Image as ImageIcon, FileText, CalendarCheck, Clock, MapPin, CalendarPlus } from 'lucide-react';
+import { Coffee, Star, Calendar, Newspaper, Loader2, PlusCircle, Wand2, Edit, BarChart3, Bot, LayoutGrid, Send, Clipboard, Check, Save, ListOrdered, Trash2, BookText, Image as ImageIcon, FileText, CalendarCheck, Clock, MapPin, CalendarPlus, FilePlus2 } from 'lucide-react';
 import { addProduct, getProducts, updateProduct, deleteProduct, type Product } from '@/lib/products-data';
 import { RoastDistributionChart } from './roast-distribution-chart';
 import { OriginDistributionChart } from './origin-distribution-chart';
@@ -38,7 +37,7 @@ import { format } from 'date-fns';
 const totalEvents = 3; 
 const formatCurrency = (amount: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
 
-type DashboardView = 'overview' | 'addProduct' | 'blogGenerator' | 'manageProducts' | 'manageBlog' | 'manageEvents';
+type DashboardView = 'overview' | 'addProduct' | 'addBlog' | 'blogGenerator' | 'manageProducts' | 'manageBlog' | 'manageEvents';
 export type GeneratedPost = GenerateBlogPostOutput;
 
 
@@ -831,13 +830,10 @@ const ManageProductsView = ({ onProductsChanged }: { onProductsChanged: () => vo
     );
 }
 
-const BlogPostForm = ({ post, onFormSubmit, closeDialog }: { post: BlogPost, onFormSubmit: () => void, closeDialog?: () => void }) => {
+const BlogPostForm = ({ post, onFormSubmit, closeDialog, isCreatingNew, currentUser }: { post?: BlogPost | null, onFormSubmit: () => void, closeDialog?: () => void, isCreatingNew?: boolean, currentUser?: User | null }) => {
     const { toast } = useToast();
     const [isSubmitting, setIsSubmitting] = useState(false);
     
-    // The initial content might be HTML. For the editor, we pass it as-is.
-    // The BlogEditor component will render it as a preview.
-    // For new edits, it's treated as Markdown.
     const form = useForm<BlogPostFormValues>({
         resolver: zodResolver(blogPostFormSchema),
         defaultValues: {
@@ -852,19 +848,22 @@ const BlogPostForm = ({ post, onFormSubmit, closeDialog }: { post: BlogPost, onF
     const onSubmit = async (data: BlogPostFormValues) => {
         setIsSubmitting(true);
         try {
-            await updateBlogPost(post.id, data);
-            toast({
-                title: "Post Updated!",
-                description: `"${data.title}" has been successfully updated.`,
-            });
+            if (isCreatingNew && currentUser) {
+                await addBlogPost(data, currentUser.name);
+                toast({ title: "Post Created!", description: `"${data.title}" has been created.` });
+                form.reset({ category: 'Coffee Education' });
+            } else if (post) {
+                await updateBlogPost(post.id, data);
+                toast({ title: "Post Updated!", description: `"${data.title}" has been updated.` });
+            }
             onFormSubmit();
             if (closeDialog) closeDialog();
         } catch (error) {
-            console.error("Failed to update blog post:", error);
+            console.error("Failed to submit blog post:", error);
             toast({
                 variant: 'destructive',
                 title: "Error!",
-                description: "Could not update the blog post. Please try again.",
+                description: `Could not ${isCreatingNew ? 'create' : 'update'} the post.`,
             });
         } finally {
             setIsSubmitting(false);
@@ -935,13 +934,26 @@ const BlogPostForm = ({ post, onFormSubmit, closeDialog }: { post: BlogPost, onF
                 </div>
                 <Button type="submit" size="lg" className="!mt-8 w-full md:w-auto" disabled={isSubmitting}>
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Update Post
+                    {isCreatingNew ? 'Create Post' : 'Update Post'}
                 </Button>
             </form>
         </Form>
     );
 };
 
+const AddBlogPostView = ({ currentUser, onPostAdded }: { currentUser: User, onPostAdded: () => void }) => (
+    <Card className="shadow-lg bg-background">
+        <CardHeader>
+            <CardTitle className="font-headline text-2xl text-primary flex items-center gap-2">
+                <FilePlus2 /> Create New Blog Post
+            </CardTitle>
+            <CardDescription>Manually craft a new article for your blog.</CardDescription>
+        </CardHeader>
+        <CardContent>
+            <BlogPostForm isCreatingNew currentUser={currentUser} onFormSubmit={onPostAdded} />
+        </CardContent>
+    </Card>
+);
 
 const ManageBlogPostsView = ({ onPostsChanged, initialPostToEdit }: { onPostsChanged: () => void, initialPostToEdit?: string | null }) => {
     const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -1325,6 +1337,8 @@ const DashboardPage = () => {
             return <AnalyticsOverview key={refreshKey} />;
         case 'addProduct':
             return <AddProductView onProductAdded={handleDataChange} />;
+        case 'addBlog':
+            return <AddBlogPostView currentUser={user} onPostAdded={handleDataChange} />;
         case 'blogGenerator':
             return <BlogGenerator currentUser={user} onPostPublished={handleDataChange} />;
         case 'manageProducts':
@@ -1342,7 +1356,8 @@ const DashboardPage = () => {
       { id: 'overview', label: 'Overview', icon: LayoutGrid },
       { id: 'manageProducts', label: 'Manage Products', icon: ListOrdered },
       { id: 'addProduct', label: 'Add Product', icon: PlusCircle },
-      { id: 'manageBlog', label: 'Manage Blog', icon: BookText },
+      { id: 'manageBlog', label: 'Manage Posts', icon: BookText },
+      { id: 'addBlog', label: 'Create Post', icon: FilePlus2 },
       { id: 'manageEvents', label: 'Manage Events', icon: CalendarCheck },
       { id: 'blogGenerator', label: 'AI Blog Generator', icon: Bot },
   ];
