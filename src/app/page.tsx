@@ -1,13 +1,5 @@
-import Image from 'next/image';
-import Link from 'next/link';
-import { ArrowRight, Coffee, Leaf, Star, ShoppingCart, Check } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { products } from '@/lib/products-data';
-import type { Metadata } from 'next';
-import { ProductsClientPage } from './products/client-page';
 import { HomeClient } from './client-page';
+import type { Metadata } from 'next';
 
 
 export const metadata: Metadata = {

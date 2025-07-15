@@ -1,5 +1,7 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
 Allow: /
+Disallow: /profile/
+Disallow: /dashboard/
 
 Sitemap: https://sehatikopi.id/sitemap.xml

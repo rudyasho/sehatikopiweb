@@ -14,8 +14,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/events',
     '/cart',
     '/recommendations',
-    '/dashboard',
-    '/profile',
     '/search',
   ].map((route) => ({
     url: `${BASE_URL}${route}`,
@@ -45,6 +43,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }));
 
+  const protectedRoutes = [
+    '/dashboard',
+    '/profile',
+  ].map((route) => ({
+      url: `${BASE_URL}${route}`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly' as const,
+      priority: 0.1,
+  }));
 
-  return [...staticRoutes, ...productRoutes, ...blogRoutes];
+  return [...staticRoutes, ...productRoutes, ...blogRoutes, ...protectedRoutes];
 }
