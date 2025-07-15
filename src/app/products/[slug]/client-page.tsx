@@ -28,14 +28,14 @@ export function ProductClientPage({ product }: { product: Product }) {
 
   return (
     <div className="bg-secondary/50">
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 py-8 md:py-12">
         <div className="mb-8">
             <Link href="/products" className="inline-flex items-center text-primary hover:underline">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Products
             </Link>
         </div>
-        <div className="grid md:grid-cols-2 gap-12 items-start">
+        <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-start">
           {/* Product Image */}
           <div className="relative aspect-square rounded-lg overflow-hidden shadow-xl">
             <Image src={product.image} alt={product.name} layout="fill" objectFit="cover" data-ai-hint={product.aiHint} />
@@ -45,7 +45,7 @@ export function ProductClientPage({ product }: { product: Product }) {
           <div className="space-y-6">
             <div>
               <Badge variant="outline">{product.origin}</Badge>
-              <h1 className="font-headline text-4xl md:text-5xl font-bold text-primary mt-2">{product.name}</h1>
+              <h1 className="font-headline text-3xl md:text-5xl font-bold text-primary mt-2">{product.name}</h1>
               <div className="flex items-center gap-2 mt-2">
                 <div className="flex text-amber-500">
                     {[...Array(5)].map((_, i) => (
@@ -69,14 +69,14 @@ export function ProductClientPage({ product }: { product: Product }) {
               ))}
             </div>
 
-            <div className="text-4xl font-bold text-primary">
+            <div className="text-3xl md:text-4xl font-bold text-primary">
               {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(product.price)}
               <span className="text-base font-normal text-foreground/60"> / 250g</span>
             </div>
             
-            <div className="flex items-center gap-4">
-                <span className="font-semibold">Quantity:</span>
-                <div className="flex items-center border rounded-md">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                <span className="font-semibold flex-shrink-0">Quantity:</span>
+                <div className="flex items-center border rounded-md self-start">
                     <Button variant="ghost" size="icon" className="h-10 w-10" onClick={() => setQuantity(q => Math.max(1, q-1))}><Minus className="h-4 w-4"/></Button>
                     <span className="px-4 font-bold">{quantity}</span>
                     <Button variant="ghost" size="icon" className="h-10 w-10" onClick={() => setQuantity(q => q+1)}><Plus className="h-4 w-4"/></Button>

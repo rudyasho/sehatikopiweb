@@ -116,13 +116,13 @@ export default function Home() {
             <p className="mt-4 text-lg text-foreground/80">
               Sehati Kopi Indonesia was born from a love for the rich coffee culture of our archipelago. We partner with local farmers to bring you the finest beans, roasting each batch to perfection to highlight its unique character. Our philosophy is simple: quality, sustainability, and a shared passion for great coffee.
             </p>
-            <div className="mt-6 flex space-x-8">
+            <div className="mt-6 flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-8">
               <div className="flex items-center gap-2">
-                <Coffee className="text-primary" />
+                <Coffee className="text-primary h-5 w-5" />
                 <span className="font-semibold">Artisanal Roasting</span>
               </div>
               <div className="flex items-center gap-2">
-                <Leaf className="text-accent" />
+                <Leaf className="text-accent h-5 w-5" />
                 <span className="font-semibold">Sustainably Sourced</span>
               </div>
             </div>
@@ -132,7 +132,7 @@ export default function Home() {
           </div>
           <div className="relative h-80 rounded-lg overflow-hidden shadow-xl">
              <Image
-              src="https://images.unsplash.com/photo-1551030173-19911abc0957?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+              src="https://images.unsplash.com/photo-1630411870702-8f6f8fd80ce2?q=80&w=1332&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
               alt="Roasting coffee beans"
               layout="fill"
               objectFit="cover"

@@ -138,17 +138,17 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
 
   return (
     <div className="bg-secondary/50">
-      <div className="container mx-auto px-4 py-12">
-        <article className="max-w-4xl mx-auto bg-background p-8 md:p-12 rounded-lg shadow-xl">
-          <div className="mb-8">
+      <div className="container mx-auto px-4 py-8 md:py-12">
+        <article className="max-w-4xl mx-auto bg-background p-6 md:p-12 rounded-lg shadow-xl">
+          <div className="mb-6 md:mb-8">
             <Link href="/blog" className="inline-flex items-center text-primary hover:underline">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Blog
             </Link>
           </div>
-          <header className="mb-8 border-b pb-8">
+          <header className="mb-6 md:mb-8 border-b pb-6 md:pb-8">
             <Badge variant="secondary" className="mb-4">{post.category}</Badge>
-            <h1 className="font-headline text-4xl md:text-5xl font-bold text-primary">{post.title}</h1>
+            <h1 className="font-headline text-3xl md:text-5xl font-bold text-primary">{post.title}</h1>
             <div className="mt-4 text-sm text-foreground/60">
               <span>By {post.author}</span> | <span>{post.date}</span>
             </div>
