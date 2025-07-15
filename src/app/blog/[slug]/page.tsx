@@ -2,7 +2,7 @@
 'use client';
 
 import Image from 'next/image';
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
@@ -79,7 +79,8 @@ const staticContent: Record<string, {author: string, date: string, content: stri
 type PostWithContent = BlogPostType & { content: string, author: string, date: string };
 
 
-export default function BlogPostPage({ params }: { params: { slug: string } }) {
+export default function BlogPostPage() {
+  const params = useParams<{ slug: string }>();
   const [post, setPost] = useState<PostWithContent | null>(null);
 
   useEffect(() => {
