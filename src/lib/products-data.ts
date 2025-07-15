@@ -91,4 +91,17 @@ export const products: Product[] = [
     tags: ['Smooth', 'Sweet', 'Herbal'],
     roast: 'Medium',
   },
+  {
+    slug: 'papua-wamena',
+    name: 'Papua Wamena',
+    origin: 'Wamena, Papua',
+    description: 'Grown in the remote highlands of Papua, this coffee has a clean, crisp flavor with a heavy body, low acidity, and notes of caramel, nuts, and a hint of stone fruit.',
+    price: 160000,
+    image: 'https://placehold.co/800x800.png',
+    aiHint: 'papua landscape',
+    rating: 4.8,
+    reviews: 65,
+    tags: ['Caramel', 'Nutty', 'Clean'],
+    roast: 'Medium'
+  },
 ];

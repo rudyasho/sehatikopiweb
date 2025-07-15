@@ -9,7 +9,7 @@ import { ArrowLeft, BookAudio, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { getBlogPosts, type BlogPost as BlogPostType } from '../page';
 import { useEffect, useState, useMemo, useTransition } from 'react';
-import { products, type Product } from '@/lib/products-data';
+import { products } from '@/lib/products-data';
 import { Card, CardContent, CardTitle, CardDescription, CardFooter, CardHeader } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
@@ -239,6 +239,8 @@ export default function BlogPostPage() {
     );
   }
 
+  const storyGenerated = storyText && audioStory;
+
   return (
     <div className="bg-secondary/50">
       <div className="container mx-auto px-4 py-8 md:py-12">
@@ -261,9 +263,11 @@ export default function BlogPostPage() {
               <Alert className="mb-8">
                   <BookAudio className="h-4 w-4" />
                   <AlertTitle className="font-headline">AI Story Teller</AlertTitle>
-                  <AlertDescription>
-                    Want an audio version of this story? Let our AI narrator read it for you.
-                  </AlertDescription>
+                  {!storyGenerated && (
+                    <>
+                    <AlertDescription>
+                      Want an audio version of this story? Let our AI narrator read it for you.
+                    </AlertDescription>
                     <div className="mt-4">
                         <Button variant="outline" onClick={handleGenerateStory} disabled={isStoryLoading} className="w-full">
                         {isStoryLoading ? (
@@ -276,6 +280,8 @@ export default function BlogPostPage() {
                         )}
                         </Button>
                     </div>
+                    </>
+                  )}
 
                     {isStoryLoading && !storyText && (
                         <div className="text-center p-4 text-sm text-muted-foreground">
