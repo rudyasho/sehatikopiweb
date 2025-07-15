@@ -1,7 +1,6 @@
-
 // src/lib/products-data.ts
-import { app } from './firebase';
-import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, writeBatch, limit } from "firebase/firestore";
+import { dbAdmin } from './firebase-admin';
+import type { DocumentData, QueryDocumentSnapshot } from 'firebase-admin/firestore';
 
 export interface Product {
   id: string;
@@ -108,25 +107,25 @@ const initialProducts: Omit<Product, 'id' | 'slug'>[] = [
   },
 ];
 
-const db = getFirestore(app);
-const productsCollection = collection(db, 'products');
+
+const productsCollection = dbAdmin?.collection('products');
 let isSeeding = false; // Flag to prevent concurrent seeding
 let seedingCompleted = false; // Flag to ensure seeding runs only once
 
 async function seedDatabaseIfNeeded() {
-  if (seedingCompleted || isSeeding) {
+  if (!dbAdmin || !productsCollection || seedingCompleted || isSeeding) {
     return;
   }
   
   isSeeding = true;
 
   try {
-    const snapshot = await getDocs(query(productsCollection, limit(1)));
+    const snapshot = await productsCollection.limit(1).get();
     if (snapshot.empty) {
       console.log('Products collection is empty. Seeding database...');
-      const batch = writeBatch(db);
+      const batch = dbAdmin.batch();
       initialProducts.forEach(productData => {
-          const docRef = doc(productsCollection); // Create a new doc with a random ID
+          const docRef = productsCollection.doc(); // Create a new doc with a random ID
           const slug = productData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
           batch.set(docRef, {...productData, slug });
       });
@@ -156,15 +155,19 @@ export async function getProducts(): Promise<Product[]> {
   if (productsCache && lastFetchTime && (now - lastFetchTime < CACHE_DURATION)) {
     return productsCache;
   }
+  
+  if (!dbAdmin || !productsCollection) {
+    console.error("Firestore Admin is not initialized. Cannot get products.");
+    return [];
+  }
 
   await seedDatabaseIfNeeded();
 
-  const productsSnapshot = await getDocs(productsCollection);
+  const productsSnapshot = await productsCollection.get();
   const productsList = productsSnapshot.docs.map(doc => {
-    const data = doc.data();
     return {
       id: doc.id,
-      ...data
+      ...doc.data()
     } as Product;
   });
   
@@ -181,6 +184,8 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
 }
 
 export async function addProduct(productData: Omit<ProductFormData, 'tags'> & { tags: string }): Promise<Product> {
+  if (!dbAdmin || !productsCollection) throw new Error("Firestore Admin not initialized.");
+
   const slug = productData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
   
   const newProductData = {
@@ -191,7 +196,7 @@ export async function addProduct(productData: Omit<ProductFormData, 'tags'> & { 
     tags: productData.tags.split(',').map(tag => tag.trim()),
   };
 
-  const docRef = await addDoc(productsCollection, newProductData);
+  const docRef = await productsCollection.add(newProductData);
   
   invalidateCache();
   
@@ -204,18 +209,22 @@ export async function addProduct(productData: Omit<ProductFormData, 'tags'> & { 
 }
 
 export async function updateProduct(id: string, productData: Omit<ProductFormData, 'tags'> & { tags: string }): Promise<void> {
-    const productRef = doc(db, 'products', id);
+    if (!dbAdmin || !productsCollection) throw new Error("Firestore Admin not initialized.");
+    
+    const productRef = productsCollection.doc(id);
     const updatedData = {
         ...productData,
         tags: productData.tags.split(',').map(tag => tag.trim()),
         slug: productData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, ''),
     };
-    await updateDoc(productRef, updatedData as any); // Cast to any to avoid type issues with Firestore
+    await productRef.update(updatedData);
     invalidateCache();
 }
 
 export async function deleteProduct(id: string): Promise<void> {
-    const productRef = doc(db, 'products', id);
-    await deleteDoc(productRef);
+    if (!dbAdmin || !productsCollection) throw new Error("Firestore Admin not initialized.");
+    
+    const productRef = productsCollection.doc(id);
+    await productRef.delete();
     invalidateCache();
 }
