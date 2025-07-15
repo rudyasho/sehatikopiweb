@@ -1,6 +1,6 @@
 // src/lib/blog-data.ts
 import { app } from './firebase';
-import { getFirestore, collection, getDocs, addDoc, query, where, writeBatch, limit, doc } from "firebase/firestore";
+import { getFirestore, collection, getDocs, addDoc, query, where, writeBatch, limit, doc, updateDoc, deleteDoc } from "firebase/firestore";
 import type { GenerateBlogPostOutput } from '@/ai/flows/blog-post-generator';
 
 export type BlogPost = {
@@ -16,14 +16,13 @@ export type BlogPost = {
     date: string; // ISO 8601 date string
 };
 
-const initialBlogPosts: Omit<BlogPost, 'id'>[] = [
+const initialBlogPosts: Omit<BlogPost, 'id' | 'slug'>[] = [
   {
     title: 'The Ultimate Guide to V60 Brewing',
     category: 'Brewing Tips',
     excerpt: 'Master the art of the V60 pour-over with our step-by-step guide. From grind size to pouring technique, we cover everything you need to know for the perfect cup.',
     image: 'https://placehold.co/600x400.png',
     aiHint: 'v60 coffee',
-    slug: 'v60-guide',
     author: 'Adi Prasetyo',
     date: '2024-07-28T10:00:00Z',
     content: `
@@ -55,7 +54,6 @@ const initialBlogPosts: Omit<BlogPost, 'id'>[] = [
     excerpt: 'Travel with us to the highlands of Aceh, the home of our Gayo coffee. Discover the stories of the farmers and the unique terroir that gives this coffee its distinct flavor.',
     image: 'https://placehold.co/600x400.png',
     aiHint: 'coffee plantation landscape',
-    slug: 'gayo-journey',
     author: 'Siti Aminah',
     date: '2024-07-22T10:00:00Z',
     content: `
@@ -71,7 +69,6 @@ const initialBlogPosts: Omit<BlogPost, 'id'>[] = [
     excerpt: 'Washed, natural, or honey-processed? Learn how different processing methods impact the final taste of your coffee and find your preferred style.',
     image: 'https://placehold.co/600x400.png',
     aiHint: 'coffee cherry',
-    slug: 'processing-methods',
     author: 'Budi Santoso',
     date: '2024-07-15T10:00:00Z',
     content: `
@@ -91,7 +88,6 @@ const initialBlogPosts: Omit<BlogPost, 'id'>[] = [
     excerpt: 'Explore the benefits of single-origin coffee, from its traceable roots to its unique and complex flavor profiles that tell the story of its origin.',
     image: 'https://placehold.co/600x400.png',
     aiHint: 'coffee cup beans',
-    slug: 'single-origin',
     author: 'Budi Santoso',
     date: '2024-07-08T10:00:00Z',
     content: `
@@ -105,7 +101,11 @@ const initialBlogPosts: Omit<BlogPost, 'id'>[] = [
       <p class="text-lg mt-8">Choosing single-origin is choosing to experience the full spectrum of what coffee can be—an agricultural product with a rich story and a unique sense of place.</p>
     `,
   },
-];
+].map(post => ({
+    ...post,
+    slug: post.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, ''),
+}));
+
 
 const db = getFirestore(app);
 const blogCollection = collection(db, 'blog');
@@ -210,4 +210,27 @@ export async function addBlogPost(post: GenerateBlogPostOutput): Promise<BlogPos
         id: docRef.id,
         ...newPostData
     } as BlogPost;
+}
+
+type BlogPostUpdateData = Partial<Pick<BlogPost, 'title' | 'category' | 'content'>>;
+
+export async function updateBlogPost(id: string, data: BlogPostUpdateData): Promise<void> {
+    const postRef = doc(db, 'blog', id);
+    const updateData: BlogPostUpdateData = { ...data };
+    
+    if (data.title) {
+        (updateData as Partial<BlogPost>).slug = data.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+    }
+    if (data.content) {
+        (updateData as Partial<BlogPost>).excerpt = `${(data.content.replace(/<[^>]+>/g, '').substring(0, 150))}...`;
+    }
+
+    await updateDoc(postRef, updateData);
+    invalidateCache();
+}
+
+export async function deleteBlogPost(id: string): Promise<void> {
+    const postRef = doc(db, 'blog', id);
+    await deleteDoc(postRef);
+    invalidateCache();
 }

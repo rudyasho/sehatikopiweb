@@ -1,3 +1,4 @@
+
 // src/app/dashboard/page.tsx
 'use client';
 
@@ -6,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ProductPopularityChart } from './product-popularity-chart';
-import { Coffee, Star, Calendar, Newspaper, Loader2, PlusCircle, Wand2, Edit, BarChart3, Bot, LayoutGrid, Send, Clipboard, Check, Save, ListOrdered, Trash2 } from 'lucide-react';
+import { Coffee, Star, Calendar, Newspaper, Loader2, PlusCircle, Wand2, Edit, BarChart3, Bot, LayoutGrid, Send, Clipboard, Check, Save, ListOrdered, Trash2, BookText } from 'lucide-react';
 import { addProduct, getProducts, updateProduct, deleteProduct, type Product } from '@/lib/products-data';
 import { RoastDistributionChart } from './roast-distribution-chart';
 import { OriginDistributionChart } from './origin-distribution-chart';
@@ -21,7 +22,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { addBlogPost, getBlogPosts } from '@/lib/blog-data';
+import { addBlogPost, getBlogPosts, updateBlogPost, deleteBlogPost, type BlogPost } from '@/lib/blog-data';
 import { generateBlogPost, type GenerateBlogPostOutput } from '@/ai/flows/blog-post-generator';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -33,7 +34,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 const totalEvents = 3; 
 const formatCurrency = (amount: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
 
-type DashboardView = 'overview' | 'addProduct' | 'blogGenerator' | 'manageProducts';
+type DashboardView = 'overview' | 'addProduct' | 'blogGenerator' | 'manageProducts' | 'manageBlog';
 export type GeneratedPost = GenerateBlogPostOutput;
 
 
@@ -50,11 +51,20 @@ const productFormSchema = z.object({
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
 
-const blogPostSchema = z.object({
+const blogGeneratorSchema = z.object({
   topic: z.string().min(5, 'Please provide a more detailed topic.'),
 });
 
-type BlogPostFormValues = z.infer<typeof blogPostSchema>;
+type BlogGeneratorFormValues = z.infer<typeof blogGeneratorSchema>;
+
+const blogPostFormSchema = z.object({
+    title: z.string().min(5, "Title is required."),
+    category: z.enum(['Brewing Tips', 'Storytelling', 'Coffee Education', 'News']),
+    content: z.string().min(50, "Content needs to be at least 50 characters."),
+});
+
+type BlogPostFormValues = z.infer<typeof blogPostFormSchema>;
+
 
 
 const MetricCard = ({ title, value, icon: Icon, isLoading }: { title: string, value: string | number, icon: React.ElementType, isLoading?: boolean }) => {
@@ -95,12 +105,12 @@ function BlogGenerator() {
   const { toast } = useToast();
   const router = useRouter();
 
-  const form = useForm<BlogPostFormValues>({
-    resolver: zodResolver(blogPostSchema),
+  const form = useForm<BlogGeneratorFormValues>({
+    resolver: zodResolver(blogGeneratorSchema),
     defaultValues: { topic: '' },
   });
 
-  async function onSubmit(data: BlogPostFormValues) {
+  async function onSubmit(data: BlogGeneratorFormValues) {
     setIsLoading(true);
     setGeneratedPost(null);
     setIsEditing(false);
@@ -453,7 +463,6 @@ const AddProductView = ({ onProductAdded }: { onProductAdded: () => void }) => (
 const ManageProductsView = () => {
     const [products, setProducts] = useState<Product[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
     const { toast } = useToast();
 
     const fetchProducts = async () => {
@@ -519,7 +528,7 @@ const ManageProductsView = () => {
                                     <TableCell className="text-muted-foreground">{product.origin}</TableCell>
                                     <TableCell className="text-right">{formatCurrency(product.price)}</TableCell>
                                     <TableCell className="text-center space-x-2">
-                                        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                                        <Dialog>
                                             <DialogTrigger asChild>
                                                 <Button variant="outline" size="icon">
                                                     <Edit className="h-4 w-4" />
@@ -529,7 +538,7 @@ const ManageProductsView = () => {
                                                 <DialogHeader>
                                                     <DialogTitle className="font-headline text-2xl text-primary">Edit Product</DialogTitle>
                                                 </DialogHeader>
-                                                <ProductForm product={product} onFormSubmit={fetchProducts} closeDialog={() => setIsDialogOpen(false)} />
+                                                <ProductForm product={product} onFormSubmit={fetchProducts} closeDialog={() => (document.querySelector('[data-radix-dialog-close]') as HTMLElement)?.click()} />
                                             </DialogContent>
                                         </Dialog>
 
@@ -564,6 +573,204 @@ const ManageProductsView = () => {
         </Card>
     );
 }
+
+const BlogPostForm = ({ post, onFormSubmit, closeDialog }: { post: BlogPost, onFormSubmit: () => void, closeDialog?: () => void }) => {
+    const { toast } = useToast();
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const form = useForm<BlogPostFormValues>({
+        resolver: zodResolver(blogPostFormSchema),
+        defaultValues: {
+            title: post?.title || '',
+            category: post?.category || 'Coffee Education',
+            content: post?.content || '',
+        },
+    });
+
+    const onSubmit = async (data: BlogPostFormValues) => {
+        setIsSubmitting(true);
+        try {
+            await updateBlogPost(post.id, data);
+            toast({
+                title: "Post Updated!",
+                description: `"${data.title}" has been successfully updated.`,
+            });
+            onFormSubmit();
+            if (closeDialog) closeDialog();
+        } catch (error) {
+            console.error("Failed to update blog post:", error);
+            toast({
+                variant: 'destructive',
+                title: "Error!",
+                description: "Could not update the blog post. Please try again.",
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    return (
+        <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <div className="max-h-[70vh] overflow-y-auto p-1 space-y-4">
+                    <FormField control={form.control} name="title" render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Post Title</FormLabel>
+                            <FormControl><Input placeholder="e.g., The Ultimate Guide to V60" {...field} /></FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )} />
+                    <FormField control={form.control} name="category" render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Category</FormLabel>
+                             <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select a category" />
+                                </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                <SelectItem value="Brewing Tips">Brewing Tips</SelectItem>
+                                <SelectItem value="Storytelling">Storytelling</SelectItem>
+                                <SelectItem value="Coffee Education">Coffee Education</SelectItem>
+                                <SelectItem value="News">News</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                    )} />
+                    <FormField control={form.control} name="content" render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Content (HTML)</FormLabel>
+                            <FormControl><Textarea placeholder="<p>Start your post here...</p>" {...field} rows={15} /></FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )} />
+                </div>
+                <Button type="submit" size="lg" className="!mt-8 w-full md:w-auto" disabled={isSubmitting}>
+                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Update Post
+                </Button>
+            </form>
+        </Form>
+    );
+};
+
+
+const ManageBlogPostsView = () => {
+    const [posts, setPosts] = useState<BlogPost[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const { toast } = useToast();
+
+    const fetchPosts = async () => {
+        setIsLoading(true);
+        try {
+            const postsData = await getBlogPosts();
+            setPosts(postsData);
+        } catch (error) {
+            console.error("Failed to fetch blog posts for management:", error);
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch blog posts.' });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchPosts();
+    }, []);
+
+    const handleDelete = async (postId: string, postTitle: string) => {
+        try {
+            await deleteBlogPost(postId);
+            toast({ title: "Post Deleted", description: `"${postTitle}" has been removed.` });
+            fetchPosts(); // Refresh list after deleting
+        } catch (error) {
+            console.error(`Failed to delete post ${postId}:`, error);
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not delete the post.' });
+        }
+    };
+    
+    if (isLoading) {
+        return (
+            <Card className="shadow-lg bg-background p-6">
+                <Skeleton className="h-8 w-1/4 mb-4" />
+                <Skeleton className="h-64 w-full" />
+            </Card>
+        )
+    }
+
+    return (
+        <Card className="shadow-lg bg-background">
+            <CardHeader>
+                <CardTitle className="font-headline text-2xl text-primary flex items-center gap-2">
+                    <BookText /> Manage Blog Posts
+                </CardTitle>
+                <CardDescription>Edit or delete existing articles from your blog.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="border rounded-lg">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Title</TableHead>
+                                <TableHead>Category</TableHead>
+                                <TableHead>Date</TableHead>
+                                <TableHead className="text-center">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {posts.map((post) => (
+                                <TableRow key={post.id}>
+                                    <TableCell className="font-medium max-w-xs truncate">{post.title}</TableCell>
+                                    <TableCell><Badge variant="secondary">{post.category}</Badge></TableCell>
+                                    <TableCell>{new Date(post.date).toLocaleDateString()}</TableCell>
+                                    <TableCell className="text-center space-x-2">
+                                        <Dialog>
+                                            <DialogTrigger asChild>
+                                                <Button variant="outline" size="icon">
+                                                    <Edit className="h-4 w-4" />
+                                                </Button>
+                                            </DialogTrigger>
+                                            <DialogContent className="sm:max-w-4xl">
+                                                <DialogHeader>
+                                                    <DialogTitle className="font-headline text-2xl text-primary">Edit Blog Post</DialogTitle>
+                                                </DialogHeader>
+                                                 <BlogPostForm post={post} onFormSubmit={fetchPosts} closeDialog={() => (document.querySelector('[data-radix-dialog-close]') as HTMLElement)?.click()} />
+                                            </DialogContent>
+                                        </Dialog>
+
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <Button variant="destructive" size="icon">
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        This action cannot be undone. This will permanently delete the post "{post.title}".
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                    <AlertDialogAction onClick={() => handleDelete(post.id, post.title)}>
+                                                        Continue
+                                                    </AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
+            </CardContent>
+        </Card>
+    );
+};
+
 
 const AnalyticsOverview = () => {
     const [stats, setStats] = useState({ totalProducts: 0, totalReviews: 0 });
@@ -639,7 +846,6 @@ const AnalyticsOverview = () => {
 const DashboardPage = () => {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const { toast } = useToast();
   const [activeView, setActiveView] = useState<DashboardView>('overview');
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -671,6 +877,8 @@ const DashboardPage = () => {
             return <BlogGenerator />;
         case 'manageProducts':
             return <ManageProductsView />;
+        case 'manageBlog':
+            return <ManageBlogPostsView />;
         default:
             return <AnalyticsOverview key={refreshKey} />;
     }
@@ -680,6 +888,7 @@ const DashboardPage = () => {
       { id: 'overview', label: 'Overview', icon: LayoutGrid },
       { id: 'manageProducts', label: 'Manage Products', icon: ListOrdered },
       { id: 'addProduct', label: 'Add Product', icon: PlusCircle },
+      { id: 'manageBlog', label: 'Manage Blog', icon: BookText },
       { id: 'blogGenerator', label: 'AI Blog Generator', icon: Bot },
   ];
 
