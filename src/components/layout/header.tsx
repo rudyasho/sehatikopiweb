@@ -55,7 +55,10 @@ export function Header() {
   const { user, loading, logout } = useAuth();
   const [isClient, setIsClient] = useState(false);
 
-  // Define navLinks inside the component to ensure consistency between server and client renders
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   const navLinks = [
     { href: '/', label: 'Home', icon: Home },
     { href: '/products', label: 'Shop', icon: ShoppingBag },
@@ -66,10 +69,6 @@ export function Header() {
     { href: '/about', label: 'About', icon: Info },
     { href: '/contact', label: 'Contact', icon: Mail },
   ];
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   const itemCount = cart.reduce((total, item) => total + item.quantity, 0);
 
@@ -156,20 +155,22 @@ export function Header() {
         </div>
         
         <div className="flex flex-1 items-center justify-end space-x-2 md:space-x-4">
-          <nav className="hidden items-center space-x-6 text-sm font-medium md:flex">
-            {navLinks.map(({ href, label }) => (
-              <Link
-                key={href}
-                href={href}
-                className={cn(
-                  'transition-colors hover:text-primary',
-                  pathname === href ? 'text-primary' : 'text-foreground/60'
-                )}
-              >
-                {label}
-              </Link>
-            ))}
-          </nav>
+          {isClient && (
+            <nav className="hidden items-center space-x-6 text-sm font-medium md:flex">
+              {navLinks.map(({ href, label }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className={cn(
+                    'transition-colors hover:text-primary',
+                    pathname === href ? 'text-primary' : 'text-foreground/60'
+                  )}
+                >
+                  {label}
+                </Link>
+              ))}
+            </nav>
+          )}
           <div className="flex items-center gap-2">
              <Button asChild variant="ghost" size="icon">
                 <Link href="/search">
