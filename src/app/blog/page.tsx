@@ -32,13 +32,8 @@ const BlogPage = () => {
   
   const [latestPost, ...otherPosts] = useMemo(() => {
     if (blogPosts.length === 0) return [null, []];
-    // Sort by date if available, otherwise just take the first one.
-    const sorted = [...blogPosts].sort((a, b) => {
-        const dateA = a.date ? new Date(a.date).getTime() : 0;
-        const dateB = b.date ? new Date(b.date).getTime() : 0;
-        return dateB - dateA;
-    });
-    return [sorted[0], sorted.slice(1)];
+    // Data is already sorted by date from the getBlogPosts function
+    return [blogPosts[0], blogPosts.slice(1)];
   }, [blogPosts]);
 
   if (isLoading) {
@@ -49,7 +44,10 @@ const BlogPage = () => {
                     <Skeleton className="h-12 w-3/4 mx-auto" />
                     <Skeleton className="h-6 w-1/2 mx-auto mt-4" />
                 </div>
-                 <Skeleton className="h-[400px] w-full mb-12" />
+                 <div className="mb-12 grid md:grid-cols-2 gap-8">
+                     <Skeleton className="h-[400px] w-full" />
+                     <Skeleton className="h-[400px] w-full" />
+                 </div>
                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-96 w-full"/>)}
                  </div>

@@ -18,6 +18,7 @@ import { generateCoffeeStory } from '@/ai/flows/story-teller-flow';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/auth-context';
 import { marked } from 'marked';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const ShareButtons = ({ title, slug }: { title: string, slug: string }) => {
   const { toast } = useToast();
@@ -218,10 +219,7 @@ const AudioPlayer = ({ audioDataUri }: { audioDataUri: string }) => {
   );
 };
 
-
-export default function BlogPostPage() {
-  const params = useParams<{ slug: string }>();
-  const [post, setPost] = useState<BlogPost | null>(null);
+const PostPageContent = ({ post }: { post: BlogPost }) => {
   const { toast } = useToast();
   const { user } = useAuth();
   const [isStoryLoading, startStoryTransition] = useTransition();
@@ -229,21 +227,10 @@ export default function BlogPostPage() {
   const [audioStory, setAudioStory] = useState<string | null>(null);
   const [storyStarted, setStoryStarted] = useState(false);
 
-  useEffect(() => {
-    if (params.slug) {
-        const fetchPost = async () => {
-            const postData = await getPostBySlug(params.slug);
-            setPost(postData);
-        }
-        fetchPost();
-    }
-  }, [params.slug]);
-
   const renderedContent = useMemo(() => {
     if (!post?.content) return '';
     return marked.parse(post.content);
   }, [post?.content]);
-
 
   const handleGenerateStory = () => {
     if (!post) return;
@@ -270,96 +257,151 @@ export default function BlogPostPage() {
     });
   };
 
-  if (!post) {
+  const storyGenerated = storyText && audioStory;
+
+  return (
+    <article className="max-w-4xl mx-auto bg-card p-6 md:p-12 rounded-lg shadow-xl">
+      <div className="mb-6 md:mb-8 flex justify-between items-center">
+        <Button asChild variant="link" className="p-0">
+          <Link href="/blog" className="inline-flex items-center text-primary hover:underline">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Blog
+          </Link>
+        </Button>
+         {user && (
+          <Button asChild variant="outline">
+            <Link href={`/dashboard?view=manageBlog&edit=${post.id}`}>
+              <Edit />
+              Edit Post
+            </Link>
+          </Button>
+        )}
+      </div>
+      <header className="mb-6 md:mb-8 border-b pb-6 md:pb-8">
+        <Badge variant="secondary" className="mb-4">{post.category}</Badge>
+        <h1 className="font-headline text-3xl md:text-5xl font-bold text-primary">{post.title}</h1>
+        <div className="mt-4 text-sm text-foreground/60">
+          <span>By {post.author}</span> | <span>{new Date(post.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+        </div>
+        <ShareButtons title={post.title} slug={post.slug} />
+      </header>
+
+      <div className="relative aspect-video w-full mb-8 rounded-lg overflow-hidden">
+        <Image src={post.image} alt={post.title} layout="fill" objectFit="cover" data-ai-hint={post.aiHint ?? 'coffee blog'} />
+      </div>
+
+      <div
+        className="prose dark:prose-invert lg:prose-xl max-w-none text-foreground/90 prose-headings:text-primary prose-h2:font-headline"
+        dangerouslySetInnerHTML={{ __html: renderedContent }}
+      />
+      
+      {user && (
+        <div className="mt-12">
+          <Separator />
+          <Alert className="mt-12">
+              <BookAudio className="h-4 w-4" />
+              <AlertTitle className="font-headline">AI Story Teller</AlertTitle>
+              {!storyStarted && (
+                <>
+                <AlertDescription>
+                  Listen to an AI-narrated version of this story.
+                </AlertDescription>
+                <div className="mt-4">
+                    <Button variant="outline" onClick={handleGenerateStory}>
+                      Listen to the Story
+                    </Button>
+                </div>
+                </>
+              )}
+
+              {isStoryLoading && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground mt-4">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>The storyteller is clearing their throat... Please wait.</span>
+                  </div>
+              )}
+                
+              {storyGenerated && (
+                  <Card className="mt-4 bg-secondary/30 animate-in fade-in-50 duration-500">
+                      <CardContent className="p-4 space-y-4">
+                        <p className="text-foreground/90 italic whitespace-pre-wrap">{storyText}</p>
+                        <AudioPlayer audioDataUri={audioStory} />
+                      </CardContent>
+                  </Card>
+              )}
+            </Alert>
+        </div>
+      )}
+
+      <RecommendedBlogs currentSlug={post.slug} />
+      <RecommendedProducts />
+    </article>
+  );
+};
+
+
+export default function BlogPostPage() {
+  const params = useParams<{ slug: string }>();
+  const [post, setPost] = useState<BlogPost | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (params.slug) {
+        const fetchPost = async () => {
+            setIsLoading(true);
+            try {
+                const postData = await getPostBySlug(params.slug);
+                setPost(postData);
+            } catch (error) {
+                console.error("Failed to fetch blog post:", error);
+                // Optionally, handle post not found error
+            } finally {
+                setIsLoading(false);
+            }
+        }
+        fetchPost();
+    }
+  }, [params.slug]);
+
+
+  if (isLoading) {
     return (
         <div className="bg-background">
-          <div className="container mx-auto px-4 py-8 md:py-12 text-center">
-            <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary"/>
-            <p className="mt-4">Loading post...</p>
+          <div className="container mx-auto px-4 py-8 md:py-12">
+             <div className="max-w-4xl mx-auto space-y-8">
+                <Skeleton className="h-8 w-1/4"/>
+                <Skeleton className="h-12 w-full"/>
+                <Skeleton className="h-6 w-1/2"/>
+                <Skeleton className="aspect-video w-full" />
+                <div className="space-y-4">
+                    <Skeleton className="h-6 w-full"/>
+                    <Skeleton className="h-6 w-full"/>
+                    <Skeleton className="h-6 w-3/4"/>
+                </div>
+             </div>
           </div>
         </div>
     );
   }
 
-  const storyGenerated = storyText && audioStory;
+  if (!post) {
+    return (
+      <div className="bg-background">
+        <div className="container mx-auto px-4 py-8 md:py-12 text-center">
+          <h1 className="text-2xl font-bold">Post Not Found</h1>
+          <p className="mt-4">The article you are looking for does not exist.</p>
+           <Button asChild className="mt-6">
+            <Link href="/blog">Back to Blog</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-background">
       <div className="container mx-auto px-4 py-8 md:py-12">
-        <article className="max-w-4xl mx-auto bg-card p-6 md:p-12 rounded-lg shadow-xl">
-          <div className="mb-6 md:mb-8 flex justify-between items-center">
-            <Link href="/blog" className="inline-flex items-center text-primary hover:underline">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Blog
-            </Link>
-             {user && (
-              <Button asChild variant="outline">
-                <Link href={`/dashboard?view=manageBlog&edit=${post.id}`}>
-                  <Edit />
-                  Edit Post
-                </Link>
-              </Button>
-            )}
-          </div>
-          <header className="mb-6 md:mb-8 border-b pb-6 md:pb-8">
-            <Badge variant="secondary" className="mb-4">{post.category}</Badge>
-            <h1 className="font-headline text-3xl md:text-5xl font-bold text-primary">{post.title}</h1>
-            <div className="mt-4 text-sm text-foreground/60">
-              <span>By {post.author}</span> | <span>{new Date(post.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
-            </div>
-            <ShareButtons title={post.title} slug={post.slug} />
-          </header>
-
-          <div className="relative aspect-video w-full mb-8 rounded-lg overflow-hidden">
-            <Image src={post.image} alt={post.title} layout="fill" objectFit="cover" data-ai-hint={post.aiHint ?? 'coffee blog'} />
-          </div>
-
-          <div
-            className="prose dark:prose-invert lg:prose-xl max-w-none text-foreground/90 prose-headings:text-primary prose-h2:font-headline"
-            dangerouslySetInnerHTML={{ __html: renderedContent }}
-          />
-          
-          {user && (
-            <div className="mt-12">
-              <Separator />
-              <Alert className="mt-12">
-                  <BookAudio className="h-4 w-4" />
-                  <AlertTitle className="font-headline">AI Story Teller</AlertTitle>
-                  {!storyStarted && (
-                    <>
-                    <AlertDescription>
-                      Listen to an AI-narrated version of this story.
-                    </AlertDescription>
-                    <div className="mt-4">
-                        <Button variant="outline" onClick={handleGenerateStory}>
-                          Listen to the Story
-                        </Button>
-                    </div>
-                    </>
-                  )}
-
-                  {isStoryLoading && (
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground mt-4">
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          <span>The storyteller is clearing their throat... Please wait.</span>
-                      </div>
-                  )}
-                    
-                  {storyGenerated && (
-                      <Card className="mt-4 bg-secondary/30 animate-in fade-in-50 duration-500">
-                          <CardContent className="p-4 space-y-4">
-                            <p className="text-foreground/90 italic whitespace-pre-wrap">{storyText}</p>
-                            <AudioPlayer audioDataUri={audioStory} />
-                          </CardContent>
-                      </Card>
-                  )}
-                </Alert>
-            </div>
-          )}
-
-          <RecommendedBlogs currentSlug={post.slug} />
-          <RecommendedProducts />
-        </article>
+        <PostPageContent post={post} />
       </div>
     </div>
   );
