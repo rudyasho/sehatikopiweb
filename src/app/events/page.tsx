@@ -1,16 +1,16 @@
+
+'use client';
+
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar, Clock, MapPin } from 'lucide-react';
-import type { Metadata } from 'next';
+import { Calendar, Clock, MapPin, Check } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { useState } from 'react';
 
-export const metadata: Metadata = {
-  title: 'Events & Workshops',
-  description: 'Join our community! Check out our schedule of coffee cupping sessions, latte art workshops, and other events to deepen your coffee knowledge.',
-};
-
-const events = [
+const eventsList = [
   {
+    id: 'cupping-101',
     title: 'Coffee Cupping 101',
     date: 'Saturday, August 17, 2024',
     time: '10:00 AM - 12:00 PM',
@@ -20,6 +20,7 @@ const events = [
     aiHint: 'coffee cupping',
   },
   {
+    id: 'latte-art-workshop',
     title: 'Latte Art Workshop',
     date: 'Sunday, August 25, 2024',
     time: '2:00 PM - 4:00 PM',
@@ -29,6 +30,7 @@ const events = [
     aiHint: 'latte art workshop',
   },
   {
+    id: 'meet-the-farmer',
     title: 'Meet the Farmer: Gayo Highlands',
     date: 'Saturday, September 7, 2024',
     time: '3:00 PM - 5:00 PM',
@@ -40,6 +42,17 @@ const events = [
 ];
 
 const EventsPage = () => {
+  const { toast } = useToast();
+  const [registeredEvents, setRegisteredEvents] = useState<Record<string, boolean>>({});
+
+  const handleRegister = (eventId: string, eventTitle: string) => {
+    setRegisteredEvents(prev => ({ ...prev, [eventId]: true }));
+    toast({
+      title: 'Registration Confirmed!',
+      description: `You have successfully registered for "${eventTitle}". We've sent a confirmation to your email.`,
+    });
+  };
+  
   return (
     <div className="bg-secondary/50">
       <div className="container mx-auto px-4 py-12">
@@ -48,38 +61,49 @@ const EventsPage = () => {
           <p className="mt-2 text-lg text-foreground/80">Join our community and deepen your coffee knowledge.</p>
         </div>
         <div className="space-y-12">
-          {events.map((event) => (
-            <Card key={event.title} className="grid md:grid-cols-5 gap-0 md:gap-6 overflow-hidden shadow-xl items-center bg-background">
-              <div className="md:col-span-2 relative h-60 md:h-full w-full">
-                <Image src={event.image} alt={event.title} layout="fill" objectFit="cover" data-ai-hint={event.aiHint} />
-              </div>
-              <div className="md:col-span-3 p-6">
-                <CardHeader className="p-0">
-                  <CardTitle className="font-headline text-3xl text-primary">{event.title}</CardTitle>
-                </CardHeader>
-                <CardContent className="p-0 pt-4">
-                  <div className="space-y-3 text-foreground/80 mb-4">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-primary" />
-                      <span>{event.date}</span>
+          {eventsList.map((event) => {
+            const isRegistered = registeredEvents[event.id];
+            return (
+              <Card key={event.id} className="grid md:grid-cols-5 gap-0 md:gap-6 overflow-hidden shadow-xl items-center bg-background">
+                <div className="md:col-span-2 relative h-60 md:h-full w-full">
+                  <Image src={event.image} alt={event.title} layout="fill" objectFit="cover" data-ai-hint={event.aiHint} />
+                </div>
+                <div className="md:col-span-3 p-6">
+                  <CardHeader className="p-0">
+                    <CardTitle className="font-headline text-3xl text-primary">{event.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-0 pt-4">
+                    <div className="space-y-3 text-foreground/80 mb-4">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-primary" />
+                        <span>{event.date}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-primary" />
+                        <span>{event.time}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-primary" />
+                        <span>{event.location}</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-primary" />
-                      <span>{event.time}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-primary" />
-                      <span>{event.location}</span>
-                    </div>
-                  </div>
-                  <CardDescription>{event.description}</CardDescription>
-                </CardContent>
-                <CardFooter className="p-0 pt-6">
-                  <Button size="lg">Register Now</Button>
-                </CardFooter>
-              </div>
-            </Card>
-          ))}
+                    <CardDescription>{event.description}</CardDescription>
+                  </CardContent>
+                  <CardFooter className="p-0 pt-6">
+                    <Button size="lg" onClick={() => handleRegister(event.id, event.title)} disabled={isRegistered}>
+                      {isRegistered ? (
+                        <>
+                          <Check className="mr-2" /> Registered
+                        </>
+                      ) : (
+                        'Register Now'
+                      )}
+                    </Button>
+                  </CardFooter>
+                </div>
+              </Card>
+            );
+          })}
         </div>
       </div>
     </div>
