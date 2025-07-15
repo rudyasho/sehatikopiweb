@@ -81,12 +81,12 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative h-[60vh] md:h-[80vh] w-full flex items-center justify-center text-center text-white">
         <Image
-          src="https://placehold.co/1920x1080.png"
+          src="https://storage.googleapis.com/maker-studio-5f33f.appspot.com/users/temp/1723706437593.png"
           alt="Sehati Kopi Roastery"
           layout="fill"
           objectFit="cover"
           className="absolute z-0"
-          data-ai-hint="coffee shop interior"
+          data-ai-hint="coffee beans cup"
           priority
         />
         <div className="absolute inset-0 bg-black/60 z-10" />
