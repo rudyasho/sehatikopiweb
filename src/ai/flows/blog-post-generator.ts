@@ -1,0 +1,53 @@
+
+'use server';
+/**
+ * @fileOverview An AI flow for generating blog post content.
+ *
+ * - generateBlogPost - A function that takes a topic and returns a blog post draft.
+ * - GenerateBlogPostOutput - The return type for the generateBlogPost function.
+ */
+
+import {ai} from '@/ai/genkit';
+import {z} from 'genkit';
+
+const GenerateBlogPostOutputSchema = z.object({
+  title: z.string().describe('A catchy and SEO-friendly title for the blog post.'),
+  category: z.enum(['Brewing Tips', 'Storytelling', 'Coffee Education', 'News']).describe('The most appropriate category for the blog post.'),
+  content: z.string().describe('The full content of the blog post, formatted as a single string of HTML. Use <p>, <h3>, <ul>, <ol>, and <li> tags. Do not include a main <h1> title, as that is handled by the `title` field.'),
+});
+export type GenerateBlogPostOutput = z.infer<typeof GenerateBlogPostOutputSchema>;
+
+
+export async function generateBlogPost(topic: string): Promise<GenerateBlogPostOutput> {
+  return blogPostGeneratorFlow(topic);
+}
+
+const prompt = ai.definePrompt({
+  name: 'blogPostGeneratorPrompt',
+  input: {schema: z.string()},
+  output: {schema: GenerateBlogPostOutputSchema},
+  prompt: `You are an expert content writer and coffee enthusiast for an Indonesian coffee brand called "Sehati Kopi". Your task is to write an engaging and informative blog post based on the provided topic.
+
+The brand voice is passionate, knowledgeable, and celebratory of Indonesian coffee heritage.
+
+Topic: {{{input}}}
+
+Instructions:
+1.  Generate a compelling title for the post.
+2.  Choose the best category from the available options.
+3.  Write the body of the blog post, at least 3-4 paragraphs long.
+4.  Structure the content using HTML tags. Use <p> for paragraphs, <h3> for subheadings, and <ul>/<ol> for lists where appropriate.
+5.  Ensure the output is a single, valid JSON object matching the defined schema. The 'content' field must be a single string containing all the HTML.`,
+});
+
+const blogPostGeneratorFlow = ai.defineFlow(
+  {
+    name: 'blogPostGeneratorFlow',
+    inputSchema: z.string(),
+    outputSchema: GenerateBlogPostOutputSchema,
+  },
+  async (topic) => {
+    const {output} = await prompt(topic);
+    return output!;
+  }
+);

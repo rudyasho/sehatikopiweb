@@ -1,14 +1,13 @@
+
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import type { Metadata } from 'next';
-
-export const metadata: Metadata = {
-  title: 'Blog',
-  description: 'Stories, brewing guides, and insights from the world of Indonesian coffee. Dive into our journal to deepen your coffee knowledge.',
-};
+import { useAuth } from '@/context/auth-context';
+import { BlogPostGenerator } from './blog-post-generator';
 
 const blogPosts = [
   {
@@ -46,6 +45,8 @@ const blogPosts = [
 ];
 
 const BlogPage = () => {
+  const { user } = useAuth();
+
   return (
     <div className="bg-secondary/50">
       <div className="container mx-auto px-4 py-12">
@@ -53,6 +54,9 @@ const BlogPage = () => {
           <h1 className="font-headline text-4xl md:text-5xl font-bold text-primary">From the Journal</h1>
           <p className="mt-2 text-lg text-foreground/80">Stories, guides, and insights from the world of coffee.</p>
         </div>
+
+        {user && <BlogPostGenerator />}
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {blogPosts.map((post) => (
             <Card key={post.slug} className="flex flex-col overflow-hidden shadow-lg transform hover:-translate-y-1 transition-transform duration-300 bg-background">
