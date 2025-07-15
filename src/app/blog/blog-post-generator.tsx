@@ -11,7 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Wand2, Clipboard, Check } from 'lucide-react';
+import { Loader2, Wand2, Clipboard, Check, Send } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 const blogPostSchema = z.object({
@@ -19,9 +19,14 @@ const blogPostSchema = z.object({
 });
 
 type BlogPostFormValues = z.infer<typeof blogPostSchema>;
+export type GeneratedPost = GenerateBlogPostOutput;
 
-export function BlogPostGenerator() {
-  const [generatedPost, setGeneratedPost] = useState<GenerateBlogPostOutput | null>(null);
+interface BlogPostGeneratorProps {
+  onPublish: (post: GeneratedPost) => void;
+}
+
+export function BlogPostGenerator({ onPublish }: BlogPostGeneratorProps) {
+  const [generatedPost, setGeneratedPost] = useState<GeneratedPost | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [hasCopied, setHasCopied] = useState(false);
   const { toast } = useToast();
@@ -37,10 +42,6 @@ export function BlogPostGenerator() {
     try {
       const result = await generateBlogPost(data.topic);
       setGeneratedPost(result);
-      toast({
-        title: 'Blog Post Generated!',
-        description: 'Your new blog post draft is ready below.',
-      });
     } catch (error) {
       console.error('Error generating blog post:', error);
       toast({
@@ -59,6 +60,13 @@ export function BlogPostGenerator() {
     setHasCopied(true);
     toast({ title: 'Content Copied!' });
     setTimeout(() => setHasCopied(false), 2000);
+  };
+
+  const handlePublish = () => {
+    if (!generatedPost) return;
+    onPublish(generatedPost);
+    setGeneratedPost(null);
+    form.reset();
   };
 
   return (
@@ -117,10 +125,16 @@ export function BlogPostGenerator() {
               <CardContent>
                 <div className="prose lg:prose-xl max-w-none text-foreground/90 prose-headings:text-primary prose-h3:font-headline"
                      dangerouslySetInnerHTML={{ __html: generatedPost.content }} />
-                <Button onClick={handleCopyToClipboard} variant="outline" className="mt-6">
-                  {hasCopied ? <Check className="mr-2"/> : <Clipboard className="mr-2"/>}
-                  Copy HTML Content
-                </Button>
+                <div className="flex flex-wrap gap-2 mt-6">
+                  <Button onClick={handleCopyToClipboard} variant="outline">
+                    {hasCopied ? <Check className="mr-2"/> : <Clipboard className="mr-2"/>}
+                    Copy HTML
+                  </Button>
+                   <Button onClick={handlePublish}>
+                    <Send className="mr-2"/>
+                    Publish to Blog
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           )}

@@ -1,15 +1,17 @@
 
 'use client';
 
+import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/context/auth-context';
-import { BlogPostGenerator } from './blog-post-generator';
+import { BlogPostGenerator, type GeneratedPost } from './blog-post-generator';
+import { useToast } from '@/hooks/use-toast';
 
-const blogPosts = [
+const initialBlogPosts = [
   {
     title: 'The Ultimate Guide to V60 Brewing',
     category: 'Brewing Tips',
@@ -44,8 +46,29 @@ const blogPosts = [
   },
 ];
 
+type BlogPost = typeof initialBlogPosts[0];
+
 const BlogPage = () => {
   const { user } = useAuth();
+  const { toast } = useToast();
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>(initialBlogPosts);
+
+  const handlePublishPost = (post: GeneratedPost) => {
+    const newPost: BlogPost = {
+      title: post.title,
+      category: post.category,
+      excerpt: post.content.substring(0, 150).replace(/<[^>]+>/g, '') + '...', // Simple excerpt generation
+      image: 'https://placehold.co/600x400.png',
+      aiHint: 'coffee blog',
+      slug: post.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, ''),
+    };
+
+    setBlogPosts(prevPosts => [newPost, ...prevPosts]);
+    toast({
+      title: 'Post Published!',
+      description: `"${post.title}" is now live on the blog.`,
+    });
+  };
 
   return (
     <div className="bg-secondary/50">
@@ -55,7 +78,7 @@ const BlogPage = () => {
           <p className="mt-2 text-lg text-foreground/80">Stories, guides, and insights from the world of coffee.</p>
         </div>
 
-        {user && <BlogPostGenerator />}
+        {user && <BlogPostGenerator onPublish={handlePublishPost} />}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {blogPosts.map((post) => (
