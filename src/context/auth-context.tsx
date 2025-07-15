@@ -9,6 +9,17 @@ import { useRouter } from 'next/navigation';
 
 export type User = FirebaseUser;
 
+export const SUPER_ADMIN_UID = "n7P0ALYxjSWIYZdybJWB7udBjvP2";
+
+export type AppUser = {
+  uid: string;
+  email: string | undefined;
+  displayName: string | undefined;
+  creationTime: string;
+  disabled: boolean;
+};
+
+
 interface AuthContextType {
   user: User | null;
   loading: boolean;

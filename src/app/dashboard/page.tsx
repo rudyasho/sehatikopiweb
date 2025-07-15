@@ -3,7 +3,7 @@
 
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useAuth, type User } from '@/context/auth-context';
+import { useAuth, type User, type AppUser, SUPER_ADMIN_UID } from '@/context/auth-context';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ProductPopularityChart } from './product-popularity-chart';
 import { Coffee, Star, Calendar, Newspaper, Loader2, PlusCircle, Wand2, Edit, BarChart3, Bot, LayoutGrid, Send, Clipboard, Check, Save, ListOrdered, Trash2, BookText, Image as ImageIcon, FileText, CalendarCheck, Clock, MapPin, CalendarPlus, FilePlus2, Users } from 'lucide-react';
@@ -32,7 +32,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { BlogEditor } from './blog-editor';
 import { addEvent, getEvents, updateEvent, deleteEvent, type Event, type EventFormData } from '@/lib/events-data';
 import { format } from 'date-fns';
-import { listAllUsers, updateUserDisabledStatus, deleteUserAccount, type AppUser, SUPER_ADMIN_UID } from '@/lib/users-data';
+import { listAllUsers, updateUserDisabledStatus, deleteUserAccount } from '@/lib/users-data';
 
 
 const totalEvents = 3; 
