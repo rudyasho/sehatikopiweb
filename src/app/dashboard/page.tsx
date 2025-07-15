@@ -1,15 +1,20 @@
 
-import type { Metadata } from 'next';
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/auth-context';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ProductPopularityChart } from './product-popularity-chart';
-import { Coffee, Star, Calendar, Newspaper } from 'lucide-react';
+import { Coffee, Star, Calendar, Newspaper, Loader2 } from 'lucide-react';
 import { products } from '@/lib/products-data';
 import { RoastDistributionChart } from './roast-distribution-chart';
 
-export const metadata: Metadata = {
-  title: 'Dashboard',
-  description: 'An overview of Sehati Kopi business metrics and analytics.',
-};
+// Metadata is now handled at the layout/page level for client components if needed, or through head.js
+// export const metadata: Metadata = {
+//   title: 'Dashboard',
+//   description: 'An overview of Sehati Kopi business metrics and analytics.',
+// };
 
 const totalProducts = products.length;
 const totalReviews = products.reduce((acc, product) => acc + product.reviews, 0);
@@ -29,6 +34,23 @@ const MetricCard = ({ title, value, icon: Icon }: { title: string, value: string
 );
 
 const DashboardPage = () => {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/'); // Redirect to home if not logged in and loading is finished
+    }
+  }, [user, loading, router]);
+  
+  if (loading || !user) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <Loader2 className="h-16 w-16 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="bg-secondary/50">
       <div className="container mx-auto px-4 py-12">
