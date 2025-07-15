@@ -74,7 +74,7 @@ export function Header() {
   const itemCount = cart.reduce((total, item) => total + item.quantity, 0);
 
   const AuthNav = () => {
-    if (loading && !isClient) return <div className="h-10 w-24 rounded-md bg-muted animate-pulse" />;
+    if (loading || !isClient) return <div className="h-10 w-24 rounded-md bg-muted animate-pulse" />;
     
     if (user) {
       return (
@@ -194,7 +194,7 @@ export function Header() {
                 </Button>
               </div>
               <nav className="flex flex-col space-y-2 pt-6 flex-grow">
-                {user && (
+                {isClient && user && (
                   <Link
                     href="/profile"
                     onClick={() => setIsMobileMenuOpen(false)}
@@ -247,8 +247,8 @@ export function Header() {
                         setIsMobileMenuOpen(false);
                     }}
                   >
-                    {user ? <LogOut className="mr-3 h-5 w-5"/> : <LogIn className="mr-3 h-5 w-5"/>}
-                    {user ? "Logout" : "Login"}
+                    {isClient && user ? <LogOut className="mr-3 h-5 w-5"/> : <LogIn className="mr-3 h-5 w-5"/>}
+                    {isClient && user ? "Logout" : "Login"}
                  </Button>
               </div>
             </SheetContent>
