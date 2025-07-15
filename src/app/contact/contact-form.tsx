@@ -8,8 +8,9 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { Loader2 } from 'lucide-react';
+import { sendContactMessage } from './actions';
 
 const contactFormSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -22,7 +23,7 @@ type ContactFormValues = z.infer<typeof contactFormSchema>;
 
 export function ContactForm() {
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(contactFormSchema),
@@ -34,22 +35,29 @@ export function ContactForm() {
     },
   });
 
-  async function onSubmit(data: ContactFormValues) {
-    setIsLoading(true);
-    // Here you would typically send the data to your backend API
-    // For this prototype, we'll simulate an API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
+  function onSubmit(data: ContactFormValues) {
+    startTransition(async () => {
+      const formData = new FormData();
+      Object.entries(data).forEach(([key, value]) => {
+        formData.append(key, value);
+      });
+      
+      const result = await sendContactMessage(formData);
 
-    setIsLoading(false);
-    
-    console.log(data);
-
-    toast({
-      title: "Message Sent!",
-      description: "Thank you for contacting us. We will get back to you shortly.",
+      if (result.error) {
+        toast({
+          variant: 'destructive',
+          title: "Error!",
+          description: result.error,
+        });
+      } else {
+         toast({
+          title: "Message Sent!",
+          description: "Thank you for contacting us. We will get back to you shortly.",
+        });
+        form.reset();
+      }
     });
-
-    form.reset();
   }
 
   return (
@@ -109,8 +117,8 @@ export function ContactForm() {
             </FormItem>
           )}
         />
-        <Button type="submit" size="lg" className="w-full" disabled={isLoading}>
-          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        <Button type="submit" size="lg" className="w-full" disabled={isPending}>
+          {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Send Message
         </Button>
       </form>
