@@ -47,7 +47,7 @@ export default async function BlogPage() {
                 <div className="p-8 flex flex-col justify-center">
                     <div className="flex items-center gap-4 mb-4 text-sm">
                       <Badge variant="secondary" className="w-fit">{latestPost.category}</Badge>
-                      <span className="text-muted-foreground">{format(new Date(latestPost.date), "MMMM d, yyyy")}</span>
+                      {latestPost.date && <span className="text-muted-foreground">{format(new Date(latestPost.date), "MMMM d, yyyy")}</span>}
                     </div>
                     <h2 className="font-headline text-3xl md:text-4xl text-primary font-bold mb-4">{latestPost.title}</h2>
                     <p className="text-lg text-foreground/80 mb-6">{latestPost.excerpt}</p>
@@ -75,7 +75,7 @@ export default async function BlogPage() {
               <CardContent className="p-6 flex-grow">
                 <div className="flex items-center gap-4 mb-2">
                     <Badge variant="secondary">{post.category}</Badge>
-                    <span className="text-xs text-muted-foreground">{format(new Date(post.date), "MMM d, yyyy")}</span>
+                    {post.date && <span className="text-xs text-muted-foreground">{format(new Date(post.date), "MMM d, yyyy")}</span>}
                 </div>
                 <Link href={`/blog/${post.slug}`}>
                   <CardTitle className="font-headline text-2xl text-primary hover:underline">{post.title}</CardTitle>
