@@ -46,6 +46,10 @@ const ImageInsertionDialog = ({ onInsertImage }: { onInsertImage: (url: string, 
         try {
             const result = await generateImage(aiPrompt);
             setGeneratedImageUrl(result.imageDataUri);
+            toast({
+              title: "Image Generated!",
+              description: "You can now insert this image. Note: It's a temporary data URL and won't be saved in the content.",
+            });
         } catch (error) {
             console.error('Error generating image for blog content:', error);
             toast({ variant: 'destructive', title: 'Image Generation Failed' });
@@ -57,6 +61,14 @@ const ImageInsertionDialog = ({ onInsertImage }: { onInsertImage: (url: string, 
     const handleInsert = () => {
         const finalUrl = generatedImageUrl || imageUrl;
         if (finalUrl) {
+            if (finalUrl.startsWith('data:image')) {
+                toast({
+                    variant: 'destructive',
+                    title: 'Insertion Not Allowed',
+                    description: 'Please use a hosted image URL. Base64 images cannot be embedded in the post content.',
+                });
+                return;
+            }
             onInsertImage(finalUrl, imageAlt || aiPrompt || 'blog image');
         }
     };
@@ -71,7 +83,7 @@ const ImageInsertionDialog = ({ onInsertImage }: { onInsertImage: (url: string, 
                     <label className="text-sm font-medium">From URL</label>
                     <div className="flex gap-2 mt-1">
                         <Input 
-                            placeholder="Image URL" 
+                            placeholder="Image URL (e.g., https://...)" 
                             value={imageUrl} 
                             onChange={(e) => {
                                 setImageUrl(e.target.value);
@@ -87,7 +99,7 @@ const ImageInsertionDialog = ({ onInsertImage }: { onInsertImage: (url: string, 
                 </div>
                  <div className="text-center text-xs text-muted-foreground">OR</div>
                  <div>
-                    <label className="text-sm font-medium">Generate with AI</label>
+                    <label className="text-sm font-medium">Generate with AI (for inspiration)</label>
                     <div className="flex gap-2 mt-1">
                         <Input 
                             placeholder="Describe the image you want..." 
@@ -98,6 +110,7 @@ const ImageInsertionDialog = ({ onInsertImage }: { onInsertImage: (url: string, 
                             {isGenerating ? <Loader2 className="animate-spin" /> : <Wand2 />}
                         </Button>
                     </div>
+                    <p className="text-xs text-muted-foreground mt-1">Note: AI-generated images are for preview. You must upload them to a hosting service and use the public URL.</p>
                  </div>
                  
                 {(isGenerating || generatedImageUrl) && (

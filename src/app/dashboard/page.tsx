@@ -63,7 +63,7 @@ type BlogGeneratorFormValues = z.infer<typeof blogGeneratorSchema>;
 const blogPostFormSchema = z.object({
     title: z.string().min(5, "Title is required."),
     category: z.enum(['Brewing Tips', 'Storytelling', 'Coffee Education', 'News']),
-    content: z.string().min(50, "Content needs to be at least 50 characters."),
+    content: z.string().min(50, "Content needs to be at least 50 characters.").max(500000, "Content is too long. Please reduce its size."),
     image: z.string().url("Please provide a valid image URL."),
     aiHint: z.string().min(2, "AI hint is required for image search."),
 });
@@ -851,7 +851,7 @@ const BlogPostForm = ({ post, onFormSubmit, closeDialog, isCreatingNew, currentU
             if (isCreatingNew && currentUser) {
                 await addBlogPost(data, currentUser.name);
                 toast({ title: "Post Created!", description: `"${data.title}" has been created.` });
-                form.reset({ category: 'Coffee Education' });
+                form.reset({ category: 'Coffee Education', title: '', content: '', image: '', aiHint: '' });
             } else if (post) {
                 await updateBlogPost(post.id, data);
                 toast({ title: "Post Updated!", description: `"${data.title}" has been updated.` });
@@ -860,10 +860,11 @@ const BlogPostForm = ({ post, onFormSubmit, closeDialog, isCreatingNew, currentU
             if (closeDialog) closeDialog();
         } catch (error) {
             console.error("Failed to submit blog post:", error);
+            const errorMessage = error instanceof Error ? error.message : `Could not ${isCreatingNew ? 'create' : 'update'} the post.`;
             toast({
                 variant: 'destructive',
                 title: "Error!",
-                description: `Could not ${isCreatingNew ? 'create' : 'update'} the post.`,
+                description: errorMessage,
             });
         } finally {
             setIsSubmitting(false);

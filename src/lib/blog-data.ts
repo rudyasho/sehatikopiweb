@@ -37,6 +37,20 @@ const invalidateCache = () => {
   lastFetchTime = null;
 };
 
+// Helper function to safely create an excerpt
+const createExcerpt = (content: string, length = 150): string => {
+    if (!content) return '';
+    // Strip markdown and HTML, then trim and slice.
+    const cleanContent = content
+        .replace(/!\[.*?\]\(.*?\)/g, '') // Remove markdown images
+        .replace(/<[^>]+>/g, '') // Remove HTML tags
+        .replace(/#+\s/g, '') // Remove markdown headings
+        .replace(/[*_>]/g, ''); // Remove other markdown characters
+    
+    if (cleanContent.length <= length) return cleanContent;
+    return `${cleanContent.substring(0, length)}...`;
+};
+
 export async function getBlogPosts(): Promise<BlogPost[]> {
     const now = Date.now();
     if (blogCache && lastFetchTime && (now - lastFetchTime < CACHE_DURATION)) {
@@ -53,7 +67,10 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
     });
 
     // Sort by date descending
-    blogList.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    blogList.sort((a, b) => {
+        if (!a.date || !b.date) return 0;
+        return new Date(b.date).getTime() - new Date(a.date).getTime()
+    });
     
     blogCache = blogList;
     lastFetchTime = now;
@@ -72,7 +89,7 @@ export async function addBlogPost(post: NewBlogPostData, authorName: string): Pr
     
     const newPostData = {
         ...post,
-        excerpt: `${(post.content.replace(/<[^>]+>/g, '').substring(0, 150))}...`,
+        excerpt: createExcerpt(post.content),
         slug: slug,
         author: authorName,
         date: new Date().toISOString(),
@@ -98,8 +115,7 @@ export async function updateBlogPost(id: string, data: BlogPostUpdateData): Prom
         updateData.slug = data.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
     }
     if (data.content) {
-        // Generate excerpt from Markdown content
-        updateData.excerpt = `${(data.content.replace(/#+\s/g, '').replace(/[*_>]/g, '').substring(0, 150))}...`;
+        updateData.excerpt = createExcerpt(data.content);
     }
 
     await updateDoc(postRef, updateData);
