@@ -46,6 +46,7 @@ import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { useCart } from '@/context/cart-context';
 import { useAuth } from '@/context/auth-context';
 import { LoginDialog } from './login-dialog';
+import { ThemeToggle } from './theme-toggle';
 
 
 const navLinks = [
@@ -182,6 +183,7 @@ export function Header() {
                 <span className="sr-only">Shopping Cart</span>
               </Link>
             </Button>
+            <ThemeToggle />
             <div className="hidden md:block">
               <AuthNav />
             </div>
