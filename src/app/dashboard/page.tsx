@@ -30,6 +30,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { BlogEditor } from './blog-editor';
+import { marked } from 'marked';
 
 
 const totalEvents = 3; 
@@ -98,18 +100,16 @@ const MetricCard = ({ title, value, icon: Icon, isLoading }: { title: string, va
     )
 };
 
-function BlogGenerator({ currentUser }: { currentUser: User }) {
+function BlogGenerator({ currentUser, onPostPublished }: { currentUser: User, onPostPublished: () => void }) {
   const [generatedPost, setGeneratedPost] = useState<GeneratedPost | null>(null);
   const [imageState, setImageState] = useState({
-      url: 'https://placehold.co/800x450.png', // Default placeholder
+      url: 'https://placehold.co/800x450.png',
       prompt: '',
       isLoading: false,
   });
 
-  const [isEditing, setIsEditing] = useState(false);
   const [isGeneratingText, setIsGeneratingText] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
-  const [hasCopied, setHasCopied] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -125,17 +125,14 @@ function BlogGenerator({ currentUser }: { currentUser: User }) {
   async function onTopicSubmit(data: BlogGeneratorFormValues) {
     setIsGeneratingText(true);
     setGeneratedPost(null);
-    setIsEditing(false);
     try {
       const result = await generateBlogPost(data.topic);
       setGeneratedPost(result);
-      // Populate the content form with generated data
       blogContentForm.reset({
           title: result.title,
           category: result.category,
           content: result.content
       });
-      // Populate the image management state
       setImageState(prev => ({ ...prev, prompt: result.imagePrompt, url: 'https://placehold.co/800x450.png' }));
     } catch (error) {
       console.error('Error generating blog post:', error);
@@ -167,10 +164,11 @@ function BlogGenerator({ currentUser }: { currentUser: User }) {
     if (!generatedPost) return;
     setIsPublishing(true);
     try {
+      const htmlContent = await marked.parse(data.content);
       const newPostData = {
           title: data.title,
           category: data.category,
-          content: data.content,
+          content: htmlContent,
           image: imageState.url,
           aiHint: imageState.prompt.split(' ').slice(0,2).join(' ')
       };
@@ -189,6 +187,7 @@ function BlogGenerator({ currentUser }: { currentUser: User }) {
       blogTopicForm.reset();
       blogContentForm.reset();
       setImageState({ url: 'https://placehold.co/800x450.png', prompt: '', isLoading: false });
+      onPostPublished();
     } catch (error) {
         console.error("Error publishing post:", error);
         toast({
@@ -251,10 +250,9 @@ function BlogGenerator({ currentUser }: { currentUser: User }) {
         {generatedPost && (
           <Form {...blogContentForm}>
             <form onSubmit={blogContentForm.handleSubmit(handlePublish)}>
-              <Card className="mt-6 animate-in fade-in-50 duration-500 bg-secondary/50 p-6 space-y-6">
+              <div className="mt-6 animate-in fade-in-50 duration-500 space-y-6">
                 
-                {/* Image Management */}
-                <div>
+                <Card className="bg-secondary/50 p-6 space-y-4">
                     <h3 className="font-headline text-xl text-primary mb-2">Featured Image</h3>
                     <Card className="p-4 bg-background/50">
                         <div className="w-full aspect-video relative bg-muted rounded-md flex items-center justify-center overflow-hidden">
@@ -290,10 +288,9 @@ function BlogGenerator({ currentUser }: { currentUser: User }) {
                              </div>
                         </div>
                     </Card>
-                </div>
+                </Card>
                   
-                {/* Content Editing */}
-                <div>
+                <Card className="bg-secondary/50 p-6 space-y-4">
                    <h3 className="font-headline text-xl text-primary mb-2">Post Content</h3>
                     <div className="space-y-4">
                         <FormField
@@ -333,21 +330,25 @@ function BlogGenerator({ currentUser }: { currentUser: User }) {
                             name="content"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Content (HTML)</FormLabel>
-                                    <FormControl><Textarea {...field} rows={12} /></FormControl>
+                                    <FormControl>
+                                        <BlogEditor 
+                                            value={field.value} 
+                                            onChange={field.onChange} 
+                                        />
+                                    </FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
                     </div>
-                </div>
+                </Card>
 
                 <Button type="submit" disabled={isPublishing} size="lg">
                    {isPublishing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Send className="mr-2"/>}
                    {isPublishing ? 'Publishing...' : 'Publish to Blog'}
                 </Button>
 
-              </Card>
+              </div>
             </form>
           </Form>
         )}
@@ -532,7 +533,7 @@ const AddProductView = ({ onProductAdded }: { onProductAdded: () => void }) => (
   </Card>
 );
 
-const ManageProductsView = () => {
+const ManageProductsView = ({ onProductsChanged }: { onProductsChanged: () => void }) => {
     const [products, setProducts] = useState<Product[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const { toast } = useToast();
@@ -558,12 +559,18 @@ const ManageProductsView = () => {
         try {
             await deleteProduct(productId);
             toast({ title: "Product Deleted", description: `"${productName}" has been removed.` });
-            fetchProducts(); // Refresh list after deleting
+            fetchProducts();
+            onProductsChanged();
         } catch (error) {
             console.error(`Failed to delete product ${productId}:`, error);
             toast({ variant: 'destructive', title: 'Error', description: 'Could not delete product.' });
         }
     };
+
+    const handleFormSubmit = () => {
+        fetchProducts();
+        onProductsChanged();
+    }
     
     if (isLoading) {
         return (
@@ -610,7 +617,7 @@ const ManageProductsView = () => {
                                                 <DialogHeader>
                                                     <DialogTitle className="font-headline text-2xl text-primary">Edit Product</DialogTitle>
                                                 </DialogHeader>
-                                                <ProductForm product={product} onFormSubmit={fetchProducts} closeDialog={() => (document.querySelector('[data-radix-dialog-close]') as HTMLElement)?.click()} />
+                                                <ProductForm product={product} onFormSubmit={handleFormSubmit} closeDialog={() => (document.querySelector('[data-radix-dialog-close]') as HTMLElement)?.click()} />
                                             </DialogContent>
                                         </Dialog>
 
@@ -664,7 +671,12 @@ const BlogPostForm = ({ post, onFormSubmit, closeDialog }: { post: BlogPost, onF
     const onSubmit = async (data: BlogPostFormValues) => {
         setIsSubmitting(true);
         try {
-            await updateBlogPost(post.id, data);
+            const htmlContent = await marked.parse(data.content);
+
+            await updateBlogPost(post.id, {
+                ...data,
+                content: htmlContent,
+            });
             toast({
                 title: "Post Updated!",
                 description: `"${data.title}" has been successfully updated.`,
@@ -728,13 +740,21 @@ const BlogPostForm = ({ post, onFormSubmit, closeDialog }: { post: BlogPost, onF
                             <FormMessage />
                         </FormItem>
                     )} />
-                    <FormField control={form.control} name="content" render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Content (HTML)</FormLabel>
-                            <FormControl><Textarea placeholder="<p>Start your post here...</p>" {...field} rows={15} /></FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )} />
+                    <FormField
+                        control={form.control}
+                        name="content"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormControl>
+                                    <BlogEditor 
+                                        value={field.value} 
+                                        onChange={field.onChange} 
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                        />
                 </div>
                 <Button type="submit" size="lg" className="!mt-8 w-full md:w-auto" disabled={isSubmitting}>
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -746,7 +766,7 @@ const BlogPostForm = ({ post, onFormSubmit, closeDialog }: { post: BlogPost, onF
 };
 
 
-const ManageBlogPostsView = () => {
+const ManageBlogPostsView = ({ onPostsChanged }: { onPostsChanged: () => void }) => {
     const [posts, setPosts] = useState<BlogPost[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const { toast } = useToast();
@@ -772,12 +792,18 @@ const ManageBlogPostsView = () => {
         try {
             await deleteBlogPost(postId);
             toast({ title: "Post Deleted", description: `"${postTitle}" has been removed.` });
-            fetchPosts(); // Refresh list after deleting
+            fetchPosts(); 
+            onPostsChanged();
         } catch (error) {
             console.error(`Failed to delete post ${postId}:`, error);
             toast({ variant: 'destructive', title: 'Error', description: 'Could not delete the post.' });
         }
     };
+
+    const handleFormSubmit = () => {
+        fetchPosts();
+        onPostsChanged();
+    }
     
     if (isLoading) {
         return (
@@ -824,7 +850,7 @@ const ManageBlogPostsView = () => {
                                                 <DialogHeader>
                                                     <DialogTitle className="font-headline text-2xl text-primary">Edit Blog Post</DialogTitle>
                                                 </DialogHeader>
-                                                 <BlogPostForm post={post} onFormSubmit={fetchPosts} closeDialog={() => (document.querySelector('[data-radix-dialog-close]') as HTMLElement)?.click()} />
+                                                 <BlogPostForm post={post} onFormSubmit={handleFormSubmit} closeDialog={() => (document.querySelector('[data-radix-dialog-close]') as HTMLElement)?.click()} />
                                             </DialogContent>
                                         </Dialog>
 
@@ -963,11 +989,11 @@ const DashboardPage = () => {
         case 'addProduct':
             return <AddProductView onProductAdded={handleDataChange} />;
         case 'blogGenerator':
-            return <BlogGenerator currentUser={user} />;
+            return <BlogGenerator currentUser={user} onPostPublished={handleDataChange} />;
         case 'manageProducts':
-            return <ManageProductsView />;
+            return <ManageProductsView onProductsChanged={handleDataChange} />;
         case 'manageBlog':
-            return <ManageBlogPostsView />;
+            return <ManageBlogPostsView onPostsChanged={handleDataChange}/>;
         default:
             return <AnalyticsOverview key={refreshKey} />;
     }

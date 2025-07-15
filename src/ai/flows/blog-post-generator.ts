@@ -13,7 +13,7 @@ import {z} from 'genkit';
 const GenerateBlogPostOutputSchema = z.object({
   title: z.string().describe('A catchy and SEO-friendly title for the blog post.'),
   category: z.enum(['Brewing Tips', 'Storytelling', 'Coffee Education', 'News']).describe('The most appropriate category for the blog post.'),
-  content: z.string().describe('The full content of the blog post, formatted as a single string of HTML. Use <p>, <h3>, <ul>, <ol>, and <li> tags. Do not include a main <h1> title, as that is handled by the `title` field.'),
+  content: z.string().describe('The full content of the blog post, formatted as a single string of Markdown. Use Markdown syntax like ## for headings, * for list items, etc. Do not include a main # title, as that is handled by the `title` field.'),
   imagePrompt: z.string().describe("A creative, descriptive prompt for an AI image generator to create a feature image for this blog post. The prompt should be detailed and evocative, suitable for generating a high-quality photograph."),
 });
 export type GenerateBlogPostOutput = z.infer<typeof GenerateBlogPostOutputSchema>;
@@ -48,9 +48,9 @@ Instructions:
 1.  Generate a compelling title for the post.
 2.  Choose the best category from the available options.
 3.  Write the body of the blog post, at least 3-4 paragraphs long.
-4.  Structure the content using HTML tags. Use <p> for paragraphs, <h3> for subheadings, and <ul>/<ol> for lists where appropriate.
+4.  Structure the content using Markdown. Use '##' for subheadings, '*' for list items, blockquotes, etc.
 5.  Based on the topic and content, write a short, descriptive, and artistic prompt to generate a feature image for this blog post.
-6.  Ensure the output is a single, valid JSON object matching the defined schema. The 'content' field must be a single string containing all the HTML.`,
+6.  Ensure the output is a single, valid JSON object matching the defined schema. The 'content' field must be a single string containing all the Markdown.`,
     });
     
     const {output} = await prompt(topic);

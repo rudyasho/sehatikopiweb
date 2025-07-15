@@ -1,0 +1,134 @@
+
+'use client';
+
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { marked } from 'marked';
+import hljs from 'highlight.js';
+import 'highlight.js/styles/atom-one-dark.css';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Bold, Italic, Link, List, Quote, Code } from 'lucide-react';
+
+// Configure marked to use highlight.js
+marked.setOptions({
+  highlight: function (code, lang) {
+    const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+    return hljs.highlight(code, { language }).value;
+  },
+  langPrefix: 'hljs language-',
+  breaks: true,
+  gfm: true,
+});
+
+interface BlogEditorProps {
+  value: string;
+  onChange: (value: string) => void;
+}
+
+const MarkdownToolbar = ({ textareaRef, onContentChange }: { textareaRef: React.RefObject<HTMLTextAreaElement>, onContentChange: (value: string) => void }) => {
+  const insertText = (before: string, after: string = '') => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = textarea.value;
+    const selectedText = text.substring(start, end);
+    
+    const newText = `${text.substring(0, start)}${before}${selectedText}${after}${text.substring(end)}`;
+    
+    textarea.value = newText;
+    textarea.focus();
+    textarea.selectionStart = start + before.length;
+    textarea.selectionEnd = end + before.length;
+
+    onContentChange(newText);
+  };
+
+  const toolbarItems = [
+    { icon: Bold, tooltip: 'Bold', action: () => insertText('**', '**') },
+    { icon: Italic, tooltip: 'Italic', action: () => insertText('*', '*') },
+    { icon: Quote, tooltip: 'Blockquote', action: () => insertText('> ') },
+    { icon: List, tooltip: 'Unordered List', action: () => insertText('\n- ') },
+    { icon: Code, tooltip: 'Code Block', action: () => insertText('\n```\n', '\n```\n') },
+    { icon: Link, tooltip: 'Link', action: () => insertText('[', '](https://)') },
+  ];
+
+  return (
+    <TooltipProvider delayDuration={100}>
+        <div className="flex items-center gap-1 border-b p-2 bg-background rounded-t-md">
+        {toolbarItems.map((item, index) => (
+            <Tooltip key={index}>
+                <TooltipTrigger asChild>
+                    <Button type="button" variant="ghost" size="icon" onClick={item.action} className="h-8 w-8">
+                        <item.icon className="h-4 w-4" />
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                    <p>{item.tooltip}</p>
+                </TooltipContent>
+            </Tooltip>
+        ))}
+        </div>
+    </TooltipProvider>
+  );
+};
+
+
+export const BlogEditor: React.FC<BlogEditorProps> = ({ value, onChange }) => {
+  const [content, setContent] = useState(value);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  
+  useEffect(() => {
+    setContent(value);
+  }, [value]);
+
+  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newValue = e.target.value;
+    setContent(newValue);
+    onChange(newValue);
+  };
+  
+  const handleToolbarChange = (newValue: string) => {
+    setContent(newValue);
+    onChange(newValue);
+  };
+
+  const renderedHtml = useMemo(() => {
+    try {
+      return marked.parse(content || '');
+    } catch (error) {
+      console.error("Markdown parsing error:", error);
+      return "<p>Error parsing Markdown.</p>";
+    }
+  }, [content]);
+
+
+  return (
+    <Card className="grid grid-cols-1 md:grid-cols-2 w-full border-0 shadow-none">
+      {/* Editor Pane */}
+      <div className="flex flex-col">
+        <MarkdownToolbar textareaRef={textareaRef} onContentChange={handleToolbarChange} />
+        <textarea
+          ref={textareaRef}
+          value={content}
+          onChange={handleContentChange}
+          className="w-full h-full min-h-[50vh] p-4 font-mono text-sm bg-background border rounded-b-md focus:outline-none focus:ring-1 focus:ring-primary"
+          placeholder="Write your post content here using Markdown..."
+        />
+      </div>
+
+      {/* Preview Pane */}
+      <div className="hidden md:block border-t border-r border-b rounded-r-md bg-secondary/30">
+        <div className="p-4 border-b bg-background rounded-tr-md">
+            <h3 className="font-semibold text-sm text-muted-foreground">Live Preview</h3>
+        </div>
+        <div
+          className="prose dark:prose-invert max-w-none p-4 h-full"
+          dangerouslySetInnerHTML={{ __html: renderedHtml }}
+        />
+      </div>
+    </Card>
+  );
+};

@@ -184,15 +184,9 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
 }
 
 export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
-    const q = query(blogCollection, where("slug", "==", slug), limit(1));
-    const querySnapshot = await getDocs(q);
-    
-    if (querySnapshot.empty) {
-        return null;
-    }
-
-    const doc = querySnapshot.docs[0];
-    return { id: doc.id, ...doc.data() } as BlogPost;
+    const posts = await getBlogPosts();
+    const post = posts.find(p => p.slug === slug);
+    return post || null;
 }
 
 export async function addBlogPost(post: NewBlogPostData, authorName: string): Promise<BlogPost> {
@@ -216,7 +210,7 @@ export async function addBlogPost(post: NewBlogPostData, authorName: string): Pr
     } as BlogPost;
 }
 
-type BlogPostUpdateData = Partial<Pick<BlogPost, 'title' | 'category' | 'content' | 'image' | 'aiHint'>>;
+export type BlogPostUpdateData = Partial<Pick<BlogPost, 'title' | 'category' | 'content' | 'image' | 'aiHint'>>;
 
 export async function updateBlogPost(id: string, data: BlogPostUpdateData): Promise<void> {
     const postRef = doc(db, 'blog', id);
