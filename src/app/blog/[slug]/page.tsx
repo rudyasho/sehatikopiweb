@@ -5,7 +5,7 @@
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, BookAudio, Loader2 } from 'lucide-react';
+import { ArrowLeft, BookAudio, Loader2, Twitter, Facebook, MessageCircle, Link2 } from 'lucide-react';
 import Link from 'next/link';
 import { getBlogPosts, type BlogPost as BlogPostType } from '../page';
 import { useEffect, useState, useMemo, useTransition } from 'react';
@@ -86,6 +86,48 @@ const staticContent: Record<string, {author: string, date: string, content: stri
 };
 
 type PostWithContent = BlogPostType & { content: string, author: string, date: string };
+
+const ShareButtons = ({ title, slug }: { title: string, slug: string }) => {
+  const { toast } = useToast();
+  const [url, setUrl] = useState('');
+
+  useEffect(() => {
+    setUrl(window.location.href);
+  }, [slug]);
+
+  if (!url) return null;
+
+  const encodedUrl = encodeURIComponent(url);
+  const encodedTitle = encodeURIComponent(`Check out this article from Sehati Kopi: ${title}`);
+
+  const shareLinks = [
+    { name: 'Twitter', icon: Twitter, href: `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}` },
+    { name: 'Facebook', icon: Facebook, href: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}` },
+    { name: 'WhatsApp', icon: MessageCircle, href: `https://api.whatsapp.com/send?text=${encodedTitle}%20${encodedUrl}` }
+  ];
+  
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(url);
+    toast({ title: "Link Copied!", description: "You can now share it with your friends." });
+  };
+
+  return (
+    <div className="flex items-center gap-2 mt-4">
+      <span className="text-sm font-semibold text-foreground/80">Share:</span>
+      {shareLinks.map(link => (
+        <Button key={link.name} variant="outline" size="icon" asChild>
+          <a href={link.href} target="_blank" rel="noopener noreferrer" aria-label={`Share on ${link.name}`}>
+            <link.icon className="h-4 w-4" />
+          </a>
+        </Button>
+      ))}
+       <Button variant="outline" size="icon" onClick={handleCopyLink} aria-label="Copy link">
+          <Link2 className="h-4 w-4" />
+       </Button>
+    </div>
+  );
+};
+
 
 const RecommendedBlogs = ({ currentSlug }: { currentSlug: string }) => {
   const recommendedPosts = useMemo(() => {
@@ -257,6 +299,7 @@ export default function BlogPostPage() {
             <div className="mt-4 text-sm text-foreground/60">
               <span>By {post.author}</span> | <span>{post.date}</span>
             </div>
+            <ShareButtons title={post.title} slug={post.slug} />
           </header>
 
             {user && (
