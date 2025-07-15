@@ -1,4 +1,6 @@
 // src/lib/events-data.ts
+'use server';
+
 import { dbAdmin } from './firebase-admin';
 
 export type Event = {

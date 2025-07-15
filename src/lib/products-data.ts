@@ -1,4 +1,6 @@
 // src/lib/products-data.ts
+'use server';
+
 import { dbAdmin } from './firebase-admin';
 import type { DocumentData, QueryDocumentSnapshot } from 'firebase-admin/firestore';
 

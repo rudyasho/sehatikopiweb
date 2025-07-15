@@ -1,4 +1,6 @@
 // src/lib/blog-data.ts
+'use server';
+
 import { dbAdmin } from './firebase-admin';
 
 export type BlogPost = {
@@ -123,7 +125,10 @@ export async function updateBlogPost(id: string, data: BlogPostUpdateData): Prom
         updateData.slug = data.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
     }
     if (data.content) {
-        updateData.excerpt = createExcerpt(data.content);
+        // Ensure we don't try to create an excerpt from a giant base64 string
+        if (!data.content.startsWith('data:image')) {
+            updateData.excerpt = createExcerpt(data.content);
+        }
     }
 
     await postRef.update(updateData);
