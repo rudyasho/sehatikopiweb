@@ -61,7 +61,7 @@ export function TopProductsTable() {
         </TableHeader>
         <TableBody>
           {topProducts.map((product) => (
-            <TableRow key={product.slug}>
+            <TableRow key={product.id}>
               <TableCell className="font-medium">{product.name}</TableCell>
               <TableCell className="text-center">
                 <Badge variant="outline" className="gap-1 pl-2 pr-2.5">
