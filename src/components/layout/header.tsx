@@ -53,9 +53,9 @@ const navLinks = [
   { href: '/', label: 'Home', icon: Home },
   { href: '/products', label: 'Shop', icon: ShoppingBag},
   { href: '/menu', label: 'Menu', icon: BookOpen },
-  { href: '/events', label: 'Events', icon: Calendar },
+  { href: '/recommendations', label: 'Recommendations', icon: Wand2},
   { href: '/blog', label: 'Blog', icon: Newspaper },
-  { href: '/recommendations', label: 'Rekomendasi', icon: Wand2},
+  { href: '/events', label: 'Events', icon: Calendar },
   { href: '/about', label: 'About', icon: Info },
   { href: '/contact', label: 'Contact', icon: Mail },
 ];
