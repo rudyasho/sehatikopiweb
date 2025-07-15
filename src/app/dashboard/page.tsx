@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth, type User } from '@/context/auth-context';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ProductPopularityChart } from './product-popularity-chart';
-import { Coffee, Star, Calendar, Newspaper, Loader2, PlusCircle, Wand2, Edit, BarChart3, Bot, LayoutGrid, Send, Clipboard, Check, Save, ListOrdered, Trash2, BookText, Image as ImageIcon, FileText, CalendarCheck, Clock, MapPin, CalendarPlus, FilePlus2 } from 'lucide-react';
+import { Coffee, Star, Calendar, Newspaper, Loader2, PlusCircle, Wand2, Edit, BarChart3, Bot, LayoutGrid, Send, Clipboard, Check, Save, ListOrdered, Trash2, BookText, Image as ImageIcon, FileText, CalendarCheck, Clock, MapPin, CalendarPlus, FilePlus2, Users } from 'lucide-react';
 import { addProduct, getProducts, updateProduct, deleteProduct, type Product } from '@/lib/products-data';
 import { RoastDistributionChart } from './roast-distribution-chart';
 import { OriginDistributionChart } from './origin-distribution-chart';
@@ -32,12 +32,13 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { BlogEditor } from './blog-editor';
 import { addEvent, getEvents, updateEvent, deleteEvent, type Event, type EventFormData } from '@/lib/events-data';
 import { format } from 'date-fns';
+import { listAllUsers, updateUserDisabledStatus, deleteUserAccount, type AppUser } from '@/lib/users-data';
 
 
 const totalEvents = 3; 
 const formatCurrency = (amount: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
 
-type DashboardView = 'overview' | 'addProduct' | 'addBlog' | 'blogGenerator' | 'manageProducts' | 'manageBlog' | 'manageEvents';
+type DashboardView = 'overview' | 'addProduct' | 'addBlog' | 'blogGenerator' | 'manageProducts' | 'manageBlog' | 'manageEvents' | 'manageUsers';
 export type GeneratedPost = GenerateBlogPostOutput;
 
 
@@ -1293,6 +1294,149 @@ const AnalyticsOverview = () => {
     )
 };
 
+const ManageUsersView = ({ currentUser }: { currentUser: User }) => {
+    const [users, setUsers] = useState<AppUser[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const { toast } = useToast();
+
+    const fetchUsers = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            const usersData = await listAllUsers();
+            // Filter out the current admin user from the list
+            setUsers(usersData.filter(user => user.uid !== currentUser.uid));
+        } catch (error) {
+            console.error("Failed to fetch users:", error);
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch users.' });
+        } finally {
+            setIsLoading(false);
+        }
+    }, [toast, currentUser.uid]);
+
+    useEffect(() => {
+        fetchUsers();
+    }, [fetchUsers]);
+
+    const handleToggleDisabled = async (uid: string, disabled: boolean) => {
+        try {
+            await updateUserDisabledStatus(uid, !disabled);
+            toast({ title: 'User Updated', description: `User has been ${!disabled ? 'disabled' : 'enabled'}.` });
+            fetchUsers();
+        } catch (error) {
+            console.error("Failed to update user status:", error);
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not update user status.' });
+        }
+    };
+
+    const handleDeleteUser = async (uid: string) => {
+        try {
+            await deleteUserAccount(uid);
+            toast({ title: 'User Deleted', description: 'User account has been permanently deleted.' });
+            fetchUsers();
+        } catch (error) {
+            console.error("Failed to delete user:", error);
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not delete user account.' });
+        }
+    };
+
+    if (isLoading) {
+        return (
+            <Card className="shadow-lg bg-background p-6">
+                <Skeleton className="h-8 w-1/4 mb-4" />
+                <Skeleton className="h-64 w-full" />
+            </Card>
+        );
+    }
+
+    return (
+        <Card className="shadow-lg bg-background">
+            <CardHeader>
+                <CardTitle className="font-headline text-2xl text-primary flex items-center gap-2">
+                    <Users /> Manage Users
+                </CardTitle>
+                <CardDescription>View, enable/disable, and delete user accounts.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="border rounded-lg">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>User</TableHead>
+                                <TableHead>UID</TableHead>
+                                <TableHead>Created</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead className="text-center">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {users.map((user) => (
+                                <TableRow key={user.uid}>
+                                    <TableCell>
+                                        <div className="font-medium">{user.displayName || 'N/A'}</div>
+                                        <div className="text-xs text-muted-foreground">{user.email}</div>
+                                    </TableCell>
+                                    <TableCell className="font-mono text-xs">{user.uid}</TableCell>
+                                    <TableCell>{format(new Date(user.creationTime), 'MMM d, yyyy')}</TableCell>
+                                    <TableCell>
+                                        <Badge variant={user.disabled ? 'destructive' : 'secondary'}>
+                                            {user.disabled ? 'Disabled' : 'Active'}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-center space-x-2">
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <Button variant="outline" size="sm">
+                                                    {user.disabled ? 'Enable' : 'Disable'}
+                                                </Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        This will {user.disabled ? 'enable' : 'disable'} the user account for "{user.email}".
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                    <AlertDialogAction onClick={() => handleToggleDisabled(user.uid, user.disabled)}>
+                                                        Confirm
+                                                    </AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
+
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <Button variant="destructive" size="sm">
+                                                    Delete
+                                                </Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        This action cannot be undone. This will permanently delete the account for "{user.email}".
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                    <AlertDialogAction onClick={() => handleDeleteUser(user.uid)}>
+                                                        Delete Permanently
+                                                    </AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
+            </CardContent>
+        </Card>
+    );
+};
+
 
 const DashboardPage = () => {
   const { user, loading } = useAuth();
@@ -1365,6 +1509,8 @@ const DashboardPage = () => {
             return <ManageBlogPostsView onPostsChanged={handleDataChange} initialPostToEdit={initialPostToEdit} />;
         case 'manageEvents':
             return <ManageEventsView onEventsChanged={handleDataChange} />;
+        case 'manageUsers':
+            return <ManageUsersView currentUser={user} />;
         default:
             return <AnalyticsOverview key={refreshKey} />;
     }
@@ -1377,6 +1523,7 @@ const DashboardPage = () => {
       { id: 'manageBlog', label: 'Manage Posts', icon: BookText },
       { id: 'addBlog', label: 'Create Post', icon: FilePlus2 },
       { id: 'manageEvents', label: 'Manage Events', icon: CalendarCheck },
+      { id: 'manageUsers', label: 'Manage Users', icon: Users },
       { id: 'blogGenerator', label: 'AI Blog Generator', icon: Bot },
   ];
 
