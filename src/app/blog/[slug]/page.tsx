@@ -3,9 +3,9 @@
 'use client';
 
 import Image from 'next/image';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, BookAudio, Loader2, Twitter, Facebook, MessageCircle, Link2, Play, Pause } from 'lucide-react';
+import { ArrowLeft, BookAudio, Loader2, Twitter, Facebook, MessageCircle, Link2, Play, Pause, Edit } from 'lucide-react';
 import Link from 'next/link';
 import { getBlogPosts, getPostBySlug, type BlogPost } from '@/lib/blog-data';
 import { useEffect, useState, useMemo, useTransition, useRef } from 'react';
@@ -287,11 +287,19 @@ export default function BlogPostPage() {
     <div className="bg-background">
       <div className="container mx-auto px-4 py-8 md:py-12">
         <article className="max-w-4xl mx-auto bg-card p-6 md:p-12 rounded-lg shadow-xl">
-          <div className="mb-6 md:mb-8">
+          <div className="mb-6 md:mb-8 flex justify-between items-center">
             <Link href="/blog" className="inline-flex items-center text-primary hover:underline">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Blog
             </Link>
+             {user && (
+              <Button asChild variant="outline">
+                <Link href={`/dashboard?view=manageBlog&edit=${post.id}`}>
+                  <Edit />
+                  Edit Post
+                </Link>
+              </Button>
+            )}
           </div>
           <header className="mb-6 md:mb-8 border-b pb-6 md:pb-8">
             <Badge variant="secondary" className="mb-4">{post.category}</Badge>

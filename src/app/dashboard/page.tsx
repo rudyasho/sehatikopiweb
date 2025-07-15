@@ -2,8 +2,8 @@
 // src/app/dashboard/page.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState, useMemo } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth, type User } from '@/context/auth-context';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ProductPopularityChart } from './product-popularity-chart';
@@ -823,27 +823,34 @@ const BlogPostForm = ({ post, onFormSubmit, closeDialog }: { post: BlogPost, onF
 };
 
 
-const ManageBlogPostsView = ({ onPostsChanged }: { onPostsChanged: () => void }) => {
+const ManageBlogPostsView = ({ onPostsChanged, initialPostToEdit }: { onPostsChanged: () => void, initialPostToEdit?: string | null }) => {
     const [posts, setPosts] = useState<BlogPost[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const { toast } = useToast();
+    const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
 
-    const fetchPosts = async () => {
+    const fetchPosts = useMemo(() => async () => {
         setIsLoading(true);
         try {
             const postsData = await getBlogPosts();
             setPosts(postsData);
+            if (initialPostToEdit) {
+                const postToEdit = postsData.find(p => p.id === initialPostToEdit);
+                if (postToEdit) {
+                    setEditingPost(postToEdit);
+                }
+            }
         } catch (error) {
             console.error("Failed to fetch blog posts for management:", error);
             toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch blog posts.' });
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [initialPostToEdit, toast]);
 
     useEffect(() => {
         fetchPosts();
-    }, []);
+    }, [fetchPosts]);
 
     const handleDelete = async (postId: string, postTitle: string) => {
         try {
@@ -897,9 +904,9 @@ const ManageBlogPostsView = ({ onPostsChanged }: { onPostsChanged: () => void })
                                     <TableCell><Badge variant="secondary">{post.category}</Badge></TableCell>
                                     <TableCell>{new Date(post.date).toLocaleDateString()}</TableCell>
                                     <TableCell className="text-center space-x-2">
-                                        <Dialog>
+                                        <Dialog open={editingPost?.id === post.id} onOpenChange={(isOpen) => !isOpen && setEditingPost(null)}>
                                             <DialogTrigger asChild>
-                                                <Button variant="outline" size="icon">
+                                                <Button variant="outline" size="icon" onClick={() => setEditingPost(post)}>
                                                     <Edit />
                                                 </Button>
                                             </DialogTrigger>
@@ -907,7 +914,7 @@ const ManageBlogPostsView = ({ onPostsChanged }: { onPostsChanged: () => void })
                                                 <DialogHeader>
                                                     <DialogTitle className="font-headline text-2xl text-primary">Edit Blog Post</DialogTitle>
                                                 </DialogHeader>
-                                                 <BlogPostForm post={post} onFormSubmit={handleFormSubmit} closeDialog={() => (document.querySelector('[data-radix-dialog-close]') as HTMLElement)?.click()} />
+                                                 {editingPost && <BlogPostForm post={editingPost} onFormSubmit={handleFormSubmit} closeDialog={() => setEditingPost(null)} />}
                                             </DialogContent>
                                         </Dialog>
 
@@ -1018,14 +1025,33 @@ const AnalyticsOverview = () => {
 const DashboardPage = () => {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [activeView, setActiveView] = useState<DashboardView>('overview');
   const [refreshKey, setRefreshKey] = useState(0);
+  const [initialPostToEdit, setInitialPostToEdit] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
       router.push('/');
     }
   }, [user, loading, router]);
+  
+  useEffect(() => {
+      const view = searchParams.get('view') as DashboardView;
+      const editPostId = searchParams.get('edit');
+      
+      if (view) {
+          setActiveView(view);
+      }
+      if (editPostId) {
+          setInitialPostToEdit(editPostId);
+          // Ensure the view is set to manageBlog when an edit is requested
+          if (view !== 'manageBlog') {
+              setActiveView('manageBlog');
+          }
+      }
+  }, [searchParams]);
+
   
   if (loading || !user) {
     return (
@@ -1050,7 +1076,7 @@ const DashboardPage = () => {
         case 'manageProducts':
             return <ManageProductsView onProductsChanged={handleDataChange} />;
         case 'manageBlog':
-            return <ManageBlogPostsView onPostsChanged={handleDataChange}/>;
+            return <ManageBlogPostsView onPostsChanged={handleDataChange} initialPostToEdit={initialPostToEdit} />;
         default:
             return <AnalyticsOverview key={refreshKey} />;
     }
@@ -1082,7 +1108,12 @@ const DashboardPage = () => {
                                      <Button
                                         key={item.id}
                                         variant={activeView === item.id ? 'secondary' : 'ghost'}
-                                        onClick={() => setActiveView(item.id as DashboardView)}
+                                        onClick={() => {
+                                            setActiveView(item.id as DashboardView);
+                                            // Reset edit state when changing views
+                                            setInitialPostToEdit(null);
+                                            router.push('/dashboard?view=' + item.id, { scroll: false });
+                                        }}
                                         className="justify-start text-base px-4 py-6"
                                      >
                                         <item.icon className="mr-3 h-5 w-5" />
@@ -1096,7 +1127,11 @@ const DashboardPage = () => {
 
                 {/* Mobile Dropdown */}
                  <div className="md:hidden">
-                    <Select value={activeView} onValueChange={(value) => setActiveView(value as DashboardView)}>
+                    <Select value={activeView} onValueChange={(value) => {
+                        setActiveView(value as DashboardView)
+                        setInitialPostToEdit(null);
+                        router.push('/dashboard?view=' + value, { scroll: false });
+                     }}>
                       <SelectTrigger className="w-full h-12 text-base">
                         <SelectValue placeholder="Select a view" />
                       </SelectTrigger>
@@ -1124,5 +1159,3 @@ const DashboardPage = () => {
 };
 
 export default DashboardPage;
-
-    
