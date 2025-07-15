@@ -3,34 +3,36 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Default deny all reads and writes
+    // By default, deny all read and write access to the database.
+    // This is a security best practice.
     match /{document=**} {
       allow read, write: if false;
     }
 
-    // Allow anyone to read products, blog posts, and events.
-    // This is necessary for the public-facing pages of the website.
-    // Write access is denied to prevent unauthorized modification from the client-side.
-    // All data modifications should happen through trusted server-side code (e.g., Server Actions).
+    // Allow public read access for products.
+    // Writing to this collection should only be done from a trusted server
+    // environment (e.g., the admin dashboard), so client-side writes are denied.
     match /products/{productId} {
       allow read: if true;
       allow write: if false;
     }
 
+    // Allow public read access for blog posts.
+    // Client-side writes are disabled for security.
     match /blog/{postId} {
       allow read: if true;
       allow write: if false;
     }
-
+    
+    // Allow public read access for events.
+    // Client-side writes are disabled for security.
     match /events/{eventId} {
       allow read: if true;
       allow write: if false;
     }
 
-    // Secure the users collection.
-    // In this mock setup, all user creation and retrieval is handled server-side
-    // during the login process, which bypasses these client-side rules.
-    // Direct client access is denied.
+    // Deny all client-side access to the users collection.
+    // User data should be managed securely via server-side logic.
     match /users/{userId} {
       allow read, write: if false;
     }
