@@ -4,10 +4,10 @@
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, BookAudio, Loader2, Twitter, Facebook, MessageCircle, Link2, Check } from 'lucide-react';
+import { ArrowLeft, BookAudio, Loader2, Twitter, Facebook, MessageCircle, Link2, Play, Pause } from 'lucide-react';
 import Link from 'next/link';
 import { getBlogPosts, type BlogPost as BlogPostType } from '../page';
-import { useEffect, useState, useMemo, useTransition } from 'react';
+import { useEffect, useState, useMemo, useTransition, useRef } from 'react';
 import { products } from '@/lib/products-data';
 import { Card, CardContent, CardTitle, CardDescription, CardFooter, CardHeader } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -211,6 +211,63 @@ const RecommendedProducts = () => {
   );
 };
 
+const AudioPlayer = ({ audioDataUri }: { audioDataUri: string }) => {
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  const togglePlayPause = () => {
+    const audio = audioRef.current;
+    if (audio) {
+      if (isPlaying) {
+        audio.pause();
+      } else {
+        audio.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (audio) {
+      const handleEnded = () => setIsPlaying(false);
+      audio.addEventListener('ended', handleEnded);
+      return () => {
+        audio.removeEventListener('ended', handleEnded);
+      };
+    }
+  }, []);
+
+  return (
+    <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50 border">
+      <audio ref={audioRef} src={audioDataUri} preload="auto" />
+      <Button onClick={togglePlayPause} size="icon" variant="outline" className="flex-shrink-0 rounded-full h-12 w-12">
+        {isPlaying ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6 translate-x-0.5" />}
+      </Button>
+      <div className="flex items-center gap-1 w-full h-8 overflow-hidden">
+        {Array.from({ length: 30 }).map((_, i) => (
+          <div
+            key={i}
+            className="w-1 bg-primary/30 rounded-full"
+            style={{
+              height: `${Math.sin(i * 0.4 + (isPlaying ? Date.now() / 200 : 0)) * 50 + 50}%`,
+              animation: isPlaying ? 'wave 1.5s ease-in-out infinite alternate' : 'none',
+              animationDelay: `${i * 0.05}s`,
+            }}
+          />
+        ))}
+        <style jsx>{`
+          @keyframes wave {
+            0% { transform: scaleY(0.2); }
+            50% { transform: scaleY(1); }
+            100% { transform: scaleY(0.2); }
+          }
+        `}</style>
+      </div>
+    </div>
+  );
+};
+
 
 export default function BlogPostPage() {
   const params = useParams<{ slug: string }>();
@@ -220,6 +277,7 @@ export default function BlogPostPage() {
   const [isStoryLoading, startStoryTransition] = useTransition();
   const [storyText, setStoryText] = useState<string | null>(null);
   const [audioStory, setAudioStory] = useState<string | null>(null);
+  const [storyStarted, setStoryStarted] = useState(false);
 
   useEffect(() => {
     const allPosts = getBlogPosts();
@@ -248,6 +306,7 @@ export default function BlogPostPage() {
 
   const handleGenerateStory = () => {
     if (!post) return;
+    setStoryStarted(true);
     startStoryTransition(async () => {
       setStoryText(null);
       setAudioStory(null);
@@ -317,13 +376,13 @@ export default function BlogPostPage() {
               <Alert className="mt-12">
                   <BookAudio className="h-4 w-4" />
                   <AlertTitle className="font-headline">AI Story Teller</AlertTitle>
-                  {!storyGenerated && !isStoryLoading && (
+                  {!storyStarted && (
                     <>
                     <AlertDescription>
                       Listen to an AI-narrated version of this story.
                     </AlertDescription>
                     <div className="mt-4">
-                        <Button variant="outline" onClick={handleGenerateStory} disabled={isStoryLoading}>
+                        <Button variant="outline" onClick={handleGenerateStory}>
                           Listen to the Story
                         </Button>
                     </div>
@@ -338,13 +397,10 @@ export default function BlogPostPage() {
                   )}
                     
                   {storyGenerated && (
-                      <Card className="mt-4 bg-background/50 animate-in fade-in-50 duration-500">
+                      <Card className="mt-4 bg-secondary/30 animate-in fade-in-50 duration-500">
                           <CardContent className="p-4 space-y-4">
                             <p className="text-foreground/90 italic whitespace-pre-wrap">{storyText}</p>
-                              <audio controls autoPlay className="w-full">
-                                  <source src={audioStory} type="audio/wav" />
-                                  Your browser does not support the audio element.
-                              </audio>
+                            <AudioPlayer audioDataUri={audioStory} />
                           </CardContent>
                       </Card>
                   )}
