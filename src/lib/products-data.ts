@@ -19,7 +19,7 @@ export const products: Product[] = [
     origin: 'Gayo Highlands, Aceh',
     description: 'A rich, full-bodied coffee with earthy notes of dark chocolate, cedar, and a hint of spice. Known for its smooth finish and low acidity, making it a classic Indonesian favorite.',
     price: 120000,
-    image: 'https://placehold.co/800x800.png',
+    image: 'https://images.unsplash.com/photo-1607681034540-2c46cc71896d?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     aiHint: 'coffee beans bag',
     rating: 4.8,
     reviews: 125,
