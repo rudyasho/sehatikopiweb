@@ -314,7 +314,7 @@ export default function BlogPostPage() {
         const result = await generateCoffeeStory({
           name: post.title,
           origin: "Indonesia",
-          description: post.excerpt,
+          description: post.content || post.excerpt,
         });
         setStoryText(result.storyText);
         setAudioStory(result.audioDataUri);
