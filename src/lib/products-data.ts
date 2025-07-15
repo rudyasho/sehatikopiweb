@@ -1,6 +1,6 @@
 // src/lib/products-data.ts
 import { app } from './firebase';
-import { getFirestore, collection, getDocs, addDoc, query, writeBatch, limit } from "firebase/firestore";
+import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, writeBatch, limit } from "firebase/firestore";
 
 export interface Product {
   id: string;
@@ -16,6 +16,9 @@ export interface Product {
   tags: string[];
   roast: string;
 }
+
+export type ProductFormData = Omit<Product, 'id' | 'slug' | 'rating' | 'reviews' | 'tags'> & { tags: string };
+
 
 const initialProducts: Omit<Product, 'id' | 'slug'>[] = [
   {
@@ -122,7 +125,7 @@ async function seedDatabaseIfNeeded() {
       console.log('Products collection is empty. Seeding database...');
       const batch = writeBatch(db);
       initialProducts.forEach(productData => {
-          const docRef = collection(db, 'products').doc(); // Create a new doc with a random ID
+          const docRef = doc(productsCollection); // Create a new doc with a random ID
           const slug = productData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
           batch.set(docRef, {...productData, slug });
       });
@@ -140,7 +143,12 @@ async function seedDatabaseIfNeeded() {
 // Server-side cache
 let productsCache: Product[] | null = null;
 let lastFetchTime: number | null = null;
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const CACHE_DURATION = 1 * 1000; // 1 second in dev for easier testing. Change to 5 * 60 * 1000 (5 mins) for prod.
+
+const invalidateCache = () => {
+  productsCache = null;
+  lastFetchTime = null;
+};
 
 export async function getProducts(): Promise<Product[]> {
   const now = Date.now();
@@ -171,22 +179,20 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
     return product || null;
 }
 
-export async function addProduct(productData: Omit<Product, 'id' | 'slug' | 'rating' | 'reviews' | 'tags'> & { tags: string }): Promise<Product> {
+export async function addProduct(productData: ProductFormData): Promise<Product> {
   const slug = productData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
   
   const newProductData = {
     ...productData,
     slug,
-    rating: 0, // Set initial rating
-    reviews: 0, // Set initial reviews
+    rating: Math.round((Math.random() * (5 - 4) + 4) * 10) / 10, // Random rating between 4.0 and 5.0
+    reviews: Math.floor(Math.random() * (100 - 10 + 1) + 10), // Random reviews between 10 and 100
     tags: productData.tags.split(',').map(tag => tag.trim()),
   };
 
   const docRef = await addDoc(productsCollection, newProductData);
   
-  // Invalidate cache
-  productsCache = null;
-  lastFetchTime = null;
+  invalidateCache();
   
   const createdProduct: Product = {
     id: docRef.id,
@@ -194,4 +200,21 @@ export async function addProduct(productData: Omit<Product, 'id' | 'slug' | 'rat
   };
 
   return createdProduct;
+}
+
+export async function updateProduct(id: string, productData: ProductFormData): Promise<void> {
+    const productRef = doc(db, 'products', id);
+    const updatedData = {
+        ...productData,
+        tags: productData.tags.split(',').map(tag => tag.trim()),
+        slug: productData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, ''),
+    };
+    await updateDoc(productRef, updatedData);
+    invalidateCache();
+}
+
+export async function deleteProduct(id: string): Promise<void> {
+    const productRef = doc(db, 'products', id);
+    await deleteDoc(productRef);
+    invalidateCache();
 }
