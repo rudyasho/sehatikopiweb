@@ -16,6 +16,7 @@ import { Metadata, ResolvingMetadata } from 'next';
 import { auth } from 'firebase-admin';
 import { getAuth } from 'firebase/auth';
 import { app } from '@/lib/firebase';
+import { format } from 'date-fns';
 
 
 type Props = {
@@ -167,7 +168,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                 <Badge variant="secondary" className="mb-4">{post.category}</Badge>
                 <h1 className="font-headline text-3xl md:text-5xl font-bold text-primary">{post.title}</h1>
                 <div className="mt-4 text-sm text-foreground/60">
-                <span>By {post.author}</span> | <span>{new Date(post.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                <span>By {post.author}</span> | <span>{format(new Date(post.date), "MMMM d, yyyy")}</span>
                 </div>
             </header>
 

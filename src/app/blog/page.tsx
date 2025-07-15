@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { getBlogPosts, type BlogPost } from '@/lib/blog-data';
 import type { Metadata } from 'next';
+import { format } from 'date-fns';
 
 export const metadata: Metadata = {
   title: 'Blog',
@@ -44,7 +45,10 @@ export default async function BlogPage() {
                      <Image src={latestPost.image || 'https://placehold.co/600x400.png'} alt={latestPost.title || 'Featured blog post image'} layout="fill" objectFit="cover" data-ai-hint={latestPost.aiHint ?? 'coffee'} />
                 </div>
                 <div className="p-8 flex flex-col justify-center">
-                    <Badge variant="secondary" className="mb-4 w-fit">{latestPost.category}</Badge>
+                    <div className="flex items-center gap-4 mb-4 text-sm">
+                      <Badge variant="secondary" className="w-fit">{latestPost.category}</Badge>
+                      <span className="text-muted-foreground">{format(new Date(latestPost.date), "MMMM d, yyyy")}</span>
+                    </div>
                     <h2 className="font-headline text-3xl md:text-4xl text-primary font-bold mb-4">{latestPost.title}</h2>
                     <p className="text-lg text-foreground/80 mb-6">{latestPost.excerpt}</p>
                     <Button asChild size="lg" className="w-fit">
@@ -69,7 +73,10 @@ export default async function BlogPage() {
                 </Link>
               </CardHeader>
               <CardContent className="p-6 flex-grow">
-                <Badge variant="secondary" className="mb-2">{post.category}</Badge>
+                <div className="flex items-center gap-4 mb-2">
+                    <Badge variant="secondary">{post.category}</Badge>
+                    <span className="text-xs text-muted-foreground">{format(new Date(post.date), "MMM d, yyyy")}</span>
+                </div>
                 <Link href={`/blog/${post.slug}`}>
                   <CardTitle className="font-headline text-2xl text-primary hover:underline">{post.title}</CardTitle>
                 </Link>

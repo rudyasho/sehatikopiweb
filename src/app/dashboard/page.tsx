@@ -1,7 +1,8 @@
+
 // src/app/dashboard/page.tsx
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth, type User } from '@/context/auth-context';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -31,6 +32,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { BlogEditor } from './blog-editor';
 import { addEvent, getEvents, updateEvent, deleteEvent, type Event, type EventFormData } from '@/lib/events-data';
+import { format } from 'date-fns';
 
 
 const totalEvents = 3; 
@@ -714,7 +716,7 @@ const ManageProductsView = ({ onProductsChanged }: { onProductsChanged: () => vo
     const [isLoading, setIsLoading] = useState(true);
     const { toast } = useToast();
 
-    const fetchProducts = async () => {
+    const fetchProducts = useCallback(async () => {
         setIsLoading(true);
         try {
             const productsData = await getProducts();
@@ -725,11 +727,11 @@ const ManageProductsView = ({ onProductsChanged }: { onProductsChanged: () => vo
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [toast]);
 
     useEffect(() => {
         fetchProducts();
-    }, []);
+    }, [fetchProducts]);
 
     const handleDelete = async (productId: string, productName: string) => {
         try {
@@ -947,7 +949,7 @@ const ManageBlogPostsView = ({ onPostsChanged, initialPostToEdit }: { onPostsCha
     const { toast } = useToast();
     const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
 
-    const fetchPosts = useMemo(() => async () => {
+    const fetchPosts = useCallback(async () => {
         setIsLoading(true);
         try {
             const postsData = await getBlogPosts();
@@ -1020,7 +1022,7 @@ const ManageBlogPostsView = ({ onPostsChanged, initialPostToEdit }: { onPostsCha
                                 <TableRow key={post.id}>
                                     <TableCell className="font-medium max-w-xs truncate">{post.title}</TableCell>
                                     <TableCell><Badge variant="secondary">{post.category}</Badge></TableCell>
-                                    <TableCell>{new Date(post.date).toLocaleDateString()}</TableCell>
+                                    <TableCell>{format(new Date(post.date), "MMM d, yyyy")}</TableCell>
                                     <TableCell className="text-center space-x-2">
                                         <Dialog open={editingPost?.id === post.id} onOpenChange={(isOpen) => !isOpen && setEditingPost(null)}>
                                             <DialogTrigger asChild>
@@ -1075,7 +1077,7 @@ const ManageEventsView = ({ onEventsChanged }: { onEventsChanged: () => void }) 
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingEvent, setEditingEvent] = useState<Event | null>(null);
 
-    const fetchEvents = async () => {
+    const fetchEvents = useCallback(async () => {
         setIsLoading(true);
         try {
             const eventsData = await getEvents();
@@ -1086,11 +1088,11 @@ const ManageEventsView = ({ onEventsChanged }: { onEventsChanged: () => void }) 
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [toast]);
 
     useEffect(() => {
         fetchEvents();
-    }, []);
+    }, [fetchEvents]);
 
     const handleDelete = async (eventId: string, eventTitle: string) => {
         try {
