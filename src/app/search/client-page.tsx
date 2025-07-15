@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -10,9 +9,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Search as SearchIcon, Newspaper, ShoppingBag } from 'lucide-react';
-import { getBlogPosts } from '@/app/blog/page';
+import { getBlogPosts, type BlogPost } from '@/lib/blog-data';
 
-type BlogPost = ReturnType<typeof getBlogPosts>[0];
 
 export function SearchClientPage() {
     const [searchTerm, setSearchTerm] = useState('');
@@ -22,7 +20,7 @@ export function SearchClientPage() {
     useEffect(() => {
         async function loadData() {
             const fetchedProducts = await getProducts();
-            const fetchedBlogPosts = getBlogPosts();
+            const fetchedBlogPosts = await getBlogPosts();
             setProducts(fetchedProducts);
             setBlogPosts(fetchedBlogPosts);
         }
@@ -79,7 +77,7 @@ export function SearchClientPage() {
                                         <h2 className="font-headline text-3xl font-semibold text-primary mb-6 flex items-center gap-3"><ShoppingBag/> Products</h2>
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                                             {filteredProducts.map((product) => (
-                                                <Card key={product.slug} className="flex flex-col overflow-hidden shadow-lg bg-background">
+                                                <Card key={product.id} className="flex flex-col overflow-hidden shadow-lg bg-background">
                                                     <CardHeader className="p-0">
                                                         <Link href={`/products/${product.slug}`}>
                                                             <div className="relative h-52 w-full">

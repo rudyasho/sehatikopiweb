@@ -1,4 +1,3 @@
-
 // src/app/dashboard/page.tsx
 'use client';
 
@@ -22,7 +21,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { addBlogPost, getBlogPosts } from '@/app/blog/page';
+import { addBlogPost, getBlogPosts } from '@/lib/blog-data';
 import { generateBlogPost, type GenerateBlogPostOutput } from '@/ai/flows/blog-post-generator';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -58,23 +57,40 @@ const blogPostSchema = z.object({
 type BlogPostFormValues = z.infer<typeof blogPostSchema>;
 
 
-const MetricCard = ({ title, value, icon: Icon, isLoading }: { title: string, value: string | number, icon: React.ElementType, isLoading?: boolean }) => (
-    <Card className="shadow-lg bg-background">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{title}</CardTitle>
-            <Icon className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-            {isLoading ? <Skeleton className="h-8 w-1/2" /> : <div className="text-2xl font-bold">{value}</div>}
-        </CardContent>
-    </Card>
-);
+const MetricCard = ({ title, value, icon: Icon, isLoading }: { title: string, value: string | number, icon: React.ElementType, isLoading?: boolean }) => {
+    const [blogPostCount, setBlogPostCount] = useState(0);
+
+    useEffect(() => {
+        if (title === "Blog Posts") {
+            const fetchCount = async () => {
+                const posts = await getBlogPosts();
+                setBlogPostCount(posts.length);
+            }
+            fetchCount();
+        }
+    }, [title]);
+
+    const displayValue = title === "Blog Posts" ? blogPostCount : value;
+
+    return (
+        <Card className="shadow-lg bg-background">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{title}</CardTitle>
+                <Icon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+                {isLoading ? <Skeleton className="h-8 w-1/2" /> : <div className="text-2xl font-bold">{displayValue}</div>}
+            </CardContent>
+        </Card>
+    )
+};
 
 function BlogGenerator() {
   const [generatedPost, setGeneratedPost] = useState<GeneratedPost | null>(null);
   const [editedPost, setEditedPost] = useState<{title: string, content: string} | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
   const [hasCopied, setHasCopied] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -113,28 +129,39 @@ function BlogGenerator() {
     setTimeout(() => setHasCopied(false), 2000);
   };
 
-  const handlePublish = () => {
+  const handlePublish = async () => {
     if (!generatedPost) return;
-    // Use edited content if available
-    const postToPublish = {
-      ...generatedPost,
-      title: editedPost?.title || generatedPost.title,
-      content: editedPost?.content || generatedPost.content,
-    };
-    const newPost = addBlogPost(postToPublish);
-    toast({
-        title: "Post Published!",
-        description: `"${newPost.title}" is now on the blog.`,
-        action: (
-            <Button variant="outline" size="sm" onClick={() => router.push(`/blog/${newPost.slug}`)}>
-                View Post
-            </Button>
-        )
-    })
-    setGeneratedPost(null);
-    setEditedPost(null);
-    setIsEditing(false);
-    form.reset();
+    setIsPublishing(true);
+    try {
+      const postToPublish = {
+        ...generatedPost,
+        title: editedPost?.title || generatedPost.title,
+        content: editedPost?.content || generatedPost.content,
+      };
+      const newPost = await addBlogPost(postToPublish);
+      toast({
+          title: "Post Published!",
+          description: `"${newPost.title}" is now on the blog.`,
+          action: (
+              <Button variant="outline" size="sm" onClick={() => router.push(`/blog/${newPost.slug}`)}>
+                  View Post
+              </Button>
+          )
+      });
+      setGeneratedPost(null);
+      setEditedPost(null);
+      setIsEditing(false);
+      form.reset();
+    } catch (error) {
+        console.error("Error publishing post:", error);
+        toast({
+            variant: 'destructive',
+            title: 'Publishing Error',
+            description: 'Could not publish the post to the database.'
+        });
+    } finally {
+        setIsPublishing(false);
+    }
   };
 
   const handleSaveChanges = () => {
@@ -234,9 +261,9 @@ function BlogGenerator() {
                   {hasCopied ? <Check className="mr-2"/> : <Clipboard className="mr-2"/>}
                   Copy HTML
                 </Button>
-                 <Button onClick={handlePublish} disabled={isEditing}>
-                  <Send className="mr-2"/>
-                  Publish to Blog
+                 <Button onClick={handlePublish} disabled={isEditing || isPublishing}>
+                   {isPublishing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Send className="mr-2"/>}
+                   {isPublishing ? 'Publishing...' : 'Publish to Blog'}
                 </Button>
               </div>
             </CardContent>
@@ -541,10 +568,10 @@ const ManageProductsView = () => {
 const AnalyticsOverview = () => {
     const [stats, setStats] = useState({ totalProducts: 0, totalReviews: 0 });
     const [isLoading, setIsLoading] = useState(true);
-    const totalBlogPosts = getBlogPosts().length;
 
     useEffect(() => {
         async function fetchStats() {
+            setIsLoading(true);
             try {
                 const products = await getProducts();
                 const totalProducts = products.length;
@@ -566,7 +593,7 @@ const AnalyticsOverview = () => {
                 <MetricCard title="Total Products" value={stats.totalProducts} icon={Coffee} isLoading={isLoading} />
                 <MetricCard title="Customer Reviews" value={stats.totalReviews} icon={Star} isLoading={isLoading} />
                 <MetricCard title="Upcoming Events" value={totalEvents} icon={Calendar} />
-                <MetricCard title="Blog Posts" value={totalBlogPosts} icon={Newspaper} />
+                <MetricCard title="Blog Posts" value={0} icon={Newspaper} isLoading={isLoading} />
             </div>
         </section>
 

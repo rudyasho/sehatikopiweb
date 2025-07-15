@@ -1,114 +1,61 @@
-
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import type { GenerateBlogPostOutput } from '@/ai/flows/blog-post-generator';
 import { Separator } from '@/components/ui/separator';
-
-const initialBlogPosts = [
-  {
-    title: 'The Ultimate Guide to V60 Brewing',
-    category: 'Brewing Tips',
-    excerpt: 'Master the art of the V60 pour-over with our step-by-step guide. From grind size to pouring technique, we cover everything you need to know for the perfect cup.',
-    image: 'https://placehold.co/600x400.png',
-    aiHint: 'v60 coffee',
-    slug: 'v60-guide',
-    content: ''
-  },
-  {
-    title: 'A Journey to the Gayo Highlands',
-    category: 'Storytelling',
-    excerpt: 'Travel with us to the highlands of Aceh, the home of our Gayo coffee. Discover the stories of the farmers and the unique terroir that gives this coffee its distinct flavor.',
-    image: 'https://placehold.co/600x400.png',
-    aiHint: 'coffee plantation landscape',
-    slug: 'gayo-journey',
-    content: ''
-  },
-  {
-    title: 'Understanding Coffee Processing Methods',
-    category: 'Coffee Education',
-    excerpt: 'Washed, natural, or honey-processed? Learn how different processing methods impact the final taste of your coffee and find your preferred style.',
-    image: 'https://placehold.co/600x400.png',
-    aiHint: 'coffee cherry',
-    slug: 'processing-methods',
-    content: ''
-  },
-  {
-    title: 'Why Single-Origin Coffee Matters',
-    category: 'Coffee Education',
-    excerpt: 'Explore the benefits of single-origin coffee, from its traceable roots to its unique and complex flavor profiles that tell the story of its origin.',
-    image: 'https://placehold.co/600x400.png',
-    aiHint: 'coffee cup beans',
-    slug: 'single-origin',
-    content: ''
-  },
-];
-
-export type BlogPost = {
-    title: string;
-    category: string;
-    excerpt: string;
-    image: string; // Can be a URL or a data URI
-    aiHint?: string;
-    slug: string;
-    content?: string; // Full HTML content
-};
-
-// Singleton pattern to hold posts in memory
-class PostStore {
-  private static instance: PostStore;
-  private posts: BlogPost[];
-
-  private constructor() {
-    this.posts = initialBlogPosts;
-  }
-
-  public static getInstance(): PostStore {
-    if (!PostStore.instance) {
-      PostStore.instance = new PostStore();
-    }
-    return PostStore.instance;
-  }
-
-  public getPosts(): BlogPost[] {
-    return this.posts;
-  }
-
-  public addPost(post: GenerateBlogPostOutput): BlogPost {
-    const newPost: BlogPost = {
-      title: post.title,
-      category: post.category,
-      excerpt: `${(post.content.replace(/<[^>]+>/g, '').substring(0, 150))}...`,
-      image: post.imageDataUri,
-      slug: post.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, ''),
-      content: post.content, // Store the full HTML content
-    };
-    this.posts.unshift(newPost); // Add to the beginning
-    return newPost;
-  }
-}
-
-// Function to add a post from another component
-export const addBlogPost = (post: GenerateBlogPostOutput) => {
-  return PostStore.getInstance().addPost(post);
-}
-
-// Function to get all posts (for blog detail page)
-export const getBlogPosts = () => {
-    return PostStore.getInstance().getPosts();
-}
-
+import { getBlogPosts, type BlogPost } from '@/lib/blog-data';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const BlogPage = () => {
-  // We use state to trigger re-renders when the singleton's data changes.
-  const [blogPosts, setBlogPosts] = useState<BlogPost[]>(PostStore.getInstance().getPosts());
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
-  const [latestPost, ...otherPosts] = useMemo(() => blogPosts, [blogPosts]);
+  useEffect(() => {
+    async function fetchPosts() {
+        setIsLoading(true);
+        try {
+            const posts = await getBlogPosts();
+            setBlogPosts(posts);
+        } catch (error) {
+            console.error("Failed to fetch blog posts:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    }
+    fetchPosts();
+  }, []);
+  
+  const [latestPost, ...otherPosts] = useMemo(() => {
+    if (blogPosts.length === 0) return [null, []];
+    // Sort by date if available, otherwise just take the first one.
+    const sorted = [...blogPosts].sort((a, b) => {
+        const dateA = a.date ? new Date(a.date).getTime() : 0;
+        const dateB = b.date ? new Date(b.date).getTime() : 0;
+        return dateB - dateA;
+    });
+    return [sorted[0], sorted.slice(1)];
+  }, [blogPosts]);
+
+  if (isLoading) {
+    return (
+        <div className="bg-secondary/50">
+            <div className="container mx-auto px-4 py-12">
+                 <div className="text-center mb-12">
+                    <Skeleton className="h-12 w-3/4 mx-auto" />
+                    <Skeleton className="h-6 w-1/2 mx-auto mt-4" />
+                </div>
+                 <Skeleton className="h-[400px] w-full mb-12" />
+                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-96 w-full"/>)}
+                 </div>
+            </div>
+        </div>
+    )
+  }
 
   return (
     <div className="bg-secondary/50">

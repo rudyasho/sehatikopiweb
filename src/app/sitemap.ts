@@ -1,13 +1,12 @@
-
 import { MetadataRoute } from 'next'
 import { getProducts } from '@/lib/products-data';
-import { getBlogPosts } from '@/app/blog/page';
+import { getBlogPosts } from '@/lib/blog-data';
 
 const BASE_URL = 'https://sehatikopi.id'; // Replace with your actual domain
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const products = await getProducts();
-  const blogPosts = getBlogPosts();
+  const blogPosts = await getBlogPosts();
 
   const staticRoutes = [
     '',
@@ -36,7 +35,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   
   const blogRoutes = blogPosts.map((post) => ({
     url: `${BASE_URL}/blog/${post.slug}`,
-    lastModified: new Date(),
+    lastModified: post.date ? new Date(post.date) : new Date(),
     changeFrequency: 'weekly' as const,
     priority: 0.7,
   }));
