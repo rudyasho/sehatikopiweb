@@ -1,4 +1,18 @@
-export const products = [
+export interface Product {
+  slug: string;
+  name: string;
+  origin: string;
+  description: string;
+  price: number;
+  image: string;
+  aiHint: string;
+  rating: number;
+  reviews: number;
+  tags: string[];
+  roast: string;
+}
+
+export const products: Product[] = [
   {
     slug: 'aceh-gayo',
     name: 'Aceh Gayo',

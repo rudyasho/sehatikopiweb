@@ -16,6 +16,7 @@ import {
   DialogDescription,
 } from '@radix-ui/react-dialog';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
+import { useCart } from '@/context/cart-context';
 
 
 const navLinks = [
@@ -32,6 +33,8 @@ const navLinks = [
 export function Header() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { cart } = useCart();
+  const itemCount = cart.reduce((total, item) => total + item.quantity, 0);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -59,9 +62,14 @@ export function Header() {
             ))}
           </nav>
           <div className="hidden md:flex items-center">
-            <Button asChild variant="ghost" size="icon">
+            <Button asChild variant="ghost" size="icon" className="relative">
               <Link href="/cart">
                 <ShoppingCart className="h-5 w-5" />
+                {itemCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
+                    {itemCount}
+                  </span>
+                )}
                 <span className="sr-only">Shopping Cart</span>
               </Link>
             </Button>
@@ -108,10 +116,15 @@ export function Header() {
                   ))}
                 </nav>
                 <div className="mt-auto border-t pt-4">
-                  <Button asChild className="w-full">
+                  <Button asChild className="w-full relative">
                     <Link href="/cart" onClick={() => setIsMobileMenuOpen(false)}>
                       <ShoppingCart className="mr-2 h-5 w-5" />
                       Shopping Cart
+                      {itemCount > 0 && (
+                        <span className="absolute right-4 flex h-5 w-5 items-center justify-center rounded-full bg-primary-foreground text-xs text-primary">
+                          {itemCount}
+                        </span>
+                      )}
                     </Link>
                   </Button>
                 </div>
