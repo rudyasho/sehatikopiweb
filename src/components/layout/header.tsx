@@ -1,8 +1,9 @@
+
 "use client";
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Coffee, Menu, X, ShoppingCart, LayoutDashboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -35,6 +36,12 @@ export function Header() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { cart } = useCart();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   const itemCount = cart.reduce((total, item) => total + item.quantity, 0);
 
   return (
@@ -66,7 +73,7 @@ export function Header() {
             <Button asChild variant="ghost" size="icon" className="relative">
               <Link href="/cart">
                 <ShoppingCart className="h-5 w-5" />
-                {itemCount > 0 && (
+                {isClient && itemCount > 0 && (
                   <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
                     {itemCount}
                   </span>
@@ -121,7 +128,7 @@ export function Header() {
                     <Link href="/cart" onClick={() => setIsMobileMenuOpen(false)}>
                       <ShoppingCart className="mr-2 h-5 w-5" />
                       Shopping Cart
-                      {itemCount > 0 && (
+                      {isClient && itemCount > 0 && (
                         <span className="absolute right-4 flex h-5 w-5 items-center justify-center rounded-full bg-primary-foreground text-xs text-primary">
                           {itemCount}
                         </span>
