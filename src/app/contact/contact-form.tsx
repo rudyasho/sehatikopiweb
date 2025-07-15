@@ -24,6 +24,7 @@ type ContactFormValues = z.infer<typeof contactFormSchema>;
 export function ContactForm() {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
+  const resendApiKey = process.env.NEXT_PUBLIC_RESEND_API_KEY;
 
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(contactFormSchema),
@@ -36,11 +37,21 @@ export function ContactForm() {
   });
 
   function onSubmit(data: ContactFormValues) {
+    if (!resendApiKey) {
+      toast({
+          variant: 'destructive',
+          title: "Configuration Error!",
+          description: "Resend API key is not configured.",
+        });
+      return;
+    }
+
     startTransition(async () => {
       const formData = new FormData();
       Object.entries(data).forEach(([key, value]) => {
         formData.append(key, value);
       });
+      formData.append('apiKey', resendApiKey);
       
       const result = await sendContactMessage(formData);
 
@@ -117,7 +128,7 @@ export function ContactForm() {
             </FormItem>
           )}
         />
-        <Button type="submit" size="lg" className="w-full" disabled={isPending}>
+        <Button type="submit" size="lg" className="w-full" disabled={isPending || !resendApiKey}>
           {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Send Message
         </Button>

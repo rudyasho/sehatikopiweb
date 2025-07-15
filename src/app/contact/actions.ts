@@ -4,13 +4,12 @@ import 'dotenv/config';
 import { z } from 'zod';
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 const contactFormSchema = z.object({
   name: z.string().min(2),
   email: z.string().email(),
   subject: z.string().min(5),
   message: z.string().min(10),
+  apiKey: z.string().startsWith('re_'),
 });
 
 export async function sendContactMessage(formData: FormData) {
@@ -19,12 +18,14 @@ export async function sendContactMessage(formData: FormData) {
   const validatedFields = contactFormSchema.safeParse(rawData);
 
   if (!validatedFields.success) {
+    console.error('Validation Errors:', validatedFields.error.flatten().fieldErrors);
     return {
       error: 'Invalid data. Please check your inputs.',
     };
   }
   
-  const { name, email, subject, message } = validatedFields.data;
+  const { name, email, subject, message, apiKey } = validatedFields.data;
+  const resend = new Resend(apiKey);
   const destinationEmail = 'sehaticoffee.id@gmail.com';
 
   try {
