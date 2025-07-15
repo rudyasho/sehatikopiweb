@@ -3,19 +3,24 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Star, Minus, Plus, ShoppingCart, ArrowLeft, Check } from 'lucide-react';
+import { Star, Minus, Plus, ShoppingCart, ArrowLeft, Check, BookAudio, Loader2 } from 'lucide-react';
 import { useCart } from '@/context/cart-context';
 import type { Product } from '@/lib/products-data';
 import { useToast } from '@/hooks/use-toast';
+import { generateCoffeeStory } from '@/ai/flows/story-teller-flow';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+
 
 export function ProductClientPage({ product }: { product: Product }) {
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useCart();
   const [isAdded, setIsAdded] = useState(false);
   const { toast } = useToast();
+  const [isStoryLoading, startStoryTransition] = useTransition();
+  const [audioStory, setAudioStory] = useState<string | null>(null);
 
   const handleAddToCart = () => {
     addToCart(product, quantity);
@@ -25,6 +30,26 @@ export function ProductClientPage({ product }: { product: Product }) {
       description: `${quantity} x ${product.name} has been added to your cart.`,
     });
     setTimeout(() => setIsAdded(false), 2000);
+  };
+  
+  const handleGenerateStory = () => {
+    startStoryTransition(async () => {
+      try {
+        const result = await generateCoffeeStory({
+          name: product.name,
+          origin: product.origin,
+          description: product.description,
+        });
+        setAudioStory(result.audioDataUri);
+      } catch (error) {
+        console.error("Error generating audio story:", error);
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Could not generate the audio story. Please try again.',
+        });
+      }
+    });
   };
 
   return (
@@ -97,6 +122,29 @@ export function ProductClientPage({ product }: { product: Product }) {
                 </>
               )}
             </Button>
+             <Alert>
+              <BookAudio className="h-4 w-4" />
+              <AlertTitle className="font-headline">AI Story Teller</AlertTitle>
+              <AlertDescription className="flex flex-col gap-4 mt-2">
+                Want to hear the story of this coffee? Let our AI narrator tell you.
+                 <Button variant="outline" onClick={handleGenerateStory} disabled={isStoryLoading}>
+                  {isStoryLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Generating Story...
+                    </>
+                  ) : (
+                    "Listen to the Story"
+                  )}
+                </Button>
+                {audioStory && !isStoryLoading && (
+                  <audio controls autoPlay className="w-full mt-2">
+                    <source src={audioStory} type="audio/wav" />
+                    Your browser does not support the audio element.
+                  </audio>
+                )}
+              </AlertDescription>
+            </Alert>
           </div>
         </div>
       </div>
