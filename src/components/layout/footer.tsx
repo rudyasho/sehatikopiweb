@@ -56,7 +56,7 @@ export function Footer() {
           <div>
             <h4 className="font-semibold mb-4">Contact Us</h4>
             <ul className="space-y-2 text-sm text-foreground/80">
-              <li>Jl. Kopi Nikmat No. 1, Jakarta</li>
+              <li>Jl. Kopi Nikmat No. 1, Jakarta, Indonesia</li>
               <li>info@sehatikopi.id</li>
               <li>+62 123 4567 890</li>
             </ul>
@@ -73,7 +73,7 @@ export function Footer() {
           </div>
         </div>
         <div className="mt-8 pt-8 border-t text-center text-sm text-foreground/60">
-          <p>&copy; {new Date().getFullYear()} Sehati Kopi Digital. All Rights Reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Sehati Kopi Indonesia. All Rights Reserved.</p>
         </div>
       </div>
     </footer>
