@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import type { GeneratedPost } from '@/app/dashboard/page';
+import type { GenerateBlogPostOutput } from '@/ai/flows/blog-post-generator';
 
 const initialBlogPosts = [
   {
@@ -17,6 +17,7 @@ const initialBlogPosts = [
     image: 'https://placehold.co/600x400.png',
     aiHint: 'v60 coffee',
     slug: 'v60-guide',
+    content: ''
   },
   {
     title: 'A Journey to the Gayo Highlands',
@@ -25,6 +26,7 @@ const initialBlogPosts = [
     image: 'https://placehold.co/600x400.png',
     aiHint: 'coffee plantation landscape',
     slug: 'gayo-journey',
+    content: ''
   },
   {
     title: 'Understanding Coffee Processing Methods',
@@ -33,6 +35,7 @@ const initialBlogPosts = [
     image: 'https://placehold.co/600x400.png',
     aiHint: 'coffee cherry',
     slug: 'processing-methods',
+    content: ''
   },
   {
     title: 'Why Single-Origin Coffee Matters',
@@ -41,6 +44,7 @@ const initialBlogPosts = [
     image: 'https://placehold.co/600x400.png',
     aiHint: 'coffee cup beans',
     slug: 'single-origin',
+    content: ''
   },
 ];
 
@@ -51,6 +55,7 @@ export type BlogPost = {
     image: string; // Can be a URL or a data URI
     aiHint?: string;
     slug: string;
+    content?: string; // Full HTML content
 };
 
 // Singleton pattern to hold posts in memory
@@ -73,14 +78,14 @@ class PostStore {
     return this.posts;
   }
 
-  public addPost(post: GeneratedPost): BlogPost {
+  public addPost(post: GenerateBlogPostOutput): BlogPost {
     const newPost: BlogPost = {
       title: post.title,
       category: post.category,
-      // Create a simple excerpt from the HTML content
       excerpt: `${(post.content.replace(/<[^>]+>/g, '').substring(0, 150))}...`,
       image: post.imageDataUri,
       slug: post.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, ''),
+      content: post.content, // Store the full HTML content
     };
     this.posts.unshift(newPost); // Add to the beginning
     return newPost;
@@ -88,7 +93,7 @@ class PostStore {
 }
 
 // Function to add a post from another component
-export const addBlogPost = (post: GeneratedPost) => {
+export const addBlogPost = (post: GenerateBlogPostOutput) => {
   return PostStore.getInstance().addPost(post);
 }
 

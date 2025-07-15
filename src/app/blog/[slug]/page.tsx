@@ -75,7 +75,6 @@ const staticContent: Record<string, {author: string, date: string, content: stri
 
 type PostWithContent = BlogPostType & { content: string, author: string, date: string };
 
-
 type Props = {
   params: { slug: string };
 };
@@ -94,7 +93,12 @@ export async function generateMetadata(
   }
   
   const previousImages = (await parent).openGraph?.images || [];
-  const postDetails = staticContent[post.slug] ?? { author: 'Sehati Kopi Team', date: new Date().toISOString() };
+  
+  // This is a temporary solution for the demo. In a real app, this data would come from a database.
+  const postDetails = staticContent[post.slug] ?? { 
+      author: 'Sehati Kopi Team', 
+      date: new Date().toISOString() 
+  };
 
   return {
     title: post.title,
@@ -119,36 +123,23 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
     notFound();
   }
 
-  // For AI-generated posts, the 'content' is in the excerpt. For others, it's in staticContent.
-  const postDetails = staticContent[postData.slug] ?? {
-      author: 'AI Author',
-      date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-      // A bit of a hack: if content isn't in static map, we assume it's AI-generated
-      // and the full content was stored in 'excerpt'. This needs a proper DB to be clean.
-      content: postData.excerpt,
-  }
-
   // This logic is messy because we're mixing static and dynamic data without a DB.
   // In a real app, the API would return the full post object.
+  const isAiGenerated = !staticContent[postData.slug];
+  
+  const postDetails = isAiGenerated
+    ? {
+        author: 'Sehati Kopi AI',
+        date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+        // For AI posts, the excerpt *is* the full content, as stored in our "database".
+        content: postData.content || `<p>This AI-generated post's content is not available in the detail view in this demo.</p>`,
+      }
+    : staticContent[postData.slug];
+  
   const post: PostWithContent = {
     ...postData,
     ...postDetails,
   };
-
-  // If the post is AI-generated and not in the static map, the excerpt *is* the content.
-  // This is a workaround for not having a proper CMS/database.
-  const isAiGenerated = !staticContent[post.slug];
-  if(isAiGenerated) {
-    const tempPost = getBlogPosts().find(p => p.slug === post.slug);
-    if(tempPost && tempPost.excerpt.endsWith('...')) {
-        // This is a hacky way to check if it's an AI post from the main page
-        // A better solution needs a database.
-        post.content = `<p>${tempPost.excerpt.slice(0, -3)}</p><p>...</p><p><i>[Full content for AI posts is not stored in this demo.]</i></p>`;
-    } else {
-        post.content = `<p>This AI generated post's content is not available in detail view in this demo.</p>`;
-    }
-  }
-
 
   return (
     <div className="bg-secondary/50">
