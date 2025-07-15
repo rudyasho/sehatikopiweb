@@ -4,48 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Star, Minus, Plus, ShoppingCart, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-
-const products = [
-  {
-    slug: 'aceh-gayo',
-    name: 'Aceh Gayo',
-    origin: 'Gayo Highlands, Aceh',
-    description: 'A rich, full-bodied coffee with earthy notes of dark chocolate, cedar, and a hint of spice. Known for its smooth finish and low acidity, making it a classic Indonesian favorite.',
-    price: 120000,
-    image: 'https://placehold.co/800x800.png',
-    aiHint: 'coffee beans bag',
-    rating: 4.8,
-    reviews: 125,
-    tags: ['Earthy', 'Spicy', 'Full Body'],
-    roast: 'Medium-Dark',
-  },
-  {
-    slug: 'bali-kintamani',
-    name: 'Bali Kintamani',
-    origin: 'Kintamani Highlands, Bali',
-    description: 'A smooth, sweet coffee with a clean finish and bright, citrusy undertones. Grown on volcanic soil alongside citrus fruits, which imparts a unique fruity aroma and flavor.',
-    price: 135000,
-    image: 'https://placehold.co/800x800.png',
-    aiHint: 'bali landscape',
-    rating: 4.9,
-    reviews: 98,
-    tags: ['Fruity', 'Citrus', 'Clean'],
-    roast: 'Medium',
-  },
-  {
-    slug: 'flores-bajawa',
-    name: 'Flores Bajawa',
-    origin: 'Bajawa, Flores',
-    description: 'A complex coffee with beautiful floral aromas, sweet chocolate notes, and a syrupy, lingering body. The unique terroir of Flores gives this coffee a truly memorable character.',
-    price: 150000,
-    image: 'https://placehold.co/800x800.png',
-    aiHint: 'indonesian flowers',
-    rating: 4.7,
-    reviews: 82,
-    tags: ['Floral', 'Chocolate', 'Syrupy'],
-    roast: 'Medium',
-  },
-];
+import { products } from '@/lib/products-data';
 
 export default function ProductDetailPage({ params }: { params: { slug: string } }) {
   const product = products.find((p) => p.slug === params.slug);
@@ -58,9 +17,9 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
     <div className="bg-secondary">
       <div className="container mx-auto px-4 py-12">
         <div className="mb-8">
-            <Link href="/" className="inline-flex items-center text-primary hover:underline">
+            <Link href="/products" className="inline-flex items-center text-primary hover:underline">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Home
+              Back to Products
             </Link>
         </div>
         <div className="grid md:grid-cols-2 gap-12 items-start">
@@ -118,3 +77,6 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
           </div>
         </div>
       </div>
+    </div>
+  );
+}

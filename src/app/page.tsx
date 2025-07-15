@@ -4,33 +4,9 @@ import { ArrowRight, Coffee, Leaf, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { products } from '@/lib/products-data';
 
-const featuredProducts = [
-  {
-    slug: 'aceh-gayo',
-    name: 'Aceh Gayo',
-    description: 'A rich, full-bodied coffee with earthy notes and a hint of spice.',
-    price: 'Rp 120.000',
-    image: 'https://placehold.co/600x400.png',
-    aiHint: 'coffee beans',
-  },
-  {
-    slug: 'bali-kintamani',
-    name: 'Bali Kintamani',
-    description: 'A smooth, sweet coffee with a clean finish and citrus undertones.',
-    price: 'Rp 135.000',
-    image: 'https://placehold.co/600x400.png',
-    aiHint: 'coffee plantation',
-  },
-  {
-    slug: 'flores-bajawa',
-    name: 'Flores Bajawa',
-    description: 'A complex coffee with floral aromas, chocolate notes, and a syrupy body.',
-    price: 'Rp 150.000',
-    image: 'https://placehold.co/600x400.png',
-    aiHint: 'roasted coffee',
-  },
-];
+const featuredProducts = products.slice(0, 3);
 
 const testimonials = [
   {
@@ -78,7 +54,7 @@ export default function Home() {
             Discover the rich heritage and exquisite taste of single-origin Indonesian coffee, roasted with passion and precision.
           </p>
           <Button asChild size="lg" className="mt-8 font-bold">
-            <Link href="/menu">
+            <Link href="/products">
               Explore Our Coffee <ArrowRight className="ml-2" />
             </Link>
           </Button>
@@ -127,18 +103,22 @@ export default function Home() {
           </p>
           <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {featuredProducts.map((product) => (
-              <Card key={product.name} className="text-left overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 shadow-lg">
+              <Card key={product.slug} className="text-left overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 shadow-lg">
                 <CardHeader className="p-0">
-                  <div className="relative h-60 w-full">
-                    <Image src={product.image} alt={product.name} layout="fill" objectFit="cover" data-ai-hint={product.aiHint}/>
-                  </div>
+                  <Link href={`/products/${product.slug}`}>
+                    <div className="relative h-60 w-full">
+                      <Image src={product.image} alt={product.name} layout="fill" objectFit="cover" data-ai-hint={product.aiHint}/>
+                    </div>
+                  </Link>
                 </CardHeader>
                 <CardContent className="p-6">
                   <CardTitle className="font-headline text-2xl text-primary">{product.name}</CardTitle>
-                  <CardDescription className="mt-2 h-12">{product.description}</CardDescription>
+                  <CardDescription className="mt-2 h-12">{product.description.substring(0, 80)}...</CardDescription>
                 </CardContent>
                 <CardFooter className="flex justify-between items-center p-6 bg-background">
-                  <span className="text-xl font-bold text-primary">{product.price}</span>
+                  <span className="text-xl font-bold text-primary">
+                     {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(product.price)}
+                  </span>
                   <Button asChild variant="secondary">
                     <Link href={`/products/${product.slug}`}>View Details</Link>
                   </Button>
