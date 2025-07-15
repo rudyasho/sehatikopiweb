@@ -9,6 +9,7 @@ import { ProductPopularityChart } from './product-popularity-chart';
 import { Coffee, Star, Calendar, Newspaper, Loader2 } from 'lucide-react';
 import { products } from '@/lib/products-data';
 import { RoastDistributionChart } from './roast-distribution-chart';
+import { OriginDistributionChart } from './origin-distribution-chart';
 
 // Metadata is now handled at the layout/page level for client components if needed, or through head.js
 // export const metadata: Metadata = {
@@ -67,8 +68,8 @@ const DashboardPage = () => {
             <MetricCard title="Blog Posts" value={totalBlogPosts} icon={Newspaper} />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <Card className="lg:col-span-2 shadow-lg bg-background">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+          <Card className="lg:col-span-3 shadow-lg bg-background">
             <CardHeader>
               <CardTitle className="font-headline text-2xl text-primary">Product Popularity (by Reviews)</CardTitle>
             </CardHeader>
@@ -78,13 +79,23 @@ const DashboardPage = () => {
               </div>
             </CardContent>
           </Card>
-           <Card className="shadow-lg bg-background">
+           <Card className="lg:col-span-2 shadow-lg bg-background">
             <CardHeader>
               <CardTitle className="font-headline text-2xl text-primary">Roast Distribution</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-[400px]">
                 <RoastDistributionChart />
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="lg:col-span-5 shadow-lg bg-background">
+            <CardHeader>
+              <CardTitle className="font-headline text-2xl text-primary">Origin Distribution</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[400px] w-full flex justify-center">
+                 <OriginDistributionChart />
               </div>
             </CardContent>
           </Card>
