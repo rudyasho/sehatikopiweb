@@ -20,7 +20,8 @@ import {
   Wand2,
   User,
   LogOut,
-  LogIn
+  LogIn,
+  Search
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -146,6 +147,12 @@ export function Header() {
             ))}
           </nav>
           <div className="flex items-center gap-2">
+             <Button asChild variant="ghost" size="icon">
+                <Link href="/search">
+                    <Search className="h-5 w-5" />
+                    <span className="sr-only">Search</span>
+                </Link>
+            </Button>
              <Button asChild variant="ghost" size="icon" className="relative">
               <Link href="/cart">
                 <ShoppingCart className="h-5 w-5" />
@@ -216,6 +223,12 @@ export function Header() {
                 ))}
               </nav>
               <div className="mt-auto border-t pt-4 space-y-2">
+                 <Button asChild className="w-full relative justify-start text-lg p-6">
+                  <Link href="/search" onClick={() => setIsMobileMenuOpen(false)}>
+                    <Search className="mr-3 h-5 w-5" />
+                    Search
+                  </Link>
+                </Button>
                 <Button asChild className="w-full relative justify-start text-lg p-6">
                   <Link href="/cart" onClick={() => setIsMobileMenuOpen(false)}>
                     <ShoppingCart className="mr-3 h-5 w-5" />
