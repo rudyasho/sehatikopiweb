@@ -58,7 +58,7 @@ const BlogPage = () => {
                 </Link>
               </CardHeader>
               <CardContent className="p-6 flex-grow">
-                <Badge variant="secondary" className="mb-2 bg-accent/20 text-accent-foreground/80">{post.category}</Badge>
+                <Badge variant="secondary" className="mb-2">{post.category}</Badge>
                 <Link href={`/blog/${post.slug}`}>
                   <CardTitle className="font-headline text-2xl text-primary hover:underline">{post.title}</CardTitle>
                 </Link>

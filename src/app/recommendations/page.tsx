@@ -2,7 +2,7 @@ import { RecommendationForm } from './recommendation-client-page';
 
 export default function RecommendationPage() {
   return (
-    <div className="bg-background">
+    <div className="bg-secondary/50">
       <div className="container mx-auto px-4 py-16">
         <div className="text-center mb-12">
           <h1 className="font-headline text-4xl md:text-5xl font-bold text-primary">Find Your Perfect Coffee</h1>

@@ -114,7 +114,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
             </Link>
           </div>
           <header className="mb-8 border-b pb-8">
-            <Badge variant="secondary" className="mb-4 bg-accent/20 text-accent-foreground/80">{post.category}</Badge>
+            <Badge variant="secondary" className="mb-4">{post.category}</Badge>
             <h1 className="font-headline text-4xl md:text-5xl font-bold text-primary">{post.title}</h1>
             <div className="mt-4 text-sm text-foreground/60">
               <span>By {post.author}</span> | <span>{post.date}</span>

@@ -85,7 +85,7 @@ export function CartClientPage() {
                     ))}
                     </div>
                 </CardContent>
-                 <CardFooter className="p-6 border-t bg-secondary/20">
+                 <CardFooter className="p-6 border-t bg-secondary/50">
                     <Link href="/products" className="inline-flex items-center text-primary hover:underline">
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Continue Shopping

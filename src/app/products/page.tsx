@@ -6,7 +6,7 @@ import { products } from '@/lib/products-data';
 
 const ProductsPage = () => {
   return (
-    <div className="bg-background">
+    <div className="bg-secondary/50">
       <div className="container mx-auto px-4 py-12">
         <div className="text-center mb-12">
           <h1 className="font-headline text-4xl md:text-5xl font-bold text-primary">Our Coffee Collection</h1>
