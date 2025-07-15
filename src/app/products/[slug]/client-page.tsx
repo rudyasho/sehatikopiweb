@@ -27,7 +27,7 @@ export function ProductClientPage({ product }: { product: Product }) {
   };
 
   return (
-    <div className="bg-secondary">
+    <div className="bg-secondary/50">
       <div className="container mx-auto px-4 py-12">
         <div className="mb-8">
             <Link href="/products" className="inline-flex items-center text-primary hover:underline">

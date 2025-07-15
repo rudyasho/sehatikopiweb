@@ -21,8 +21,8 @@ const AboutPage = () => {
       {/* Hero Section */}
       <section className="relative h-[50vh] flex items-center justify-center text-center text-white">
         <Image
-          src="https://images.unsplash.com/photo-1654815439629-5e93cb7f74a1?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-          alt="Coffee beans in a hand"
+          src="https://images.unsplash.com/photo-1541167760496-1628856ab772?q=80&w=1337&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+          alt="Coffee shop interior"
           layout="fill"
           objectFit="cover"
           className="absolute z-0"
@@ -42,7 +42,7 @@ const AboutPage = () => {
         <div className="container mx-auto px-4 grid md:grid-cols-2 gap-12 items-center">
           <div className="relative h-96 rounded-lg overflow-hidden shadow-xl order-last md:order-first">
              <Image
-              src="https://placehold.co/600x800.png"
+              src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?q=80&w=987&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
               alt="Old photo of coffee farmers"
               layout="fill"
               objectFit="cover"
@@ -62,43 +62,43 @@ const AboutPage = () => {
       </section>
 
       {/* Our Values */}
-      <section className="py-16 md:py-24 bg-secondary">
+      <section className="py-16 md:py-24 bg-secondary/50">
         <div className="container mx-auto px-4 text-center">
           <h2 className="font-headline text-3xl md:text-4xl text-primary font-semibold">Our Values</h2>
           <p className="mt-2 text-lg max-w-2xl mx-auto text-foreground/80">
             The principles that guide every bean we roast and every cup we serve.
           </p>
           <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card className="text-center shadow-lg">
+            <Card className="text-center shadow-lg bg-background">
               <CardHeader>
-                <div className="mx-auto bg-accent/20 p-4 rounded-full w-fit">
+                <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit">
                   <Heart className="h-8 w-8 text-primary" />
                 </div>
                 <CardTitle className="font-headline text-2xl pt-4">Authenticity</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-6 pt-0">
                 <p>We honor the unique character of each coffee's origin, telling its true story through meticulous roasting and transparent sourcing.</p>
               </CardContent>
             </Card>
-            <Card className="text-center shadow-lg">
+            <Card className="text-center shadow-lg bg-background">
               <CardHeader>
-                <div className="mx-auto bg-accent/20 p-4 rounded-full w-fit">
+                <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit">
                   <Leaf className="h-8 w-8 text-primary" />
                 </div>
                 <CardTitle className="font-headline text-2xl pt-4">Sustainability</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-6 pt-0">
                 <p>We are committed to environmentally-friendly practices and ensuring fair compensation for our partner farmers, sustaining both land and livelihood.</p>
               </CardContent>
             </Card>
-            <Card className="text-center shadow-lg">
+            <Card className="text-center shadow-lg bg-background">
               <CardHeader>
-                <div className="mx-auto bg-accent/20 p-4 rounded-full w-fit">
+                <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit">
                   <Users className="h-8 w-8 text-primary" />
                 </div>
                 <CardTitle className="font-headline text-2xl pt-4">Community</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-6 pt-0">
                 <p>We believe in building a strong community, from our farmers to our customers, united by a shared love for exceptional coffee.</p>
               </CardContent>
             </Card>
@@ -116,13 +116,13 @@ const AboutPage = () => {
           <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
             {teamMembers.map((member) => (
               <Card key={member.name} className="pt-6 border-0 shadow-none bg-transparent">
-                <CardContent className="flex flex-col items-center">
+                <CardContent className="flex flex-col items-center p-0">
                   <Avatar className="h-32 w-32 mb-4">
                     <AvatarImage src={member.avatar} alt={member.name} data-ai-hint={member.aiHint}/>
                     <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
                   </Avatar>
                   <h3 className="text-xl font-semibold text-primary">{member.name}</h3>
-                  <p className="text-accent font-medium">{member.role}</p>
+                  <p className="text-accent-foreground">{member.role}</p>
                 </CardContent>
               </Card>
             ))}

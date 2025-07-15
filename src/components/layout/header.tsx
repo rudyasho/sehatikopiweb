@@ -29,7 +29,7 @@ const navLinks = [
   { href: '/dashboard', label: 'Dashboard'},
   { href: '/about', label: 'About' },
   { href: '/contact', label: 'Contact' },
-  { href: '/recommendations', label: 'AI Recommender'},
+  { href: '/recommendations', label: 'Rekomendasi'},
 ];
 
 export function Header() {

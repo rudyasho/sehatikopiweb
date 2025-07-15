@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     siteName: 'Sehati Kopi Digital',
     images: [
       {
-        url: 'https://images6.alphacoders.com/427/thumb-1920-427470.jpg', 
+        url: 'https://images.unsplash.com/photo-1511537190424-bbbab87ac5eb?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', 
         width: 1200,
         height: 630,
         alt: 'Sehati Kopi Digital',
@@ -35,6 +35,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Sehati Kopi Digital',
     description: 'Discover the rich heritage and exquisite taste of single-origin Indonesian coffee.',
+    images: ['https://images.unsplash.com/photo-1511537190424-bbbab87ac5eb?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
   },
   robots: {
     index: true,
@@ -81,7 +82,7 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative h-[60vh] md:h-[80vh] w-full flex items-center justify-center text-center text-white">
         <Image
-          src="https://images6.alphacoders.com/427/thumb-1920-427470.jpg"
+          src="https://images.unsplash.com/photo-1511537190424-bbbab87ac5eb?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
           alt="Sehati Kopi Roastery"
           layout="fill"
           objectFit="cover"
@@ -131,7 +132,7 @@ export default function Home() {
           </div>
           <div className="relative h-80 rounded-lg overflow-hidden shadow-xl">
              <Image
-              src="https://cdn1.img.sputniknews.africa/img/07e8/03/0f/1065560665_0:257:2730:1793_1920x0_80_0_0_c6054183140f04a74f71ff022dc30346.jpg.webp"
+              src="https://images.unsplash.com/photo-1551030173-19911abc0957?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
               alt="Roasting coffee beans"
               layout="fill"
               objectFit="cover"

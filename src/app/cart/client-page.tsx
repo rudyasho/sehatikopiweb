@@ -42,7 +42,7 @@ export function CartClientPage() {
   }, []);
 
   const handleCheckout = () => {
-    const phoneNumber = "6281234567890"; // Replace with your WhatsApp number
+    const phoneNumber = "6281234567890"; // Ganti dengan nomor WhatsApp Anda
     const message = `Halo Sehati Kopi, saya ingin memesan:\n\n${cart
       .map(item => `${item.quantity}x ${item.name} (${formatCurrency(item.price * item.quantity)})`)
       .join('\n')}\n\nSubtotal: ${formatCurrency(subtotal)}\nShipping: ${formatCurrency(shipping)}\n*Total: ${formatCurrency(total)}*\n\nTerima kasih!`;
