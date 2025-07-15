@@ -1,8 +1,9 @@
 // src/lib/products-data.ts
 import { app } from './firebase';
-import { getFirestore, collection, getDocs, addDoc, query, orderBy, limit, doc, getDoc } from "firebase/firestore";
+import { getFirestore, collection, getDocs, addDoc, query, where, writeBatch, limit } from "firebase/firestore";
 
 export interface Product {
+  id: string;
   slug: string;
   name: string;
   origin: string;
@@ -16,7 +17,7 @@ export interface Product {
   roast: string;
 }
 
-const initialProducts: Omit<Product, 'slug'>[] = [
+const initialProducts: Omit<Product, 'id' | 'slug'>[] = [
   {
     name: 'Aceh Gayo',
     origin: 'Gayo Highlands, Aceh',
@@ -105,24 +106,41 @@ const initialProducts: Omit<Product, 'slug'>[] = [
 
 const db = getFirestore(app);
 const productsCollection = collection(db, 'products');
+let isSeeding = false; // Flag to prevent concurrent seeding
+let seedingCompleted = false; // Flag to ensure seeding runs only once
+
+async function seedDatabaseIfNeeded() {
+  if (seedingCompleted || isSeeding) {
+    return;
+  }
+  
+  isSeeding = true;
+
+  try {
+    const snapshot = await getDocs(query(productsCollection, limit(1)));
+    if (snapshot.empty) {
+      console.log('Products collection is empty. Seeding database...');
+      const batch = writeBatch(db);
+      initialProducts.forEach(productData => {
+          const docRef = collection(db, 'products').doc(); // Create a new doc with a random ID
+          const slug = productData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+          batch.set(docRef, {...productData, slug });
+      });
+      await batch.commit();
+      console.log('Database seeded successfully.');
+    }
+    seedingCompleted = true;
+  } catch (error) {
+    console.error("Error seeding database:", error);
+  } finally {
+    isSeeding = false;
+  }
+}
 
 // Server-side cache
 let productsCache: Product[] | null = null;
 let lastFetchTime: number | null = null;
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-
-async function seedDatabaseIfNeeded() {
-  const snapshot = await getDocs(query(productsCollection, limit(1)));
-  if (snapshot.empty) {
-    console.log('Products collection is empty. Seeding database...');
-    const seedPromises = initialProducts.map(productData => {
-       const slug = productData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
-       return addDoc(productsCollection, {...productData, slug });
-    });
-    await Promise.all(seedPromises);
-    console.log('Database seeded successfully.');
-  }
-}
 
 export async function getProducts(): Promise<Product[]> {
   const now = Date.now();
@@ -140,7 +158,7 @@ export async function getProducts(): Promise<Product[]> {
       ...data
     } as Product;
   });
-
+  
   productsCache = productsList;
   lastFetchTime = now;
 
@@ -148,21 +166,19 @@ export async function getProducts(): Promise<Product[]> {
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
-    // This function might not be efficient at scale with Firestore without proper indexing
-    // For this app, we'll fetch all and filter. In a larger app, use a query.
     const products = await getProducts();
     const product = products.find(p => p.slug === slug);
     return product || null;
 }
 
-export async function addProduct(productData: Omit<Product, 'slug' | 'rating' | 'reviews' | 'tags'> & { tags: string }): Promise<Product> {
+export async function addProduct(productData: Omit<Product, 'id' | 'slug' | 'rating' | 'reviews' | 'tags'> & { tags: string }): Promise<Product> {
   const slug = productData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
   
   const newProductData = {
     ...productData,
     slug,
-    rating: 0,
-    reviews: 0,
+    rating: 0, // Set initial rating
+    reviews: 0, // Set initial reviews
     tags: productData.tags.split(',').map(tag => tag.trim()),
   };
 
@@ -172,8 +188,10 @@ export async function addProduct(productData: Omit<Product, 'slug' | 'rating' | 
   productsCache = null;
   lastFetchTime = null;
   
-  return {
+  const createdProduct: Product = {
     id: docRef.id,
-    ...newProductData,
-  } as Product;
+    ...newProductData
+  };
+
+  return createdProduct;
 }
