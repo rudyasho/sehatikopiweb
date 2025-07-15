@@ -49,16 +49,24 @@ export function LoginDialog({ onLoginSuccess, isMobile = false }: LoginDialogPro
     defaultValues: { email: '', password: '' },
   });
 
-  const onSubmit = (data: LoginFormValues) => {
-    login(data);
-    toast({
-      title: 'Login Successful',
-      description: 'Welcome back!',
-    });
-    setOpen(false);
-    form.reset();
-    if (onLoginSuccess) {
-      onLoginSuccess();
+  const onSubmit = async (data: LoginFormValues) => {
+    const success = await login(data);
+    if (success) {
+        toast({
+            title: 'Login Successful',
+            description: 'Welcome back!',
+        });
+        setOpen(false);
+        form.reset();
+        if (onLoginSuccess) {
+            onLoginSuccess();
+        }
+    } else {
+        toast({
+            variant: 'destructive',
+            title: 'Login Failed',
+            description: 'Invalid email or password. Please try again.',
+        });
     }
   };
 
@@ -116,7 +124,7 @@ export function LoginDialog({ onLoginSuccess, isMobile = false }: LoginDialogPro
               {loading ? <Loader2 className="animate-spin" /> : 'Login'}
             </Button>
             <p className="text-xs text-center text-muted-foreground pt-2">
-              Note: This is a demo. Any email/password will work.
+              Hint: Use `dev@sidepe.com` and `admin123` to log in.
             </p>
           </form>
         </Form>

@@ -12,15 +12,15 @@ export interface User {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (credentials: {email: string; password: string;}) => void;
+  login: (credentials: {email: string; password: string;}) => Promise<boolean>;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const mockUser: User = {
-  name: 'Alexandre Christie',
-  email: 'alex@example.com',
+  name: 'Super Admin',
+  email: 'dev@sidepe.com',
   avatar: 'https://placehold.co/100x100.png'
 };
 
@@ -43,17 +43,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  const login = (credentials: {email: string; password: string;}) => {
-    setLoading(true);
-    // Simulate an API call. In a real app, you'd validate credentials here.
-    // For this mock, we'll log in the user as long as they provide any email/password.
-    console.log("Attempting to log in with:", credentials.email);
-    setTimeout(() => {
-      const userToLogin = {...mockUser, email: credentials.email};
-      localStorage.setItem('sehati-user', JSON.stringify(userToLogin));
-      setUser(userToLogin);
-      setLoading(false);
-    }, 500);
+  const login = (credentials: {email: string; password: string;}): Promise<boolean> => {
+    return new Promise((resolve) => {
+        setLoading(true);
+        // Simulate an API call with a short delay
+        setTimeout(() => {
+            if (credentials.email === 'dev@sidepe.com' && credentials.password === 'admin123') {
+                localStorage.setItem('sehati-user', JSON.stringify(mockUser));
+                setUser(mockUser);
+                setLoading(false);
+                resolve(true);
+            } else {
+                setLoading(false);
+                resolve(false);
+            }
+        }, 500);
+    });
   };
 
   const logout = () => {
