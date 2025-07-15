@@ -1,7 +1,4 @@
 
-'use client';
-
-import { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,51 +6,27 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { getBlogPosts, type BlogPost } from '@/lib/blog-data';
-import { Skeleton } from '@/components/ui/skeleton';
+import type { Metadata } from 'next';
 
-const BlogPage = () => {
-  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  
-  useEffect(() => {
-    async function fetchPosts() {
-        setIsLoading(true);
-        try {
-            const posts = await getBlogPosts();
-            setBlogPosts(posts);
-        } catch (error) {
-            console.error("Failed to fetch blog posts:", error);
-        } finally {
-            setIsLoading(false);
-        }
-    }
-    fetchPosts();
-  }, []);
-  
-  const [latestPost, ...otherPosts] = useMemo(() => {
-    if (blogPosts.length === 0) return [null, []];
-    // Data is already sorted by date from the getBlogPosts function
-    return [blogPosts[0], blogPosts.slice(1)];
-  }, [blogPosts]);
+export const metadata: Metadata = {
+  title: 'Blog',
+  description: 'Stories, guides, and insights from the world of Indonesian coffee. Explore our journal for the latest articles on brewing, culture, and news.',
+};
 
-  if (isLoading) {
-    return (
+export default async function BlogPage() {
+  const blogPosts = await getBlogPosts();
+  
+  const [latestPost, ...otherPosts] = blogPosts.length > 0 ? [blogPosts[0], blogPosts.slice(1)] : [null, []];
+
+  if (blogPosts.length === 0) {
+     return (
         <div className="bg-secondary/50">
-            <div className="container mx-auto px-4 py-12">
-                 <div className="text-center mb-12">
-                    <Skeleton className="h-12 w-3/4 mx-auto" />
-                    <Skeleton className="h-6 w-1/2 mx-auto mt-4" />
-                </div>
-                 <div className="mb-12 grid md:grid-cols-2 gap-8">
-                     <Skeleton className="h-[400px] w-full" />
-                     <Skeleton className="h-[400px] w-full" />
-                 </div>
-                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-96 w-full"/>)}
-                 </div>
+            <div className="container mx-auto px-4 py-12 text-center">
+                <h1 className="font-headline text-4xl">No Blog Posts Yet</h1>
+                <p className="mt-4">Check back soon for stories and insights!</p>
             </div>
         </div>
-    )
+     )
   }
 
   return (
@@ -86,8 +59,8 @@ const BlogPage = () => {
         {/* Other Posts */}
         <h3 className="font-headline text-3xl text-primary mb-8 text-center">All Articles</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {otherPosts.map((post, index) => (
-            <Card key={`${post.id}-${index}`} className="flex flex-col overflow-hidden shadow-lg transform hover:-translate-y-1 transition-transform duration-300 bg-background">
+          {otherPosts.map((post) => (
+            <Card key={post.id} className="flex flex-col overflow-hidden shadow-lg transform hover:-translate-y-1 transition-transform duration-300 bg-background">
               <CardHeader className="p-0">
                 <Link href={`/blog/${post.slug}`}>
                   <div className="relative h-60 w-full">
@@ -114,5 +87,3 @@ const BlogPage = () => {
     </div>
   );
 };
-
-export default BlogPage;

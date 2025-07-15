@@ -1,7 +1,7 @@
 
 // src/lib/blog-data.ts
 import { app } from './firebase';
-import { getFirestore, collection, getDocs, addDoc, query, writeBatch, limit, doc, updateDoc, deleteDoc } from "firebase/firestore";
+import { getFirestore, collection, getDocs, addDoc, query, where, getDoc, doc, writeBatch, limit, updateDoc, deleteDoc } from "firebase/firestore";
 
 export type BlogPost = {
     id: string;
@@ -101,7 +101,7 @@ Each method offers a unique sensory experience. We encourage you to try coffees 
     content: `The term 'single-origin' simply means that the coffee comes from a single known geographical location. This could be a single farm, a specific cooperative of farmers, or a particular region in a country. But why does this matter?
 
 ## Traceability and Story
-Single-origin coffee connects you directly to the source. You know where your coffee came from, who grew it, and the conditions it was grown in. This transparency ensures quality and ethical sourcing, allowing us to build meaningful relationships with our farming partners.
+Single-origin coffee connects you to the source. You know where your coffee came from, who grew it, and the conditions it was grown in. This transparency ensures quality and ethical sourcing, allowing us to build meaningful relationships with our farming partners.
 
 ## Distinctive Flavor
 Unlike blends, which are designed for consistency, single-origin coffees celebrate uniqueness. The specific soil, climate, altitude, and processing methods (the 'terroir') of a region impart a distinct flavor profile that can't be replicated. It's a taste of a specific place and time. You might taste the volcanic soil of Flores or the citrusy notes of Bali Kintamani.

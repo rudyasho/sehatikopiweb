@@ -1,81 +1,67 @@
 
 // src/app/blog/[slug]/page.tsx
-'use client';
-
 import Image from 'next/image';
-import { useParams, useRouter } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, BookAudio, Loader2, Twitter, Facebook, MessageCircle, Link2, Play, Pause, Edit } from 'lucide-react';
+import { ArrowLeft, Edit } from 'lucide-react';
 import Link from 'next/link';
 import { getBlogPosts, getPostBySlug, type BlogPost } from '@/lib/blog-data';
-import { useEffect, useState, useMemo, useTransition, useRef } from 'react';
 import { getProducts } from '@/lib/products-data';
 import { Card, CardContent, CardTitle, CardDescription, CardFooter, CardHeader } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { generateCoffeeStory } from '@/ai/flows/story-teller-flow';
-import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/context/auth-context';
 import { marked } from 'marked';
-import { Skeleton } from '@/components/ui/skeleton';
+import { BlogPostClientWrapper } from './client-page';
+import { Metadata, ResolvingMetadata } from 'next';
+import { auth } from 'firebase-admin';
+import { getAuth } from 'firebase/auth';
+import { app } from '@/lib/firebase';
 
-const ShareButtons = ({ title, slug }: { title: string, slug: string }) => {
-  const { toast } = useToast();
-  const [url, setUrl] = useState('');
 
-  useEffect(() => {
-    setUrl(window.location.href);
-  }, [slug]);
-
-  if (!url) return null;
-
-  const encodedUrl = encodeURIComponent(url);
-  const encodedTitle = encodeURIComponent(`Check out this article from Sehati Kopi: ${title}`);
-
-  const shareLinks = [
-    { name: 'Twitter', icon: Twitter, href: `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}` },
-    { name: 'Facebook', icon: Facebook, href: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}` },
-    { name: 'WhatsApp', icon: MessageCircle, href: `https://api.whatsapp.com/send?text=${encodedTitle}%20${encodedUrl}` }
-  ];
-  
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(url);
-    toast({ title: "Link Copied!", description: "You can now share it with your friends." });
-  };
-
-  return (
-    <div className="flex items-center gap-2 mt-4">
-      <span className="text-sm font-semibold text-foreground/80">Share:</span>
-      {shareLinks.map(link => (
-        <Button key={link.name} variant="outline" size="icon" asChild>
-          <a href={link.href} target="_blank" rel="noopener noreferrer" aria-label={`Share on ${link.name}`}>
-            <link.icon className="h-4 w-4" />
-          </a>
-        </Button>
-      ))}
-       <Button variant="outline" size="icon" onClick={handleCopyLink} aria-label="Copy link">
-          <Link2 className="h-4 w-4" />
-       </Button>
-    </div>
-  );
+type Props = {
+  params: { slug: string };
 };
 
+export async function generateMetadata(
+  { params }: Props,
+  parent: ResolvingMetadata
+): Promise<Metadata> {
+  const post = await getPostBySlug(params.slug);
 
-const RecommendedBlogs = ({ currentSlug }: { currentSlug: string }) => {
-    const [recommendedPosts, setRecommendedPosts] = useState<BlogPost[]>([]);
+  if (!post) {
+    return {
+      title: 'Post Not Found',
+    };
+  }
+  
+  const previousImages = (await parent).openGraph?.images || [];
 
-    useEffect(() => {
-        const fetchRecommended = async () => {
-            const allPosts = await getBlogPosts();
-            const recommended = allPosts
-                .filter(p => p.slug !== currentSlug) // Exclude the current post
-                .sort(() => 0.5 - Math.random()) // Shuffle the array
-                .slice(0, 3); // Take the first 3
-            setRecommendedPosts(recommended);
-        }
-        fetchRecommended();
-    }, [currentSlug]);
+  return {
+    title: post.title,
+    description: post.excerpt,
+    openGraph: {
+      title: post.title,
+      description: post.excerpt,
+      images: [post.image, ...previousImages],
+      type: 'article',
+      publishedTime: post.date,
+      authors: [post.author],
+    },
+    twitter: {
+        card: 'summary_large_image',
+        title: post.title,
+        description: post.excerpt,
+        images: [post.image],
+    }
+  };
+}
+
+const RecommendedBlogs = async ({ currentSlug }: { currentSlug: string }) => {
+    const allPosts = await getBlogPosts();
+    const recommendedPosts = allPosts
+        .filter(p => p.slug !== currentSlug)
+        .sort(() => 0.5 - Math.random()) 
+        .slice(0, 3); 
 
   if (recommendedPosts.length === 0) {
     return null;
@@ -116,19 +102,11 @@ const RecommendedBlogs = ({ currentSlug }: { currentSlug: string }) => {
   )
 }
 
-const RecommendedProducts = () => {
-    const [topProducts, setTopProducts] = useState<any[]>([]);
-
-    useEffect(() => {
-        async function fetchTopProducts() {
-            const products = await getProducts();
-            const sortedProducts = products
-                .sort((a, b) => b.reviews - a.reviews)
-                .slice(0, 3);
-            setTopProducts(sortedProducts);
-        }
-        fetchTopProducts();
-    }, []);
+const RecommendedProducts = async () => {
+    const products = await getProducts();
+    const topProducts = products
+        .sort((a, b) => b.reviews - a.reviews)
+        .slice(0, 3);
 
   if (!topProducts.length) return null;
 
@@ -162,246 +140,50 @@ const RecommendedProducts = () => {
   );
 };
 
-const AudioPlayer = ({ audioDataUri }: { audioDataUri: string }) => {
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
 
-  const togglePlayPause = () => {
-    const audio = audioRef.current;
-    if (audio) {
-      if (isPlaying) {
-        audio.pause();
-      } else {
-        audio.play();
-      }
-      setIsPlaying(!isPlaying);
-    }
-  };
-
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (audio) {
-      const handleEnded = () => setIsPlaying(false);
-      audio.addEventListener('ended', handleEnded);
-      return () => {
-        audio.removeEventListener('ended', handleEnded);
-      };
-    }
-  }, []);
-
-  return (
-    <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50 border">
-      <audio ref={audioRef} src={audioDataUri} preload="auto" />
-      <Button onClick={togglePlayPause} size="icon" variant="outline" className="flex-shrink-0 rounded-full h-12 w-12">
-        {isPlaying ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6 translate-x-0.5" />}
-      </Button>
-      <div className="flex items-center gap-1 w-full h-8 overflow-hidden">
-        {Array.from({ length: 30 }).map((_, i) => (
-          <div
-            key={i}
-            className="w-1 bg-primary/30 rounded-full"
-            style={{
-              height: `${Math.sin(i * 0.4 + (isPlaying ? Date.now() / 200 : 0)) * 50 + 50}%`,
-              animation: isPlaying ? 'wave 1.5s ease-in-out infinite alternate' : 'none',
-              animationDelay: `${i * 0.05}s`,
-            }}
-          />
-        ))}
-        <style jsx>{`
-          @keyframes wave {
-            0% { transform: scaleY(0.2); }
-            50% { transform: scaleY(1); }
-            100% { transform: scaleY(0.2); }
-          }
-        `}</style>
-      </div>
-    </div>
-  );
-};
-
-const PostPageContent = ({ post }: { post: BlogPost }) => {
-  const { toast } = useToast();
-  const { user } = useAuth();
-  const [isStoryLoading, startStoryTransition] = useTransition();
-  const [storyText, setStoryText] = useState<string | null>(null);
-  const [audioStory, setAudioStory] = useState<string | null>(null);
-  const [storyStarted, setStoryStarted] = useState(false);
-
-  const renderedContent = useMemo(() => {
-    if (!post?.content) return '';
-    return marked.parse(post.content);
-  }, [post?.content]);
-
-  const handleGenerateStory = () => {
-    if (!post) return;
-    setStoryStarted(true);
-    startStoryTransition(async () => {
-      setStoryText(null);
-      setAudioStory(null);
-      try {
-        const result = await generateCoffeeStory({
-          name: post.title,
-          origin: "Indonesia",
-          description: post.content, // Pass the full content for better story context
-        });
-        setStoryText(result.storyText);
-        setAudioStory(result.audioDataUri);
-      } catch (error) {
-        console.error("Error generating audio story:", error);
-        toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: 'Could not generate the audio story. Please try again.',
-        });
-      }
-    });
-  };
-
-  const storyGenerated = storyText && audioStory;
-
-  return (
-    <article className="max-w-4xl mx-auto bg-card p-6 md:p-12 rounded-lg shadow-xl">
-      <div className="mb-6 md:mb-8 flex justify-between items-center">
-        <Button asChild variant="link" className="p-0">
-          <Link href="/blog" className="inline-flex items-center text-primary hover:underline">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Blog
-          </Link>
-        </Button>
-         {user && (
-          <Button asChild variant="outline">
-            <Link href={`/dashboard?view=manageBlog&edit=${post.id}`}>
-              <Edit />
-              Edit Post
-            </Link>
-          </Button>
-        )}
-      </div>
-      <header className="mb-6 md:mb-8 border-b pb-6 md:pb-8">
-        <Badge variant="secondary" className="mb-4">{post.category}</Badge>
-        <h1 className="font-headline text-3xl md:text-5xl font-bold text-primary">{post.title}</h1>
-        <div className="mt-4 text-sm text-foreground/60">
-          <span>By {post.author}</span> | <span>{new Date(post.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
-        </div>
-        <ShareButtons title={post.title} slug={post.slug} />
-      </header>
-
-      <div className="relative aspect-video w-full mb-8 rounded-lg overflow-hidden">
-        <Image src={post.image} alt={post.title} layout="fill" objectFit="cover" data-ai-hint={post.aiHint ?? 'coffee blog'} />
-      </div>
-
-      <div
-        className="prose dark:prose-invert lg:prose-xl max-w-none text-foreground/90 prose-headings:text-primary prose-h2:font-headline"
-        dangerouslySetInnerHTML={{ __html: renderedContent }}
-      />
-      
-      {user && (
-        <div className="mt-12">
-          <Separator />
-          <Alert className="mt-12">
-              <BookAudio className="h-4 w-4" />
-              <AlertTitle className="font-headline">AI Story Teller</AlertTitle>
-              {!storyStarted && (
-                <>
-                <AlertDescription>
-                  Listen to an AI-narrated version of this story.
-                </AlertDescription>
-                <div className="mt-4">
-                    <Button variant="outline" onClick={handleGenerateStory}>
-                      Listen to the Story
-                    </Button>
-                </div>
-                </>
-              )}
-
-              {isStoryLoading && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground mt-4">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      <span>The storyteller is clearing their throat... Please wait.</span>
-                  </div>
-              )}
-                
-              {storyGenerated && (
-                  <Card className="mt-4 bg-secondary/30 animate-in fade-in-50 duration-500">
-                      <CardContent className="p-4 space-y-4">
-                        <p className="text-foreground/90 italic whitespace-pre-wrap">{storyText}</p>
-                        <AudioPlayer audioDataUri={audioStory} />
-                      </CardContent>
-                  </Card>
-              )}
-            </Alert>
-        </div>
-      )}
-
-      <RecommendedBlogs currentSlug={post.slug} />
-      <RecommendedProducts />
-    </article>
-  );
-};
-
-
-export default function BlogPostPage() {
-  const params = useParams<{ slug: string }>();
-  const [post, setPost] = useState<BlogPost | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    if (params.slug) {
-        const fetchPost = async () => {
-            setIsLoading(true);
-            try {
-                const postData = await getPostBySlug(params.slug);
-                setPost(postData);
-            } catch (error) {
-                console.error("Failed to fetch blog post:", error);
-                // Optionally, handle post not found error
-            } finally {
-                setIsLoading(false);
-            }
-        }
-        fetchPost();
-    }
-  }, [params.slug]);
-
-
-  if (isLoading) {
-    return (
-        <div className="bg-background">
-          <div className="container mx-auto px-4 py-8 md:py-12">
-             <div className="max-w-4xl mx-auto space-y-8">
-                <Skeleton className="h-8 w-1/4"/>
-                <Skeleton className="h-12 w-full"/>
-                <Skeleton className="h-6 w-1/2"/>
-                <Skeleton className="aspect-video w-full" />
-                <div className="space-y-4">
-                    <Skeleton className="h-6 w-full"/>
-                    <Skeleton className="h-6 w-full"/>
-                    <Skeleton className="h-6 w-3/4"/>
-                </div>
-             </div>
-          </div>
-        </div>
-    );
-  }
+export default async function BlogPostPage({ params }: { params: { slug: string } }) {
+  const post = await getPostBySlug(params.slug);
 
   if (!post) {
-    return (
-      <div className="bg-background">
-        <div className="container mx-auto px-4 py-8 md:py-12 text-center">
-          <h1 className="text-2xl font-bold">Post Not Found</h1>
-          <p className="mt-4">The article you are looking for does not exist.</p>
-           <Button asChild className="mt-6">
-            <Link href="/blog">Back to Blog</Link>
-          </Button>
-        </div>
-      </div>
-    );
+    notFound();
   }
+  
+  const renderedContent = marked.parse(post.content);
 
   return (
     <div className="bg-background">
       <div className="container mx-auto px-4 py-8 md:py-12">
-        <PostPageContent post={post} />
+        <BlogPostClientWrapper post={post}>
+            <article className="max-w-4xl mx-auto bg-card p-6 md:p-12 rounded-lg shadow-xl">
+            <div className="mb-6 md:mb-8 flex justify-between items-center">
+                <Button asChild variant="link" className="p-0">
+                <Link href="/blog" className="inline-flex items-center text-primary hover:underline">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back to Blog
+                </Link>
+                </Button>
+            </div>
+            <header className="mb-6 md:mb-8 border-b pb-6 md:pb-8">
+                <Badge variant="secondary" className="mb-4">{post.category}</Badge>
+                <h1 className="font-headline text-3xl md:text-5xl font-bold text-primary">{post.title}</h1>
+                <div className="mt-4 text-sm text-foreground/60">
+                <span>By {post.author}</span> | <span>{new Date(post.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                </div>
+            </header>
+
+            <div className="relative aspect-video w-full mb-8 rounded-lg overflow-hidden">
+                <Image src={post.image} alt={post.title} layout="fill" objectFit="cover" data-ai-hint={post.aiHint ?? 'coffee blog'} />
+            </div>
+
+            <div
+                className="prose dark:prose-invert lg:prose-xl max-w-none text-foreground/90 prose-headings:text-primary prose-h2:font-headline"
+                dangerouslySetInnerHTML={{ __html: renderedContent as string }}
+            />
+            
+            <RecommendedBlogs currentSlug={post.slug} />
+            <RecommendedProducts />
+            </article>
+        </BlogPostClientWrapper>
       </div>
     </div>
   );
