@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { Minus, Plus, Trash2, ArrowLeft, ShoppingCart } from 'lucide-react';
+import { Minus, Plus, Trash2, ArrowLeft, ShoppingCart, Loader2 } from 'lucide-react';
 import { useCart } from '@/context/cart-context';
+import { useState, useEffect } from 'react';
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
@@ -24,10 +25,22 @@ const EmptyCart = () => (
     </div>
 );
 
+const LoadingSpinner = () => (
+    <div className="text-center py-16">
+        <Loader2 className="mx-auto h-24 w-24 text-primary animate-spin" />
+        <h2 className="mt-6 text-2xl font-semibold">Loading Your Cart...</h2>
+    </div>
+)
+
 
 export function CartClientPage() {
   const { cart, updateQuantity, removeFromCart, subtotal, shipping, total } = useCart();
+  const [isClient, setIsClient] = useState(false);
   
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   const handleCheckout = () => {
     const phoneNumber = "6281234567890"; // Replace with your WhatsApp number
     const message = `Halo Sehati Kopi, saya ingin memesan:\n\n${cart
@@ -38,6 +51,19 @@ export function CartClientPage() {
     window.open(whatsappUrl, '_blank');
   };
 
+
+  if (!isClient) {
+    return (
+        <div className="bg-secondary/50">
+            <div className="container mx-auto px-4 py-12">
+                 <div className="text-center mb-12">
+                    <h1 className="font-headline text-4xl md:text-5xl font-bold text-primary">Your Shopping Cart</h1>
+                </div>
+                <LoadingSpinner />
+            </div>
+        </div>
+    )
+  }
 
   if (cart.length === 0) {
     return (
