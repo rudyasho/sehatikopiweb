@@ -20,7 +20,6 @@ import {
   Wand2,
   User,
   LogOut,
-  LogIn,
   Search
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -46,6 +45,7 @@ import {
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { useCart } from '@/context/cart-context';
 import { useAuth } from '@/context/auth-context';
+import { LoginDialog } from './login-dialog';
 
 
 const navLinks = [
@@ -64,7 +64,7 @@ export function Header() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { cart } = useCart();
-  const { user, loading, login, logout } = useAuth();
+  const { user, loading, logout } = useAuth();
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -113,11 +113,29 @@ export function Header() {
       );
     }
 
+    return <LoginDialog />;
+  }
+
+  const MobileAuth = () => {
+    if (loading || !isClient) {
+      return <div className="h-14 w-full rounded-md bg-muted animate-pulse" />;
+    }
+    if (user) {
+      return (
+        <Button 
+          className="w-full justify-start text-lg p-6"
+          onClick={() => {
+              logout();
+              setIsMobileMenuOpen(false);
+          }}
+        >
+          <LogOut className="mr-3 h-5 w-5"/>
+          Logout
+        </Button>
+      );
+    }
     return (
-      <Button onClick={login}>
-        <LogIn className="mr-2"/>
-        Login
-      </Button>
+      <LoginDialog onLoginSuccess={() => setIsMobileMenuOpen(false)} isMobile={true} />
     )
   }
 
@@ -240,16 +258,7 @@ export function Header() {
                     )}
                   </Link>
                 </Button>
-                 <Button 
-                    className="w-full justify-start text-lg p-6"
-                    onClick={() => {
-                        if (user) logout(); else login();
-                        setIsMobileMenuOpen(false);
-                    }}
-                  >
-                    {isClient && user ? <LogOut className="mr-3 h-5 w-5"/> : <LogIn className="mr-3 h-5 w-5"/>}
-                    {isClient && user ? "Logout" : "Login"}
-                 </Button>
+                <MobileAuth />
               </div>
             </SheetContent>
           </Sheet>

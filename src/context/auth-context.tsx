@@ -3,7 +3,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-interface User {
+export interface User {
   name: string;
   email: string;
   avatar: string;
@@ -12,7 +12,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: () => void;
+  login: (credentials: {email: string; password: string;}) => void;
   logout: () => void;
 }
 
@@ -43,12 +43,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  const login = () => {
+  const login = (credentials: {email: string; password: string;}) => {
     setLoading(true);
-    // Simulate an API call
+    // Simulate an API call. In a real app, you'd validate credentials here.
+    // For this mock, we'll log in the user as long as they provide any email/password.
+    console.log("Attempting to log in with:", credentials.email);
     setTimeout(() => {
-      localStorage.setItem('sehati-user', JSON.stringify(mockUser));
-      setUser(mockUser);
+      const userToLogin = {...mockUser, email: credentials.email};
+      localStorage.setItem('sehati-user', JSON.stringify(userToLogin));
+      setUser(userToLogin);
       setLoading(false);
     }, 500);
   };
