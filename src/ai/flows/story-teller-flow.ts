@@ -50,9 +50,8 @@ const storyTellerFlow = ai.defineFlow(
   async (input) => {
     // 1. Generate the story text
     const {text: storyText} = await ai.generate({
-        prompt: textGenerationPrompt.prompt,
-        input: input,
-        model: 'googleai/gemini-2.5-flash'
+      prompt: await textGenerationPrompt.render({input: input}),
+      model: 'googleai/gemini-2.5-flash',
     });
     
     // 2. Convert text to speech
