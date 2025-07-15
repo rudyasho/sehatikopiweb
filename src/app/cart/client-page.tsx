@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Minus, Plus, Trash2, ArrowLeft, ShoppingCart } from 'lucide-react';
 import { useCart } from '@/context/cart-context';
-import { useToast } from '@/hooks/use-toast';
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
@@ -28,14 +27,17 @@ const EmptyCart = () => (
 
 export function CartClientPage() {
   const { cart, updateQuantity, removeFromCart, subtotal, shipping, total } = useCart();
-  const { toast } = useToast();
-
+  
   const handleCheckout = () => {
-    toast({
-      title: "Checkout Simulated",
-      description: "In a real app, you would be redirected to a payment gateway.",
-    });
-  }
+    const phoneNumber = "6281234567890"; // Replace with your WhatsApp number
+    const message = `Halo Sehati Kopi, saya ingin memesan:\n\n${cart
+      .map(item => `${item.quantity}x ${item.name} (${formatCurrency(item.price * item.quantity)})`)
+      .join('\n')}\n\nSubtotal: ${formatCurrency(subtotal)}\nShipping: ${formatCurrency(shipping)}\n*Total: ${formatCurrency(total)}*\n\nTerima kasih!`;
+
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
 
   if (cart.length === 0) {
     return (
@@ -115,7 +117,7 @@ export function CartClientPage() {
                     </div>
                 </CardContent>
                 <CardFooter>
-                    <Button size="lg" className="w-full" onClick={handleCheckout}>Proceed to Checkout</Button>
+                    <Button size="lg" className="w-full" onClick={handleCheckout}>Checkout via WhatsApp</Button>
                 </CardFooter>
              </Card>
           </div>

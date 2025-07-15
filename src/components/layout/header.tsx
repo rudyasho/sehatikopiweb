@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { Coffee, Menu, X, ShoppingCart } from 'lucide-react';
+import { Coffee, Menu, X, ShoppingCart, LayoutDashboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -25,6 +25,7 @@ const navLinks = [
   { href: '/menu', label: 'Menu' },
   { href: '/events', label: 'Events' },
   { href: '/blog', label: 'Blog' },
+  { href: '/dashboard', label: 'Dashboard'},
   { href: '/about', label: 'About' },
   { href: '/contact', label: 'Contact' },
   { href: '/recommendations', label: 'AI Recommender'},
