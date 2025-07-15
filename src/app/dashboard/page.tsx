@@ -1022,7 +1022,7 @@ const ManageBlogPostsView = ({ onPostsChanged, initialPostToEdit }: { onPostsCha
                                 <TableRow key={post.id}>
                                     <TableCell className="font-medium max-w-xs truncate">{post.title}</TableCell>
                                     <TableCell><Badge variant="secondary">{post.category}</Badge></TableCell>
-                                    <TableCell>{format(new Date(post.date), "MMM d, yyyy")}</TableCell>
+                                    <TableCell>{post.date ? format(new Date(post.date), "MMM d, yyyy") : 'N/A'}</TableCell>
                                     <TableCell className="text-center space-x-2">
                                         <Dialog open={editingPost?.id === post.id} onOpenChange={(isOpen) => !isOpen && setEditingPost(null)}>
                                             <DialogTrigger asChild>
