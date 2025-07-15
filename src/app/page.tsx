@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     siteName: 'Sehati Kopi Digital',
     images: [
       {
-        url: 'https://placehold.co/1200x630.png', 
+        url: 'https://images6.alphacoders.com/427/thumb-1920-427470.jpg', 
         width: 1200,
         height: 630,
         alt: 'Sehati Kopi Digital',
@@ -81,7 +81,7 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative h-[60vh] md:h-[80vh] w-full flex items-center justify-center text-center text-white">
         <Image
-          src="https://storage.googleapis.com/maker-studio-5f33f.appspot.com/users/temp/1723706437593.png"
+          src="https://images6.alphacoders.com/427/thumb-1920-427470.jpg"
           alt="Sehati Kopi Roastery"
           layout="fill"
           objectFit="cover"
