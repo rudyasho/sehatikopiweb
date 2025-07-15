@@ -14,7 +14,7 @@ const ProductsPage = () => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {products.map((product) => (
-             <Card key={product.slug} className="text-left overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 shadow-lg">
+             <Card key={product.slug} className="text-left overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 shadow-lg bg-background">
                 <CardHeader className="p-0">
                   <Link href={`/products/${product.slug}`}>
                     <div className="relative h-60 w-full">

@@ -104,7 +104,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
   }
 
   return (
-    <div className="bg-secondary">
+    <div className="bg-secondary/50">
       <div className="container mx-auto px-4 py-12">
         <article className="max-w-4xl mx-auto bg-background p-8 md:p-12 rounded-lg shadow-xl">
           <div className="mb-8">
@@ -114,17 +114,17 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
             </Link>
           </div>
           <header className="mb-8 border-b pb-8">
-            <Badge variant="secondary" className="mb-4 bg-accent text-accent-foreground">{post.category}</Badge>
+            <Badge variant="secondary" className="mb-4 bg-accent/20 text-accent-foreground/80">{post.category}</Badge>
             <h1 className="font-headline text-4xl md:text-5xl font-bold text-primary">{post.title}</h1>
             <div className="mt-4 text-sm text-foreground/60">
               <span>By {post.author}</span> | <span>{post.date}</span>
             </div>
           </header>
-          <div className="relative h-96 w-full mb-8 rounded-lg overflow-hidden">
+          <div className="relative aspect-video w-full mb-8 rounded-lg overflow-hidden">
             <Image src={post.image} alt={post.title} layout="fill" objectFit="cover" data-ai-hint={post.aiHint} />
           </div>
           <div
-            className="prose lg:prose-xl max-w-none text-foreground/90"
+            className="prose lg:prose-xl max-w-none text-foreground/90 prose-headings:text-primary prose-h3:font-headline"
             dangerouslySetInnerHTML={{ __html: post.content }}
           />
         </article>

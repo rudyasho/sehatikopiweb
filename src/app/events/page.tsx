@@ -35,7 +35,7 @@ const events = [
 
 const EventsPage = () => {
   return (
-    <div className="bg-secondary">
+    <div className="bg-secondary/50">
       <div className="container mx-auto px-4 py-12">
         <div className="text-center mb-12">
           <h1 className="font-headline text-4xl md:text-5xl font-bold text-primary">Events & Workshops</h1>
@@ -43,15 +43,15 @@ const EventsPage = () => {
         </div>
         <div className="space-y-12">
           {events.map((event) => (
-            <Card key={event.title} className="grid md:grid-cols-5 gap-6 overflow-hidden shadow-xl items-center">
+            <Card key={event.title} className="grid md:grid-cols-5 gap-0 md:gap-6 overflow-hidden shadow-xl items-center bg-background">
               <div className="md:col-span-2 relative h-60 md:h-full w-full">
                 <Image src={event.image} alt={event.title} layout="fill" objectFit="cover" data-ai-hint={event.aiHint} />
               </div>
-              <div className="md:col-span-3">
-                <CardHeader>
+              <div className="md:col-span-3 p-6">
+                <CardHeader className="p-0">
                   <CardTitle className="font-headline text-3xl text-primary">{event.title}</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-0 pt-4">
                   <div className="space-y-3 text-foreground/80 mb-4">
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-primary" />
@@ -68,7 +68,7 @@ const EventsPage = () => {
                   </div>
                   <CardDescription>{event.description}</CardDescription>
                 </CardContent>
-                <CardFooter>
+                <CardFooter className="p-0 pt-6">
                   <Button size="lg">Register Now</Button>
                 </CardFooter>
               </div>

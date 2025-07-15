@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { Minus, Plus, Trash2, ArrowLeft } from 'lucide-react';
+import { Minus, Plus, Trash2, ArrowLeft, ShoppingCart } from 'lucide-react';
 
 const cartItems = [
   {
@@ -33,9 +33,34 @@ const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
 }
 
+const EmptyCart = () => (
+    <div className="text-center py-16">
+        <ShoppingCart className="mx-auto h-24 w-24 text-foreground/30" />
+        <h2 className="mt-6 text-2xl font-semibold">Your Cart is Empty</h2>
+        <p className="mt-2 text-foreground/60">Looks like you haven't added anything to your cart yet.</p>
+        <Button asChild size="lg" className="mt-6">
+            <Link href="/products">Start Shopping</Link>
+        </Button>
+    </div>
+);
+
+
 export default function CartPage() {
+  if (cartItems.length === 0) {
+    return (
+        <div className="bg-secondary/50">
+            <div className="container mx-auto px-4 py-12">
+                 <div className="text-center mb-12">
+                    <h1 className="font-headline text-4xl md:text-5xl font-bold text-primary">Your Shopping Cart</h1>
+                </div>
+                <EmptyCart />
+            </div>
+        </div>
+    )
+  }
+
   return (
-    <div className="bg-secondary">
+    <div className="bg-secondary/50">
       <div className="container mx-auto px-4 py-12">
         <div className="text-center mb-12">
           <h1 className="font-headline text-4xl md:text-5xl font-bold text-primary">Your Shopping Cart</h1>
@@ -43,7 +68,7 @@ export default function CartPage() {
 
         <div className="grid lg:grid-cols-3 gap-8 items-start">
           <div className="lg:col-span-2">
-            <Card className="shadow-lg">
+            <Card className="shadow-lg bg-background">
                 <CardContent className="p-6">
                     <div className="space-y-6">
                     {cartItems.map((item) => (
@@ -61,7 +86,7 @@ export default function CartPage() {
                                 <Button variant="outline" size="icon" className="h-8 w-8"><Plus className="h-4 w-4" /></Button>
                             </div>
                             <p className="font-semibold text-lg w-28 text-right">{formatCurrency(item.price * item.quantity)}</p>
-                            <Button variant="ghost" size="icon" className="text-destructive">
+                            <Button variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10">
                                 <Trash2 className="h-5 w-5" />
                                 <span className="sr-only">Remove item</span>
                             </Button>
@@ -69,8 +94,8 @@ export default function CartPage() {
                     ))}
                     </div>
                 </CardContent>
-                 <CardFooter className="p-6 border-t">
-                    <Link href="/" className="inline-flex items-center text-primary hover:underline">
+                 <CardFooter className="p-6 border-t bg-secondary/20">
+                    <Link href="/products" className="inline-flex items-center text-primary hover:underline">
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Continue Shopping
                     </Link>
@@ -79,7 +104,7 @@ export default function CartPage() {
           </div>
           
           <div className="lg:col-span-1">
-             <Card className="shadow-lg sticky top-24">
+             <Card className="shadow-lg sticky top-24 bg-background">
                 <CardHeader>
                     <CardTitle className="font-headline text-2xl text-primary">Order Summary</CardTitle>
                 </CardHeader>

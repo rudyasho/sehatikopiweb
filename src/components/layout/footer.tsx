@@ -12,14 +12,15 @@ export function Footer() {
 
   const handleNewsletterSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const email = (event.currentTarget.elements.namedItem('email') as HTMLInputElement).value;
+    const emailInput = event.currentTarget.elements.namedItem('email') as HTMLInputElement;
+    const email = emailInput.value;
     
     if (email) {
       toast({
         title: "Subscribed!",
         description: `Thank you for subscribing, ${email}!`,
       });
-      (event.target as HTMLFormElement).reset();
+      emailInput.value = '';
     }
   };
 

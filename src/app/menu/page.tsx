@@ -56,7 +56,7 @@ const Page = () => {
                     <CardTitle className="font-headline text-xl text-primary">{item.name}</CardTitle>
                     <CardDescription className="mt-2 text-sm">{item.description}</CardDescription>
                   </CardContent>
-                  <CardFooter className="flex justify-between items-center p-4 bg-background">
+                  <CardFooter className="flex justify-between items-center p-4 bg-secondary/50">
                     <span className="text-lg font-bold text-primary">{item.price}</span>
                     <Button variant="secondary">Order</Button>
                   </CardFooter>

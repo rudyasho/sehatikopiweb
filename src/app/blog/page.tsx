@@ -41,7 +41,7 @@ const blogPosts = [
 
 const BlogPage = () => {
   return (
-    <div className="bg-background">
+    <div className="bg-secondary/50">
       <div className="container mx-auto px-4 py-12">
         <div className="text-center mb-12">
           <h1 className="font-headline text-4xl md:text-5xl font-bold text-primary">From the Journal</h1>
@@ -49,7 +49,7 @@ const BlogPage = () => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {blogPosts.map((post) => (
-            <Card key={post.slug} className="flex flex-col overflow-hidden shadow-lg transform hover:-translate-y-1 transition-transform duration-300">
+            <Card key={post.slug} className="flex flex-col overflow-hidden shadow-lg transform hover:-translate-y-1 transition-transform duration-300 bg-background">
               <CardHeader className="p-0">
                 <Link href={`/blog/${post.slug}`}>
                   <div className="relative h-60 w-full">
@@ -58,13 +58,13 @@ const BlogPage = () => {
                 </Link>
               </CardHeader>
               <CardContent className="p-6 flex-grow">
-                <Badge variant="secondary" className="mb-2 bg-accent text-accent-foreground">{post.category}</Badge>
+                <Badge variant="secondary" className="mb-2 bg-accent/20 text-accent-foreground/80">{post.category}</Badge>
                 <Link href={`/blog/${post.slug}`}>
                   <CardTitle className="font-headline text-2xl text-primary hover:underline">{post.title}</CardTitle>
                 </Link>
                 <CardDescription className="mt-2 text-base">{post.excerpt}</CardDescription>
               </CardContent>
-              <CardFooter className="p-6 bg-secondary">
+              <CardFooter className="p-6 bg-secondary/50">
                  <Button asChild variant="link" className="p-0 h-auto text-primary">
                     <Link href={`/blog/${post.slug}`}>Read More &rarr;</Link>
                   </Button>

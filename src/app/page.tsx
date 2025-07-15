@@ -44,6 +44,7 @@ export default function Home() {
           objectFit="cover"
           className="absolute z-0"
           data-ai-hint="coffee shop interior"
+          priority
         />
         <div className="absolute inset-0 bg-black/60 z-10" />
         <div className="relative z-20 container mx-auto px-4">
@@ -81,6 +82,9 @@ export default function Home() {
                 <span className="font-semibold">Sustainably Sourced</span>
               </div>
             </div>
+            <Button asChild variant="link" className="mt-4 px-0">
+              <Link href="/about">Learn more about our story &rarr;</Link>
+            </Button>
           </div>
           <div className="relative h-80 rounded-lg overflow-hidden shadow-xl">
              <Image
@@ -95,7 +99,7 @@ export default function Home() {
       </section>
       
       {/* Featured Products */}
-      <section className="py-16 md:py-24 bg-secondary">
+      <section className="py-16 md:py-24 bg-secondary/50">
         <div className="container mx-auto px-4 text-center">
           <h2 className="font-headline text-3xl md:text-4xl font-semibold text-primary">Featured Coffee</h2>
           <p className="mt-2 text-lg max-w-2xl mx-auto text-foreground/80">
@@ -103,7 +107,7 @@ export default function Home() {
           </p>
           <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {featuredProducts.map((product) => (
-              <Card key={product.slug} className="text-left overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 shadow-lg">
+              <Card key={product.slug} className="text-left overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 shadow-lg bg-background">
                 <CardHeader className="p-0">
                   <Link href={`/products/${product.slug}`}>
                     <div className="relative h-60 w-full">
@@ -115,17 +119,22 @@ export default function Home() {
                   <CardTitle className="font-headline text-2xl text-primary">{product.name}</CardTitle>
                   <CardDescription className="mt-2 h-12">{product.description.substring(0, 80)}...</CardDescription>
                 </CardContent>
-                <CardFooter className="flex justify-between items-center p-6 bg-background">
+                <CardFooter className="flex justify-between items-center p-6 bg-secondary/50">
                   <span className="text-xl font-bold text-primary">
                      {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(product.price)}
                   </span>
-                  <Button asChild variant="secondary">
+                  <Button asChild>
                     <Link href={`/products/${product.slug}`}>View Details</Link>
                   </Button>
                 </CardFooter>
               </Card>
             ))}
           </div>
+           <Button asChild variant="outline" size="lg" className="mt-12">
+            <Link href="/products">
+              Shop All Coffee
+            </Link>
+          </Button>
         </div>
       </section>
 
@@ -135,9 +144,9 @@ export default function Home() {
           <h2 className="font-headline text-3xl md:text-4xl font-semibold text-primary">What Our Customers Say</h2>
           <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
-              <Card key={index} className="p-6 text-left shadow-lg bg-secondary">
+              <Card key={index} className="p-6 text-left shadow-lg bg-secondary/50">
                 <CardHeader className="flex flex-row items-center gap-4 p-0">
-                  <Avatar>
+                  <Avatar className="h-16 w-16">
                     <AvatarImage src={testimonial.avatar} alt={testimonial.name} data-ai-hint={testimonial.aiHint} />
                     <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
                   </Avatar>
@@ -158,7 +167,7 @@ export default function Home() {
       </section>
 
       {/* Blog & AI Tool CTA */}
-      <section className="py-16 md:py-24 bg-secondary">
+      <section className="py-16 md:py-24 bg-secondary/50">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-8">
             <div className="bg-background p-8 rounded-lg shadow-xl text-center flex flex-col items-center justify-center">
