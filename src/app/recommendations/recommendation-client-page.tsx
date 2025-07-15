@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -15,7 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, Wand2, Coffee, ArrowRight } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { getProducts, type Product } from '@/lib/products-data';
+import { getProductBySlug, type Product } from '@/lib/products-data';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -35,8 +35,15 @@ const recommendationSchema = z.object({
 type RecommendationFormValues = z.infer<typeof recommendationSchema>;
 
 function RecommendedProductCard({ slug }: { slug: string }) {
-  const products = getProducts();
-  const product = products.find((p) => p.slug === slug);
+  const [product, setProduct] = useState<Product | null>(null);
+
+  useEffect(() => {
+    async function fetchProduct() {
+      const p = await getProductBySlug(slug);
+      setProduct(p);
+    }
+    fetchProduct();
+  }, [slug]);
 
   if (!product) {
     return (

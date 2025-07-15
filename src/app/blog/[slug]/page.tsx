@@ -177,10 +177,20 @@ const RecommendedBlogs = ({ currentSlug }: { currentSlug: string }) => {
 }
 
 const RecommendedProducts = () => {
-  const products = getProducts();
-  const topProducts = products
-    .sort((a, b) => b.reviews - a.reviews)
-    .slice(0, 3);
+    const [topProducts, setTopProducts] = useState<any[]>([]);
+
+    useEffect(() => {
+        async function fetchTopProducts() {
+            const products = await getProducts();
+            const sortedProducts = products
+                .sort((a, b) => b.reviews - a.reviews)
+                .slice(0, 3);
+            setTopProducts(sortedProducts);
+        }
+        fetchTopProducts();
+    }, []);
+
+  if (!topProducts.length) return null;
 
   return (
     <div className="mt-12">

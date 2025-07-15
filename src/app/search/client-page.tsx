@@ -1,47 +1,33 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
-import { products, type Product } from '@/lib/products-data';
+import { getProducts, type Product } from '@/lib/products-data';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Search as SearchIcon, Newspaper, ShoppingBag } from 'lucide-react';
+import { getBlogPosts } from '@/app/blog/page';
 
-const blogPosts = [
-    {
-      title: 'The Ultimate Guide to V60 Brewing',
-      category: 'Brewing Tips',
-      excerpt: 'Master the art of the V60 pour-over with our step-by-step guide. From grind size to pouring technique, we cover everything you need to know for the perfect cup.',
-      slug: 'v60-guide',
-    },
-    {
-      title: 'A Journey to the Gayo Highlands',
-      category: 'Storytelling',
-      excerpt: 'Travel with us to the highlands of Aceh, the home of our Gayo coffee. Discover the stories of the farmers and the unique terroir that gives this coffee its distinct flavor.',
-      slug: 'gayo-journey',
-    },
-    {
-      title: 'Understanding Coffee Processing Methods',
-      category: 'Coffee Education',
-      excerpt: 'Washed, natural, or honey-processed? Learn how different processing methods impact the final taste of your coffee and find your preferred style.',
-      slug: 'processing-methods',
-    },
-    {
-      title: 'Why Single-Origin Coffee Matters',
-      category: 'Coffee Education',
-      excerpt: 'Explore the benefits of single-origin coffee, from its traceable roots to its unique and complex flavor profiles that tell the story of its origin.',
-      slug: 'single-origin',
-    },
-];
-
-type BlogPost = typeof blogPosts[0];
+type BlogPost = ReturnType<typeof getBlogPosts>[0];
 
 export function SearchClientPage() {
     const [searchTerm, setSearchTerm] = useState('');
+    const [products, setProducts] = useState<Product[]>([]);
+    const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+
+    useEffect(() => {
+        async function loadData() {
+            const fetchedProducts = await getProducts();
+            const fetchedBlogPosts = getBlogPosts();
+            setProducts(fetchedProducts);
+            setBlogPosts(fetchedBlogPosts);
+        }
+        loadData();
+    }, []);
 
     const filteredProducts = useMemo(() => {
         if (!searchTerm) return [];
@@ -51,7 +37,7 @@ export function SearchClientPage() {
             p.origin.toLowerCase().includes(searchTerm.toLowerCase()) ||
             p.tags.some(t => t.toLowerCase().includes(searchTerm.toLowerCase()))
         );
-    }, [searchTerm]);
+    }, [searchTerm, products]);
 
     const filteredBlogPosts = useMemo(() => {
         if (!searchTerm) return [];
@@ -60,7 +46,7 @@ export function SearchClientPage() {
             p.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
             p.category.toLowerCase().includes(searchTerm.toLowerCase())
         );
-    }, [searchTerm]);
+    }, [searchTerm, blogPosts]);
 
     const hasResults = filteredProducts.length > 0 || filteredBlogPosts.length > 0;
 

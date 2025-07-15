@@ -1,11 +1,14 @@
 
 import { MetadataRoute } from 'next'
 import { getProducts } from '@/lib/products-data';
+import { getBlogPosts } from '@/app/blog/page';
 
 const BASE_URL = 'https://sehatikopi.id'; // Replace with your actual domain
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const products = getProducts();
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const products = await getProducts();
+  const blogPosts = getBlogPosts();
+
   const staticRoutes = [
     '',
     '/about',
@@ -31,13 +34,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.9,
   }));
   
-  const blogPosts = [
-    { slug: 'v60-guide' },
-    { slug: 'gayo-journey' },
-    { slug: 'processing-methods' },
-    { slug: 'single-origin' },
-  ];
-
   const blogRoutes = blogPosts.map((post) => ({
     url: `${BASE_URL}/blog/${post.slug}`,
     lastModified: new Date(),

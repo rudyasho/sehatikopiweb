@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { getProducts } from '@/lib/products-data';
+import { Product } from '@/lib/products-data';
 import { X } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -16,19 +16,19 @@ export interface Filters {
 
 interface ProductFiltersProps {
   onFilterChange: (filters: Filters) => void;
+  allProducts: Product[];
 }
 
-export function ProductFilters({ onFilterChange }: ProductFiltersProps) {
+export function ProductFilters({ onFilterChange, allProducts }: ProductFiltersProps) {
   const [selectedRoasts, setSelectedRoasts] = useState<string[]>([]);
   const [selectedOrigin, setSelectedOrigin] = useState<string>('all');
   const [sortOrder, setSortOrder] = useState('name-asc');
   
   const { allRoasts, allOrigins } = useMemo(() => {
-    const products = getProducts();
-    const roasts = [...new Set(products.map(p => p.roast))];
-    const origins = [...new Set(products.map(p => p.origin))];
+    const roasts = [...new Set(allProducts.map(p => p.roast))];
+    const origins = [...new Set(allProducts.map(p => p.origin))];
     return { allRoasts: roasts, allOrigins: origins };
-  }, []);
+  }, [allProducts]);
 
 
   useEffect(() => {

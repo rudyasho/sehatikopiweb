@@ -16,11 +16,13 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useCart } from '@/context/cart-context';
 import { useToast } from '@/hooks/use-toast';
-import { ShoppingCart, Check, ListFilter } from 'lucide-react';
+import { ShoppingCart, Check, ListFilter, Loader2 } from 'lucide-react';
 import { ProductFilters, type Filters } from './product-filters';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export function ProductsClientPage() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { addToCart } = useCart();
   const { toast } = useToast();
   const [addedProducts, setAddedProducts] = useState<Record<string, boolean>>(
@@ -33,8 +35,17 @@ export function ProductsClientPage() {
   });
 
   useEffect(() => {
-    // This will run on client side and get the most up-to-date list
-    setProducts(getProducts());
+    async function fetchProducts() {
+        try {
+            const fetchedProducts = await getProducts();
+            setProducts(fetchedProducts);
+        } catch (error) {
+            console.error("Failed to fetch products:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    }
+    fetchProducts();
   }, []);
 
   const handleAddToCart = (product: Product) => {
@@ -81,6 +92,24 @@ export function ProductsClientPage() {
 
     return filtered;
   }, [filters, products]);
+  
+  const renderLoadingState = () => (
+      <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        {[...Array(6)].map((_, i) => (
+            <Card key={i} className="text-left overflow-hidden bg-background flex flex-col">
+                <Skeleton className="h-60 w-full" />
+                <CardContent className="p-6 flex-grow">
+                    <Skeleton className="h-8 w-3/4 mb-4" />
+                    <Skeleton className="h-16 w-full" />
+                </CardContent>
+                <CardFooter className="flex justify-between items-center p-6 bg-secondary/50">
+                    <Skeleton className="h-8 w-1/3" />
+                    <Skeleton className="h-10 w-24" />
+                </CardFooter>
+            </Card>
+        ))}
+      </div>
+  );
 
   return (
     <div className="bg-secondary/50">
@@ -95,9 +124,11 @@ export function ProductsClientPage() {
           </p>
         </div>
         
-        <ProductFilters onFilterChange={setFilters} />
+        <ProductFilters onFilterChange={setFilters} allProducts={products} />
 
-        {filteredAndSortedProducts.length > 0 ? (
+        {isLoading ? renderLoadingState() : 
+        
+        filteredAndSortedProducts.length > 0 ? (
           <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredAndSortedProducts.map((product) => (
               <Card
@@ -162,7 +193,6 @@ export function ProductsClientPage() {
             </p>
           </div>
         )}
-
       </div>
     </div>
   );

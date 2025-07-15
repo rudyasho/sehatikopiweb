@@ -1,3 +1,6 @@
+// src/lib/products-data.ts
+import { app } from './firebase';
+import { getFirestore, collection, getDocs, addDoc, query, orderBy, limit, doc, getDoc } from "firebase/firestore";
 
 export interface Product {
   slug: string;
@@ -13,9 +16,8 @@ export interface Product {
   roast: string;
 }
 
-const initialProducts: Product[] = [
+const initialProducts: Omit<Product, 'slug'>[] = [
   {
-    slug: 'aceh-gayo',
     name: 'Aceh Gayo',
     origin: 'Gayo Highlands, Aceh',
     description: 'A rich, full-bodied coffee with earthy notes of dark chocolate, cedar, and a hint of spice. Known for its smooth finish and low acidity, making it a classic Indonesian favorite.',
@@ -28,7 +30,6 @@ const initialProducts: Product[] = [
     roast: 'Medium-Dark',
   },
   {
-    slug: 'bali-kintamani',
     name: 'Bali Kintamani',
     origin: 'Kintamani Highlands, Bali',
     description: 'A smooth, sweet coffee with a clean finish and bright, citrusy undertones. Grown on volcanic soil alongside citrus fruits, which imparts a unique fruity aroma and flavor.',
@@ -41,7 +42,6 @@ const initialProducts: Product[] = [
     roast: 'Medium',
   },
   {
-    slug: 'flores-bajawa',
     name: 'Flores Bajawa',
     origin: 'Bajawa, Flores',
     description: 'A complex coffee with beautiful floral aromas, sweet chocolate notes, and a syrupy, lingering body. The unique terroir of Flores gives this coffee a truly memorable character.',
@@ -54,7 +54,6 @@ const initialProducts: Product[] = [
     roast: 'Medium',
   },
   {
-    slug: 'sumatra-mandheling',
     name: 'Sumatra Mandheling',
     origin: 'Mandailing, Sumatra',
     description: 'Famously smooth and heavy-bodied, this coffee presents deep, resonant notes of tobacco, dark cocoa, and a whisper of tropical fruit. A truly classic and satisfying cup.',
@@ -67,7 +66,6 @@ const initialProducts: Product[] = [
     roast: 'Dark',
   },
   {
-    slug: 'toraja-kalosi',
     name: 'Toraja Kalosi',
     origin: 'Tana Toraja, Sulawesi',
     description: 'Well-balanced with a velvety body and notes of ripe fruit and dark chocolate. It has a vibrant yet low-toned acidity, making it a delightfully complex and clean coffee.',
@@ -80,7 +78,6 @@ const initialProducts: Product[] = [
     roast: 'Medium-Dark',
   },
   {
-    slug: 'java-preanger',
     name: 'Java Preanger',
     origin: 'West Java',
     description: 'One of the world\'s oldest coffee cultivation areas. This coffee offers a medium body, a mild acidity, and a smooth, clean taste with a sweet, slightly herbaceous finish.',
@@ -93,7 +90,6 @@ const initialProducts: Product[] = [
     roast: 'Medium',
   },
   {
-    slug: 'papua-wamena',
     name: 'Papua Wamena',
     origin: 'Wamena, Papua',
     description: 'Grown in the remote highlands of Papua, this coffee has a clean, crisp flavor with a heavy body, low acidity, and notes of caramel, nuts, and a hint of stone fruit.',
@@ -107,46 +103,77 @@ const initialProducts: Product[] = [
   },
 ];
 
+const db = getFirestore(app);
+const productsCollection = collection(db, 'products');
 
-// Singleton pattern to hold products in memory
-class ProductStore {
-  private static instance: ProductStore;
-  private products: Product[];
+// Server-side cache
+let productsCache: Product[] | null = null;
+let lastFetchTime: number | null = null;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-  private constructor() {
-    this.products = initialProducts;
-  }
-
-  public static getInstance(): ProductStore {
-    if (!ProductStore.instance) {
-      ProductStore.instance = new ProductStore();
-    }
-    return ProductStore.instance;
-  }
-
-  public getProducts(): Product[] {
-    return this.products;
-  }
-
-  public addProduct(productData: Omit<Product, 'slug' | 'rating' | 'reviews' | 'tags'> & { tags: string }): Product {
-    const newProduct: Product = {
-      ...productData,
-      slug: productData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, ''),
-      rating: 0, // Default value for new products
-      reviews: 0, // Default value
-      tags: productData.tags.split(',').map(tag => tag.trim()),
-    };
-    this.products.unshift(newProduct); // Add to the beginning
-    return newProduct;
+async function seedDatabaseIfNeeded() {
+  const snapshot = await getDocs(query(productsCollection, limit(1)));
+  if (snapshot.empty) {
+    console.log('Products collection is empty. Seeding database...');
+    const seedPromises = initialProducts.map(productData => {
+       const slug = productData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+       return addDoc(productsCollection, {...productData, slug });
+    });
+    await Promise.all(seedPromises);
+    console.log('Database seeded successfully.');
   }
 }
 
-// Function to add a product from another component
-export const addProduct = (productData: Omit<Product, 'slug' | 'rating' | 'reviews' | 'tags'> & { tags: string }) => {
-  return ProductStore.getInstance().addProduct(productData);
+export async function getProducts(): Promise<Product[]> {
+  const now = Date.now();
+  if (productsCache && lastFetchTime && (now - lastFetchTime < CACHE_DURATION)) {
+    return productsCache;
+  }
+
+  await seedDatabaseIfNeeded();
+
+  const productsSnapshot = await getDocs(productsCollection);
+  const productsList = productsSnapshot.docs.map(doc => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      ...data
+    } as Product;
+  });
+
+  productsCache = productsList;
+  lastFetchTime = now;
+
+  return productsList;
 }
 
-// Function to get all products
-export const getProducts = () => {
-    return ProductStore.getInstance().getProducts();
+export async function getProductBySlug(slug: string): Promise<Product | null> {
+    // This function might not be efficient at scale with Firestore without proper indexing
+    // For this app, we'll fetch all and filter. In a larger app, use a query.
+    const products = await getProducts();
+    const product = products.find(p => p.slug === slug);
+    return product || null;
+}
+
+export async function addProduct(productData: Omit<Product, 'slug' | 'rating' | 'reviews' | 'tags'> & { tags: string }): Promise<Product> {
+  const slug = productData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+  
+  const newProductData = {
+    ...productData,
+    slug,
+    rating: 0,
+    reviews: 0,
+    tags: productData.tags.split(',').map(tag => tag.trim()),
+  };
+
+  const docRef = await addDoc(productsCollection, newProductData);
+  
+  // Invalidate cache
+  productsCache = null;
+  lastFetchTime = null;
+  
+  return {
+    id: docRef.id,
+    ...newProductData,
+  } as Product;
 }

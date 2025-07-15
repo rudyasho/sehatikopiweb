@@ -30,13 +30,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { addBlogPost } from '@/app/blog/page';
+import { addBlogPost, getBlogPosts } from '@/app/blog/page';
 import { generateBlogPost, type GenerateBlogPostOutput } from '@/ai/flows/blog-post-generator';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 
 
 const totalEvents = 3; 
-const totalBlogPosts = 4; // This will become dynamic later
 
 type DashboardView = 'overview' | 'addProduct' | 'blogGenerator';
 export type GeneratedPost = GenerateBlogPostOutput;
@@ -62,14 +62,14 @@ const blogPostSchema = z.object({
 type BlogPostFormValues = z.infer<typeof blogPostSchema>;
 
 
-const MetricCard = ({ title, value, icon: Icon }: { title: string, value: string | number, icon: React.ElementType }) => (
+const MetricCard = ({ title, value, icon: Icon, isLoading }: { title: string, value: string | number, icon: React.ElementType, isLoading?: boolean }) => (
     <Card className="shadow-lg bg-background">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{title}</CardTitle>
             <Icon className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-            <div className="text-2xl font-bold">{value}</div>
+            {isLoading ? <Skeleton className="h-8 w-1/2" /> : <div className="text-2xl font-bold">{value}</div>}
         </CardContent>
     </Card>
 );
@@ -256,6 +256,7 @@ const AddProductForm = () => {
     const { toast } = useToast();
     const router = useRouter();
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const form = useForm<NewProductFormValues>({
         resolver: zodResolver(newProductSchema),
@@ -272,19 +273,31 @@ const AddProductForm = () => {
         }
     }
 
-    const onSubmit = (data: NewProductFormValues) => {
-        const newProduct = addProduct(data);
-        toast({
-            title: "Product Added!",
-            description: `${data.name} has been added to the product list.`,
-            action: (
-                <Button variant="outline" size="sm" onClick={() => router.push(`/products/${newProduct.slug}`)}>
-                    View Product
-                </Button>
-            )
-        });
-        form.reset();
-        setImagePreview(null);
+    const onSubmit = async (data: NewProductFormValues) => {
+        setIsSubmitting(true);
+        try {
+            const newProduct = await addProduct(data);
+            toast({
+                title: "Product Added!",
+                description: `${data.name} has been added to the product list.`,
+                action: (
+                    <Button variant="outline" size="sm" onClick={() => router.push(`/products/${newProduct.slug}`)}>
+                        View Product
+                    </Button>
+                )
+            });
+            form.reset();
+            setImagePreview(null);
+        } catch (error) {
+            console.error("Failed to add product:", error);
+            toast({
+                variant: 'destructive',
+                title: "Error!",
+                description: "Could not add the product. Please try again.",
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -380,7 +393,10 @@ const AddProductForm = () => {
                         </div>
                     </div>
 
-                    <Button type="submit" size="lg" className="!mt-8 w-full md:w-auto">Add Product</Button>
+                    <Button type="submit" size="lg" className="!mt-8 w-full md:w-auto" disabled={isSubmitting}>
+                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Add Product
+                    </Button>
                 </form>
             </Form>
         </CardContent>
@@ -389,16 +405,32 @@ const AddProductForm = () => {
 }
 
 const AnalyticsOverview = () => {
-    const products = getProducts();
-    const totalProducts = products.length;
-    const totalReviews = products.reduce((acc, product) => acc + product.reviews, 0);
+    const [stats, setStats] = useState({ totalProducts: 0, totalReviews: 0 });
+    const [isLoading, setIsLoading] = useState(true);
+    const totalBlogPosts = getBlogPosts().length;
+
+    useEffect(() => {
+        async function fetchStats() {
+            try {
+                const products = await getProducts();
+                const totalProducts = products.length;
+                const totalReviews = products.reduce((acc, product) => acc + product.reviews, 0);
+                setStats({ totalProducts, totalReviews });
+            } catch (error) {
+                console.error("Failed to fetch product stats:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+        fetchStats();
+    }, []);
 
     return (
     <div className="space-y-8">
         <section>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <MetricCard title="Total Products" value={totalProducts} icon={Coffee} />
-                <MetricCard title="Customer Reviews" value={totalReviews} icon={Star} />
+                <MetricCard title="Total Products" value={stats.totalProducts} icon={Coffee} isLoading={isLoading} />
+                <MetricCard title="Customer Reviews" value={stats.totalReviews} icon={Star} isLoading={isLoading} />
                 <MetricCard title="Upcoming Events" value={totalEvents} icon={Calendar} />
                 <MetricCard title="Blog Posts" value={totalBlogPosts} icon={Newspaper} />
             </div>

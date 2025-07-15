@@ -2,14 +2,34 @@
 'use client';
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { getProducts } from '@/lib/products-data';
+import { getProducts, Product } from '@/lib/products-data';
+import { useState, useEffect } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export function ProductPopularityChart() {
-  const products = getProducts();
-  const chartData = products.map(product => ({
-    name: product.name,
-    reviews: product.reviews,
-  }));
+  const [chartData, setChartData] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchData() {
+        try {
+            const products = await getProducts();
+            setChartData(products.map(product => ({
+                name: product.name,
+                reviews: product.reviews,
+            })));
+        } catch (error) {
+            console.error("Failed to fetch product data for chart:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    }
+    fetchData();
+  }, []);
+
+  if (isLoading) {
+    return <Skeleton className="h-[400px] w-full" />;
+  }
 
   return (
     <ResponsiveContainer width="100%" height="100%">

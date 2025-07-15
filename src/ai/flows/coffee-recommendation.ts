@@ -37,37 +37,10 @@ export async function recommendCoffee(input: RecommendCoffeeInput): Promise<Reco
   return recommendCoffeeFlow(input);
 }
 
-const getProductContext = () => {
-  const products = getProducts();
+const getProductContext = async () => {
+  const products = await getProducts();
   return products.map(p => ` - Name: ${p.name}, Slug: ${p.slug}, Description: ${p.description}, Roast: ${p.roast}`).join('\n');
 }
-
-const prompt = ai.definePrompt({
-  name: 'recommendCoffeePrompt',
-  input: {schema: RecommendCoffeeInputSchema},
-  output: {schema: RecommendCoffeeOutputSchema},
-  prompt: `You are an expert coffee sommelier for an Indonesian coffee brand called "Sehati Kopi". A customer has provided their preferences. Based on this, recommend a specific Indonesian coffee bean from the list provided below and a roast level. Provide a compelling reason for your choice in the notes.
-
-Available Coffees:
-${getProductContext()}
-
-Customer Preferences:
-*   Flavour: {{{flavorPreferences}}}
-*   Brewing Method: {{{brewingMethod}}}
-*   Preferred Caffeine Level: {{{caffeineLevel}}}
-*   Time of Day: {{{timeOfDay}}}
-
-Your Task:
-1.  Analyze the customer's preferences.
-2.  Select the *single best match* from the 'Available Coffees' list.
-3.  Set the 'beanRecommendation' to the name of the chosen coffee.
-4.  Set the 'productSlug' to the slug of the chosen coffee.
-5.  Determine the most appropriate 'roastLevel'.
-6.  Write encouraging and detailed 'notes' explaining *why* the recommendation fits their complete profile, referencing their preferences.
-7.  If the user drinks coffee in the 'Evening', strongly lean towards a low-caffeine option or a coffee that is described as smooth and gentle.
-
-Return the results as JSON.`,
-});
 
 const recommendCoffeeFlow = ai.defineFlow(
   {
@@ -75,7 +48,36 @@ const recommendCoffeeFlow = ai.defineFlow(
     inputSchema: RecommendCoffeeInputSchema,
     outputSchema: RecommendCoffeeOutputSchema,
   },
-  async input => {
+  async (input) => {
+    const productContext = await getProductContext();
+
+    const prompt = ai.definePrompt({
+      name: 'recommendCoffeePrompt',
+      input: {schema: RecommendCoffeeInputSchema},
+      output: {schema: RecommendCoffeeOutputSchema},
+      prompt: `You are an expert coffee sommelier for an Indonesian coffee brand called "Sehati Kopi". A customer has provided their preferences. Based on this, recommend a specific Indonesian coffee bean from the list provided below and a roast level. Provide a compelling reason for your choice in the notes.
+
+    Available Coffees:
+    ${productContext}
+
+    Customer Preferences:
+    *   Flavour: {{{flavorPreferences}}}
+    *   Brewing Method: {{{brewingMethod}}}
+    *   Preferred Caffeine Level: {{{caffeineLevel}}}
+    *   Time of Day: {{{timeOfDay}}}
+
+    Your Task:
+    1.  Analyze the customer's preferences.
+    2.  Select the *single best match* from the 'Available Coffees' list.
+    3.  Set the 'beanRecommendation' to the name of the chosen coffee.
+    4.  Set the 'productSlug' to the slug of the chosen coffee.
+    5.  Determine the most appropriate 'roastLevel'.
+    6.  Write encouraging and detailed 'notes' explaining *why* the recommendation fits their complete profile, referencing their preferences.
+    7.  If the user drinks coffee in the 'Evening', strongly lean towards a low-caffeine option or a coffee that is described as smooth and gentle.
+
+    Return the results as JSON.`,
+    });
+
     const {output} = await prompt(input);
     return output!;
   }

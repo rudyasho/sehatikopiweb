@@ -3,14 +3,15 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, Coffee, Leaf, Star, ShoppingCart, Check } from 'lucide-react';
+import { ArrowRight, Coffee, Leaf, Star, ShoppingCart, Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getProducts, Product } from '@/lib/products-data';
 import { useCart } from '@/context/cart-context';
 import { useToast } from '@/hooks/use-toast';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const testimonials = [
   {
@@ -37,11 +38,25 @@ const testimonials = [
 ];
 
 function FeaturedProducts() {
-  const allProducts = useMemo(() => getProducts(), []);
-  const featuredProducts = allProducts.slice(0, 3);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { addToCart } = useCart();
   const { toast } = useToast();
   const [addedProducts, setAddedProducts] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    async function fetchProducts() {
+      try {
+        const fetchedProducts = await getProducts();
+        setProducts(fetchedProducts.slice(0, 3));
+      } catch (error) {
+        console.error("Failed to fetch products:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchProducts();
+  }, []);
 
   const handleAddToCart = (product: Product) => {
     addToCart(product, 1);
@@ -55,9 +70,29 @@ function FeaturedProducts() {
     }, 2000);
   };
 
+  if (isLoading) {
+    return (
+        <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[...Array(3)].map((_, i) => (
+                <Card key={i} className="text-left overflow-hidden bg-background flex flex-col">
+                    <Skeleton className="h-60 w-full" />
+                    <CardContent className="p-6 flex-grow">
+                        <Skeleton className="h-8 w-3/4 mb-4" />
+                        <Skeleton className="h-12 w-full" />
+                    </CardContent>
+                    <CardFooter className="flex justify-between items-center p-6 bg-secondary/50">
+                       <Skeleton className="h-8 w-1/3" />
+                       <Skeleton className="h-10 w-24" />
+                    </CardFooter>
+                </Card>
+            ))}
+        </div>
+    );
+  }
+
   return (
     <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-      {featuredProducts.map((product) => (
+      {products.map((product) => (
         <Card key={product.slug} className="text-left overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 shadow-lg bg-background flex flex-col">
           <CardHeader className="p-0">
             <Link href={`/products/${product.slug}`}>
