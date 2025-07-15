@@ -1,7 +1,9 @@
+
 'use client';
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,7 +11,6 @@ import { Separator } from '@/components/ui/separator';
 import { Minus, Plus, Trash2, ArrowLeft, ShoppingCart, Loader2 } from 'lucide-react';
 import { useCart } from '@/context/cart-context';
 import { useState, useEffect } from 'react';
-import { useToast } from '@/hooks/use-toast';
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
@@ -35,8 +36,9 @@ const LoadingSpinner = () => (
 
 
 export function CartClientPage() {
-  const { cart, updateQuantity, removeFromCart, subtotal, shipping, total } = useCart();
+  const { cart, updateQuantity, removeFromCart, subtotal, shipping, total, clearCart, setLastOrder } = useCart();
   const [isClient, setIsClient] = useState(false);
+  const router = useRouter();
   
   useEffect(() => {
     setIsClient(true);
@@ -49,7 +51,25 @@ export function CartClientPage() {
       .join('\n')}\n\nSubtotal: ${formatCurrency(subtotal)}\nShipping: ${formatCurrency(shipping)}\n*Total: ${formatCurrency(total)}*\n\nTerima kasih!`;
 
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    
+    // Set the order details for the confirmation page
+    setLastOrder({
+      items: cart,
+      subtotal,
+      shipping,
+      total,
+      orderDate: new Date().toISOString(),
+      orderId: `SK-${Date.now()}`
+    });
+
+    // Open WhatsApp link
     window.open(whatsappUrl, '_blank');
+    
+    // Clear the cart
+    clearCart();
+
+    // Redirect to success page
+    router.push('/checkout/success');
   };
 
 

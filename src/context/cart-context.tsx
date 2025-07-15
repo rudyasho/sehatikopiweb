@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
@@ -5,6 +6,15 @@ import type { Product } from '@/lib/products-data';
 
 export interface CartItem extends Product {
   quantity: number;
+}
+
+interface OrderSummary {
+    orderId: string;
+    orderDate: string;
+    items: CartItem[];
+    subtotal: number;
+    shipping: number;
+    total: number;
 }
 
 interface CartContextType {
@@ -17,6 +27,8 @@ interface CartContextType {
   subtotal: number;
   shipping: number;
   total: number;
+  lastOrder: OrderSummary | null;
+  setLastOrder: (order: OrderSummary | null) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -24,15 +36,47 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>(() => {
     if (typeof window !== 'undefined') {
-      const savedCart = localStorage.getItem('sehati-cart');
-      return savedCart ? JSON.parse(savedCart) : [];
+      try {
+        const savedCart = localStorage.getItem('sehati-cart');
+        return savedCart ? JSON.parse(savedCart) : [];
+      } catch (e) {
+        return [];
+      }
     }
     return [];
   });
+  
+  const [lastOrder, setLastOrder] = useState<OrderSummary | null>(() => {
+    if (typeof window !== 'undefined') {
+        try {
+            const savedOrder = sessionStorage.getItem('sehati-last-order');
+            return savedOrder ? JSON.parse(savedOrder) : null;
+        } catch (e) {
+            return null;
+        }
+    }
+    return null;
+  });
 
   useEffect(() => {
-    localStorage.setItem('sehati-cart', JSON.stringify(cart));
+    try {
+        localStorage.setItem('sehati-cart', JSON.stringify(cart));
+    } catch (e) {
+        console.error("Failed to save cart to localStorage", e);
+    }
   }, [cart]);
+
+  useEffect(() => {
+    try {
+        if (lastOrder) {
+            sessionStorage.setItem('sehati-last-order', JSON.stringify(lastOrder));
+        } else {
+            sessionStorage.removeItem('sehati-last-order');
+        }
+    } catch (e) {
+        console.error("Failed to save last order to sessionStorage", e);
+    }
+  }, [lastOrder]);
 
   const addToCart = (product: Product, quantity: number) => {
     setCart(prevCart => {
@@ -70,7 +114,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const itemCount = cart.reduce((total, item) => total + item.quantity, 0);
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const shipping = subtotal > 0 ? 15000 : 0; // Free shipping logic could be more complex
+  const shipping = subtotal > 0 ? 15000 : 0; 
   const total = subtotal + shipping;
 
 
@@ -86,6 +130,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         subtotal,
         shipping,
         total,
+        lastOrder,
+        setLastOrder
       }}
     >
       {children}
