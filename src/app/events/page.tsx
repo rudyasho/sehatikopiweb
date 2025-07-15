@@ -1,49 +1,51 @@
-
+// src/app/events/page.tsx
 'use client';
 
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar, Clock, MapPin, Check } from 'lucide-react';
+import { Calendar, Clock, MapPin, Check, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { getEvents, type Event } from '@/lib/events-data';
+import { Skeleton } from '@/components/ui/skeleton';
 
-const eventsList = [
-  {
-    id: 'cupping-101',
-    title: 'Coffee Cupping 101',
-    date: 'Saturday, August 17, 2024',
-    time: '10:00 AM - 12:00 PM',
-    location: 'Sehati Kopi Roastery, Jakarta',
-    description: 'Join us for an immersive coffee cupping session. Learn to identify different flavor notes and aromas from our single-origin Indonesian coffees. Perfect for beginners and enthusiasts alike.',
-    image: 'https://placehold.co/600x400.png',
-    aiHint: 'coffee cupping',
-  },
-  {
-    id: 'latte-art-workshop',
-    title: 'Latte Art Workshop',
-    date: 'Sunday, August 25, 2024',
-    time: '2:00 PM - 4:00 PM',
-    location: 'Sehati Kopi Flagship Store',
-    description: 'Unleash your inner artist! Our expert baristas will guide you through the basics of milk steaming and pouring techniques to create beautiful latte art. All materials provided.',
-    image: 'https://placehold.co/600x400.png',
-    aiHint: 'latte art workshop',
-  },
-  {
-    id: 'meet-the-farmer',
-    title: 'Meet the Farmer: Gayo Highlands',
-    date: 'Saturday, September 7, 2024',
-    time: '3:00 PM - 5:00 PM',
-    location: 'Online via Zoom',
-    description: 'A special virtual event where you can meet the farmers behind our Aceh Gayo beans. Hear their stories, learn about their farming practices, and participate in a live Q&A session.',
-    image: 'https://placehold.co/600x400.png',
-    aiHint: 'coffee farmer',
-  },
-];
+const EventCardSkeleton = () => (
+    <Card className="grid md:grid-cols-5 gap-0 md:gap-6 overflow-hidden items-center bg-background">
+        <Skeleton className="md:col-span-2 relative h-60 md:h-full w-full" />
+        <div className="md:col-span-3 p-6 space-y-4">
+            <Skeleton className="h-8 w-3/4" />
+            <div className="space-y-2">
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-4 w-1/2" />
+            </div>
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-32" />
+        </div>
+    </Card>
+);
 
 const EventsPage = () => {
   const { toast } = useToast();
   const [registeredEvents, setRegisteredEvents] = useState<Record<string, boolean>>({});
+  const [events, setEvents] = useState<Event[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchEvents() {
+        try {
+            const eventsData = await getEvents();
+            setEvents(eventsData);
+        } catch (error) {
+            console.error("Failed to fetch events:", error);
+            toast({ variant: "destructive", title: "Error", description: "Could not load events." });
+        } finally {
+            setIsLoading(false);
+        }
+    }
+    fetchEvents();
+  }, [toast]);
 
   const handleRegister = (eventId: string, eventTitle: string) => {
     setRegisteredEvents(prev => ({ ...prev, [eventId]: true }));
@@ -61,49 +63,62 @@ const EventsPage = () => {
           <p className="mt-2 text-lg text-foreground/80">Join our community and deepen your coffee knowledge.</p>
         </div>
         <div className="space-y-12">
-          {eventsList.map((event) => {
-            const isRegistered = registeredEvents[event.id];
-            return (
-              <Card key={event.id} className="grid md:grid-cols-5 gap-0 md:gap-6 overflow-hidden shadow-xl items-center bg-background">
-                <div className="md:col-span-2 relative h-60 md:h-full w-full">
-                  <Image src={event.image} alt={event.title} layout="fill" objectFit="cover" data-ai-hint={event.aiHint} />
-                </div>
-                <div className="md:col-span-3 p-6">
-                  <CardHeader className="p-0">
-                    <CardTitle className="font-headline text-3xl text-primary">{event.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-0 pt-4">
-                    <div className="space-y-3 text-foreground/80 mb-4">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-primary" />
-                        <span>{event.date}</span>
+          {isLoading ? (
+            <>
+                <EventCardSkeleton />
+                <EventCardSkeleton />
+            </>
+          ) : events.length > 0 ? (
+            events.map((event) => {
+              const isRegistered = registeredEvents[event.id];
+              return (
+                <Card key={event.id} className="grid md:grid-cols-5 gap-0 md:gap-6 overflow-hidden shadow-xl items-center bg-background">
+                  <div className="md:col-span-2 relative h-60 md:h-full w-full">
+                    <Image src={event.image} alt={event.title} layout="fill" objectFit="cover" data-ai-hint={event.aiHint} />
+                  </div>
+                  <div className="md:col-span-3 p-6">
+                    <CardHeader className="p-0">
+                      <CardTitle className="font-headline text-3xl text-primary">{event.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-0 pt-4">
+                      <div className="space-y-3 text-foreground/80 mb-4">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-primary" />
+                          <span>{event.date}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-primary" />
+                          <span>{event.time}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-4 w-4 text-primary" />
+                          <span>{event.location}</span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-primary" />
-                        <span>{event.time}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-primary" />
-                        <span>{event.location}</span>
-                      </div>
-                    </div>
-                    <CardDescription>{event.description}</CardDescription>
-                  </CardContent>
-                  <CardFooter className="p-0 pt-6">
-                    <Button size="lg" onClick={() => handleRegister(event.id, event.title)} disabled={isRegistered}>
-                      {isRegistered ? (
-                        <>
-                          <Check className="mr-2" /> Registered
-                        </>
-                      ) : (
-                        'Register Now'
-                      )}
-                    </Button>
-                  </CardFooter>
-                </div>
-              </Card>
-            );
-          })}
+                      <CardDescription>{event.description}</CardDescription>
+                    </CardContent>
+                    <CardFooter className="p-0 pt-6">
+                      <Button size="lg" onClick={() => handleRegister(event.id, event.title)} disabled={isRegistered}>
+                        {isRegistered ? (
+                          <>
+                            <Check className="mr-2" /> Registered
+                          </>
+                        ) : (
+                          'Register Now'
+                        )}
+                      </Button>
+                    </CardFooter>
+                  </div>
+                </Card>
+              );
+            })
+          ) : (
+             <div className="text-center py-16">
+                <Calendar className="mx-auto h-24 w-24 text-foreground/30" />
+                <h2 className="mt-6 text-2xl font-semibold">No Upcoming Events</h2>
+                <p className="mt-2 text-foreground/60">Check back soon for new events and workshops!</p>
+            </div>
+          )}
         </div>
       </div>
     </div>

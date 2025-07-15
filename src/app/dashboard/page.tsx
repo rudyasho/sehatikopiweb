@@ -1,4 +1,3 @@
-
 // src/app/dashboard/page.tsx
 'use client';
 
@@ -7,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth, type User } from '@/context/auth-context';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ProductPopularityChart } from './product-popularity-chart';
-import { Coffee, Star, Calendar, Newspaper, Loader2, PlusCircle, Wand2, Edit, BarChart3, Bot, LayoutGrid, Send, Clipboard, Check, Save, ListOrdered, Trash2, BookText, Image as ImageIcon, FileText } from 'lucide-react';
+import { Coffee, Star, Calendar, Newspaper, Loader2, PlusCircle, Wand2, Edit, BarChart3, Bot, LayoutGrid, Send, Clipboard, Check, Save, ListOrdered, Trash2, BookText, Image as ImageIcon, FileText, CalendarCheck, Clock, MapPin, CalendarPlus } from 'lucide-react';
 import { addProduct, getProducts, updateProduct, deleteProduct, type Product } from '@/lib/products-data';
 import { RoastDistributionChart } from './roast-distribution-chart';
 import { OriginDistributionChart } from './origin-distribution-chart';
@@ -31,12 +30,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { BlogEditor } from './blog-editor';
+import { addEvent, getEvents, updateEvent, deleteEvent, type Event, type EventFormData } from '@/lib/events-data';
 
 
 const totalEvents = 3; 
 const formatCurrency = (amount: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
 
-type DashboardView = 'overview' | 'addProduct' | 'blogGenerator' | 'manageProducts' | 'manageBlog';
+type DashboardView = 'overview' | 'addProduct' | 'blogGenerator' | 'manageProducts' | 'manageBlog' | 'manageEvents';
 export type GeneratedPost = GenerateBlogPostOutput;
 
 
@@ -69,22 +69,34 @@ const blogPostFormSchema = z.object({
 
 type BlogPostFormValues = z.infer<typeof blogPostFormSchema>;
 
+const eventFormSchema = z.object({
+  title: z.string().min(5, "Event title is required."),
+  date: z.string().min(10, "Event date is required."),
+  time: z.string().min(5, "Event time is required."),
+  location: z.string().min(5, "Event location is required."),
+  description: z.string().min(10, "Description is required."),
+  image: z.string().url("Image URL is required."),
+  aiHint: z.string().min(2, "AI hint is required for image search.")
+});
+
+type EventFormValues = z.infer<typeof eventFormSchema>;
+
 
 
 const MetricCard = ({ title, value, icon: Icon, isLoading }: { title: string, value: string | number, icon: React.ElementType, isLoading?: boolean }) => {
-    const [blogPostCount, setBlogPostCount] = useState(0);
+    const [counts, setCounts] = useState({ blogPosts: 0, events: 0});
 
     useEffect(() => {
-        if (title === "Blog Posts") {
-            const fetchCount = async () => {
-                const posts = await getBlogPosts();
-                setBlogPostCount(posts.length);
+        async function fetchCounts() {
+            if (title === "Blog Posts" || title === "Upcoming Events") {
+                const [posts, events] = await Promise.all([getBlogPosts(), getEvents()]);
+                setCounts({ blogPosts: posts.length, events: events.length });
             }
-            fetchCount();
         }
+        fetchCounts();
     }, [title]);
 
-    const displayValue = title === "Blog Posts" ? blogPostCount : value;
+    const displayValue = title === "Blog Posts" ? counts.blogPosts : title === "Upcoming Events" ? counts.events : value;
 
     return (
         <Card className="shadow-lg bg-background">
@@ -577,6 +589,112 @@ const ProductForm = ({ product, onFormSubmit, closeDialog }: { product?: Product
     )
 }
 
+const EventForm = ({ event, onFormSubmit, closeDialog, isCreatingNew }: { event?: Event | null, onFormSubmit: () => void, closeDialog: () => void, isCreatingNew: boolean }) => {
+    const { toast } = useToast();
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const form = useForm<EventFormValues>({
+        resolver: zodResolver(eventFormSchema),
+        defaultValues: { 
+            title: event?.title || '',
+            date: event?.date || '',
+            time: event?.time || '',
+            location: event?.location || '',
+            description: event?.description || '',
+            image: event?.image || '',
+            aiHint: event?.aiHint || ''
+        },
+    });
+
+    const onSubmit = async (data: EventFormValues) => {
+        setIsSubmitting(true);
+        try {
+            if (isCreatingNew) {
+                await addEvent(data);
+                toast({ title: "Event Added!", description: `"${data.title}" has been added.` });
+            } else if (event) {
+                await updateEvent(event.id, data);
+                toast({ title: "Event Updated!", description: `"${data.title}" has been updated.` });
+            }
+            onFormSubmit();
+            closeDialog();
+        } catch (error) {
+            console.error("Failed to submit event:", error);
+            toast({
+                variant: 'destructive',
+                title: "Error!",
+                description: `Could not ${isCreatingNew ? 'add' : 'update'} the event.`,
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    return (
+        <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto p-1">
+                <FormField control={form.control} name="title" render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Event Title</FormLabel>
+                        <FormControl><Input placeholder="e.g., Latte Art Workshop" {...field} /></FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )} />
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField control={form.control} name="date" render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Date</FormLabel>
+                            <FormControl><Input placeholder="e.g., Saturday, August 17, 2024" {...field} /></FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )} />
+                     <FormField control={form.control} name="time" render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Time</FormLabel>
+                            <FormControl><Input placeholder="e.g., 10:00 AM - 12:00 PM" {...field} /></FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )} />
+                </div>
+                 <FormField control={form.control} name="location" render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Location</FormLabel>
+                        <FormControl><Input placeholder="e.g., Sehati Kopi Roastery, Jakarta" {...field} /></FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )} />
+                <FormField control={form.control} name="description" render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Description</FormLabel>
+                        <FormControl><Textarea placeholder="Describe the event..." {...field} rows={4} /></FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )} />
+                <FormField control={form.control} name="image" render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Image URL</FormLabel>
+                        <FormControl><Input type="url" placeholder="https://example.com/image.png" {...field} /></FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )} />
+                <FormField control={form.control} name="aiHint" render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>AI Hint</FormLabel>
+                        <FormControl><Input placeholder="e.g., coffee cupping" {...field} /></FormControl>
+                        <CardDescription className="text-xs pt-1">Keywords for Unsplash search.</CardDescription>
+                        <FormMessage />
+                    </FormItem>
+                )} />
+                 <Button type="submit" size="lg" className="!mt-6 w-full" disabled={isSubmitting}>
+                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isCreatingNew ? 'Add Event' : 'Update Event'}
+                </Button>
+            </form>
+        </Form>
+    );
+};
+
+
 const AddProductView = ({ onProductAdded }: { onProductAdded: () => void }) => (
   <Card className="shadow-lg bg-background">
     <CardHeader>
@@ -950,6 +1068,140 @@ const ManageBlogPostsView = ({ onPostsChanged, initialPostToEdit }: { onPostsCha
     );
 };
 
+const ManageEventsView = ({ onEventsChanged }: { onEventsChanged: () => void }) => {
+    const [events, setEvents] = useState<Event[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const { toast } = useToast();
+    const [isFormOpen, setIsFormOpen] = useState(false);
+    const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+
+    const fetchEvents = async () => {
+        setIsLoading(true);
+        try {
+            const eventsData = await getEvents();
+            setEvents(eventsData);
+        } catch (error) {
+            console.error("Failed to fetch events:", error);
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch events.' });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchEvents();
+    }, []);
+
+    const handleDelete = async (eventId: string, eventTitle: string) => {
+        try {
+            await deleteEvent(eventId);
+            toast({ title: "Event Deleted", description: `"${eventTitle}" has been removed.` });
+            onEventsChanged();
+            fetchEvents();
+        } catch (error) {
+            console.error(`Failed to delete event ${eventId}:`, error);
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not delete event.' });
+        }
+    };
+
+    const handleFormSubmit = () => {
+        onEventsChanged();
+        fetchEvents();
+        setIsFormOpen(false);
+        setEditingEvent(null);
+    };
+
+    if (isLoading) {
+        return (
+            <Card className="shadow-lg bg-background p-6">
+                <Skeleton className="h-8 w-1/4 mb-4" />
+                <Skeleton className="h-64 w-full" />
+            </Card>
+        );
+    }
+
+    return (
+        <Card className="shadow-lg bg-background">
+            <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                    <CardTitle className="font-headline text-2xl text-primary flex items-center gap-2">
+                        <CalendarCheck /> Manage Events
+                    </CardTitle>
+                    <CardDescription>Add, edit, or delete events and workshops.</CardDescription>
+                </div>
+                <Dialog open={isFormOpen} onOpenChange={(open) => {
+                    setIsFormOpen(open);
+                    if (!open) setEditingEvent(null);
+                }}>
+                    <DialogTrigger asChild>
+                        <Button onClick={() => { setEditingEvent(null); setIsFormOpen(true); }}>
+                           <CalendarPlus /> Add New Event
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle className="font-headline text-2xl text-primary">{editingEvent ? 'Edit Event' : 'Add New Event'}</DialogTitle>
+                        </DialogHeader>
+                        <EventForm
+                            isCreatingNew={!editingEvent}
+                            event={editingEvent}
+                            onFormSubmit={handleFormSubmit}
+                            closeDialog={() => setIsFormOpen(false)}
+                        />
+                    </DialogContent>
+                </Dialog>
+            </CardHeader>
+            <CardContent>
+                <div className="border rounded-lg">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Event Title</TableHead>
+                                <TableHead>Date</TableHead>
+                                <TableHead className="text-center">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {events.map((event) => (
+                                <TableRow key={event.id}>
+                                    <TableCell className="font-medium">{event.title}</TableCell>
+                                    <TableCell>{event.date}</TableCell>
+                                    <TableCell className="text-center space-x-2">
+                                        <Button variant="outline" size="icon" onClick={() => { setEditingEvent(event); setIsFormOpen(true); }}>
+                                            <Edit />
+                                        </Button>
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <Button variant="destructive" size="icon">
+                                                    <Trash2 />
+                                                </Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        This action cannot be undone. This will permanently delete the event "{event.title}".
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                    <AlertDialogAction onClick={() => handleDelete(event.id, event.title)}>
+                                                        Continue
+                                                    </AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
+            </CardContent>
+        </Card>
+    );
+};
+
 
 const AnalyticsOverview = () => {
     const [stats, setStats] = useState({ totalProducts: 0, totalReviews: 0 });
@@ -978,7 +1230,7 @@ const AnalyticsOverview = () => {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <MetricCard title="Total Products" value={stats.totalProducts} icon={Coffee} isLoading={isLoading} />
                 <MetricCard title="Customer Reviews" value={stats.totalReviews} icon={Star} isLoading={isLoading} />
-                <MetricCard title="Upcoming Events" value={totalEvents} icon={Calendar} />
+                <MetricCard title="Upcoming Events" value={0} icon={Calendar} isLoading={isLoading} />
                 <MetricCard title="Blog Posts" value={0} icon={Newspaper} isLoading={isLoading} />
             </div>
         </section>
@@ -1077,6 +1329,8 @@ const DashboardPage = () => {
             return <ManageProductsView onProductsChanged={handleDataChange} />;
         case 'manageBlog':
             return <ManageBlogPostsView onPostsChanged={handleDataChange} initialPostToEdit={initialPostToEdit} />;
+        case 'manageEvents':
+            return <ManageEventsView onEventsChanged={handleDataChange} />;
         default:
             return <AnalyticsOverview key={refreshKey} />;
     }
@@ -1087,6 +1341,7 @@ const DashboardPage = () => {
       { id: 'manageProducts', label: 'Manage Products', icon: ListOrdered },
       { id: 'addProduct', label: 'Add Product', icon: PlusCircle },
       { id: 'manageBlog', label: 'Manage Blog', icon: BookText },
+      { id: 'manageEvents', label: 'Manage Events', icon: CalendarCheck },
       { id: 'blogGenerator', label: 'AI Blog Generator', icon: Bot },
   ];
 
