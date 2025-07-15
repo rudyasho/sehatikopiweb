@@ -132,7 +132,7 @@ export function ProductsClientPage() {
           <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredAndSortedProducts.map((product) => (
               <Card
-                key={product.slug}
+                key={product.id}
                 className="text-left overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 shadow-lg bg-background flex flex-col"
               >
                 <CardHeader className="p-0">
