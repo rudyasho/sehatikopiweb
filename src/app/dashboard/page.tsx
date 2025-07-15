@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ProductPopularityChart } from './product-popularity-chart';
-import { Coffee, Star, Calendar, Newspaper, Loader2, List, PlusCircle } from 'lucide-react';
+import { Coffee, Star, Calendar, Newspaper, Loader2, List, PlusCircle, Upload, Link as LinkIcon } from 'lucide-react';
 import { products, type Product } from '@/lib/products-data';
 import { RoastDistributionChart } from './roast-distribution-chart';
 import { OriginDistributionChart } from './origin-distribution-chart';
@@ -22,6 +22,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import Image from 'next/image';
 
 const totalProducts = products.length;
 const totalReviews = products.reduce((acc, product) => acc + product.reviews, 0);
@@ -35,6 +36,7 @@ const newProductSchema = z.object({
   price: z.coerce.number().min(1, "Price must be greater than 0."),
   roast: z.string().min(3, "Roast level is required."),
   tags: z.string().min(3, "Please add at least one tag, comma separated."),
+  photo: z.string().optional(),
 });
 
 type NewProductFormValues = z.infer<typeof newProductSchema>;
@@ -54,10 +56,35 @@ const MetricCard = ({ title, value, icon: Icon }: { title: string, value: string
 
 const AddProductForm = () => {
     const { toast } = useToast();
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+
     const form = useForm<NewProductFormValues>({
         resolver: zodResolver(newProductSchema),
-        defaultValues: { name: '', origin: '', description: '', price: 0, roast: '', tags: '' },
+        defaultValues: { name: '', origin: '', description: '', price: 0, roast: '', tags: '', photo: '' },
     });
+
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const result = reader.result as string;
+                setImagePreview(result);
+                form.setValue('photo', result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleUrlChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const url = event.target.value;
+        if (url) {
+            setImagePreview(url);
+            form.setValue('photo', url);
+        } else {
+            setImagePreview(null);
+        }
+    }
 
     const onSubmit = (data: NewProductFormValues) => {
         console.log("New Product Data:", data);
@@ -66,6 +93,7 @@ const AddProductForm = () => {
             description: `${data.name} has been added to the product list.`,
         });
         form.reset();
+        setImagePreview(null);
     };
 
     return (
@@ -80,55 +108,99 @@ const AddProductForm = () => {
             </CardHeader>
             <CardContent>
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <FormField control={form.control} name="name" render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Product Name</FormLabel>
-                                    <FormControl><Input placeholder="e.g., Papua Wamena" {...field} /></FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )} />
-                            <FormField control={form.control} name="origin" render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Origin</FormLabel>
-                                    <FormControl><Input placeholder="e.g., Wamena, Papua" {...field} /></FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )} />
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {/* Form Fields */}
+                            <div className="md:col-span-2 space-y-4">
+                               <FormField control={form.control} name="name" render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Product Name</FormLabel>
+                                        <FormControl><Input placeholder="e.g., Papua Wamena" {...field} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )} />
+                                <FormField control={form.control} name="origin" render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Origin</FormLabel>
+                                        <FormControl><Input placeholder="e.g., Wamena, Papua" {...field} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )} />
+                                <FormField control={form.control} name="description" render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Description</FormLabel>
+                                        <FormControl><Textarea placeholder="Describe the coffee's flavor profile..." {...field} rows={6} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )} />
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <FormField control={form.control} name="price" render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Price (IDR)</FormLabel>
+                                                <FormControl><Input type="number" placeholder="150000" {...field} /></FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )} />
+                                        <FormField control={form.control} name="roast" render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Roast Level</FormLabel>
+                                                <FormControl><Input placeholder="e.g., Medium-Light" {...field} /></FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )} />
+                                </div>
+                                <FormField control={form.control} name="tags" render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Tags</FormLabel>
+                                        <FormControl><Input placeholder="e.g., Fruity, Aromatic, Clean" {...field} /></FormControl>
+                                        <CardDescription className="text-xs pt-1">Enter tags separated by commas.</CardDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )} />
+                            </div>
+                            
+                            {/* Photo Upload */}
+                            <div className="md:col-span-1 space-y-4">
+                                <FormLabel>Product Photo</FormLabel>
+                                <Card className="p-4">
+                                    <div className="w-full aspect-square relative bg-muted rounded-md flex items-center justify-center overflow-hidden">
+                                    {imagePreview ? (
+                                        <Image src={imagePreview} alt="Product Preview" layout="fill" objectFit="cover" />
+                                    ) : (
+                                        <span className="text-sm text-muted-foreground">Image Preview</span>
+                                    )}
+                                    </div>
+                                </Card>
+                                <Tabs defaultValue="local" className="w-full">
+                                    <TabsList className="grid w-full grid-cols-2">
+                                        <TabsTrigger value="local"><Upload className="mr-2 h-4 w-4"/>Local</TabsTrigger>
+                                        <TabsTrigger value="url"><LinkIcon className="mr-2 h-4 w-4"/>URL</TabsTrigger>
+                                    </TabsList>
+                                    <TabsContent value="local" className="pt-2">
+                                        <FormField control={form.control} name="photo" render={({ field }) => (
+                                            <FormItem>
+                                                <FormControl>
+                                                    <Input type="file" accept="image/*" onChange={handleFileChange} className="file:text-primary file:font-semibold" />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )} />
+                                    </TabsContent>
+                                    <TabsContent value="url" className="pt-2">
+                                        <FormField control={form.control} name="photo" render={() => (
+                                            <FormItem>
+                                                <FormControl>
+                                                    <Input type="url" placeholder="https://example.com/image.png" onChange={handleUrlChange} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )} />
+                                    </TabsContent>
+                                </Tabs>
+                            </div>
                         </div>
-                        <FormField control={form.control} name="description" render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Description</FormLabel>
-                                <FormControl><Textarea placeholder="Describe the coffee's flavor profile..." {...field} /></FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )} />
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                           <FormField control={form.control} name="price" render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Price (IDR)</FormLabel>
-                                    <FormControl><Input type="number" placeholder="150000" {...field} /></FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )} />
-                             <FormField control={form.control} name="roast" render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Roast Level</FormLabel>
-                                    <FormControl><Input placeholder="e.g., Medium-Light" {...field} /></FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )} />
-                        </div>
-                         <FormField control={form.control} name="tags" render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Tags</FormLabel>
-                                <FormControl><Input placeholder="e.g., Fruity, Aromatic, Clean" {...field} /></FormControl>
-                                <CardDescription className="text-xs pt-1">Enter tags separated by commas.</CardDescription>
-                                <FormMessage />
-                            </FormItem>
-                        )} />
-                        <Button type="submit">Add Product</Button>
+
+                        <Button type="submit" size="lg" className="!mt-8">Add Product</Button>
                     </form>
                 </Form>
             </CardContent>
