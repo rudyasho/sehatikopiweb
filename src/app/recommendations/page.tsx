@@ -1,4 +1,10 @@
 import { RecommendationForm } from './recommendation-client-page';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'AI Coffee Recommender',
+  description: 'Not sure which coffee to choose? Use our AI-powered tool to get a personalized coffee recommendation based on your flavor and brewing preferences.',
+};
 
 export default function RecommendationPage() {
   return (

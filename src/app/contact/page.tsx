@@ -2,10 +2,16 @@ import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Phone, Mail, MapPin, Share2 } from 'lucide-react';
 import { ContactForm } from './contact-form';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Contact Us',
+  description: 'Have a question or want to visit us? Find our contact details, location map, and a quick form to get in touch with the Sehati Kopi team.',
+};
 
 const ContactPage = () => {
   return (
-    <div className="bg-secondary">
+    <div className="bg-background">
       <div className="container mx-auto px-4 py-16">
         <div className="text-center mb-12">
           <h1 className="font-headline text-4xl md:text-5xl font-bold text-primary">Get In Touch</h1>
@@ -13,7 +19,7 @@ const ContactPage = () => {
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Contact Form */}
-          <Card className="shadow-xl">
+          <Card className="shadow-xl bg-secondary/50">
             <CardHeader>
               <CardTitle className="font-headline text-2xl text-primary">Send a Message</CardTitle>
             </CardHeader>
@@ -24,7 +30,7 @@ const ContactPage = () => {
 
           {/* Contact Info & Map */}
           <div className="space-y-8">
-            <Card className="shadow-xl">
+            <Card className="shadow-xl bg-secondary/50">
               <CardHeader>
                 <CardTitle className="font-headline text-2xl text-primary">Contact Information</CardTitle>
               </CardHeader>
@@ -49,10 +55,6 @@ const ContactPage = () => {
             </Card>
             
             <div className="relative h-80 w-full rounded-lg overflow-hidden shadow-xl">
-              {/* 
-                An interactive map would be placed here.
-                Using a placeholder as an API key for services like Google Maps is required.
-              */}
               <Image 
                 src="https://placehold.co/800x600.png" 
                 alt="Map of Sehati Kopi location" 

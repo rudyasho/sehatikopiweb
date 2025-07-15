@@ -2,6 +2,12 @@ import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar, Clock, MapPin } from 'lucide-react';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Events & Workshops',
+  description: 'Join our community! Check out our schedule of coffee cupping sessions, latte art workshops, and other events to deepen your coffee knowledge.',
+};
 
 const events = [
   {

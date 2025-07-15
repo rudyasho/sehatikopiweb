@@ -1,0 +1,10 @@
+# Allow all user agents to crawl the site
+User-agent: *
+Allow: /
+
+# Disallow crawling of specific paths if needed
+# For example, to disallow crawling the cart:
+# Disallow: /cart/
+
+# Point to the sitemap
+Sitemap: https://sehatikopi.id/sitemap.xml

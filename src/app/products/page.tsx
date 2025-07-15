@@ -3,6 +3,12 @@ import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { products } from '@/lib/products-data';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Our Coffee Collection',
+  description: 'Explore our hand-picked selection of the finest single-origin Indonesian coffees. From the earthy notes of Aceh Gayo to the fruity aroma of Bali Kintamani, find your perfect brew.',
+};
 
 const ProductsPage = () => {
   return (

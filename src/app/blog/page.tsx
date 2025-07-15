@@ -3,6 +3,12 @@ import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Blog',
+  description: 'Stories, brewing guides, and insights from the world of Indonesian coffee. Dive into our journal to deepen your coffee knowledge.',
+};
 
 const blogPosts = [
   {

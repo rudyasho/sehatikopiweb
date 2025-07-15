@@ -2,6 +2,12 @@ import Image from 'next/image';
 import { Leaf, Users, Heart } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'About Us',
+  description: 'Learn about the story, values, and passionate team behind Sehati Kopi. Discover our commitment to authenticity, sustainability, and community in the world of Indonesian coffee.',
+};
 
 const teamMembers = [
   { name: 'Budi Santoso', role: 'Founder & Head Roaster', avatar: 'https://placehold.co/100x100.png', aiHint: 'man portrait' },
