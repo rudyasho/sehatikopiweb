@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ProductPopularityChart } from './product-popularity-chart';
-import { Coffee, Star, Calendar, Newspaper, Loader2, PlusCircle, Upload, Link as LinkIcon, Edit, BarChart3, Settings, Bot, LayoutGrid, Send, Clipboard, Check, Wand2 } from 'lucide-react';
+import { Coffee, Star, Calendar, Newspaper, Loader2, PlusCircle, Upload, Link as LinkIcon, Edit, BarChart3, Settings, Bot, LayoutGrid, Send, Clipboard, Check, Wand2, Save } from 'lucide-react';
 import { products } from '@/lib/products-data';
 import { RoastDistributionChart } from './roast-distribution-chart';
 import { OriginDistributionChart } from './origin-distribution-chart';
@@ -77,6 +77,8 @@ const MetricCard = ({ title, value, icon: Icon }: { title: string, value: string
 
 function BlogGenerator() {
   const [generatedPost, setGeneratedPost] = useState<GeneratedPost | null>(null);
+  const [editedPost, setEditedPost] = useState<{title: string, content: string} | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [hasCopied, setHasCopied] = useState(false);
   const { toast } = useToast();
@@ -90,9 +92,12 @@ function BlogGenerator() {
   async function onSubmit(data: BlogPostFormValues) {
     setIsLoading(true);
     setGeneratedPost(null);
+    setIsEditing(false);
+    setEditedPost(null);
     try {
       const result = await generateBlogPost(data.topic);
       setGeneratedPost(result);
+      setEditedPost({ title: result.title, content: result.content });
     } catch (error) {
       console.error('Error generating blog post:', error);
       toast({
@@ -107,7 +112,7 @@ function BlogGenerator() {
 
   const handleCopyToClipboard = () => {
     if (!generatedPost?.content) return;
-    navigator.clipboard.writeText(generatedPost.content);
+    navigator.clipboard.writeText(isEditing ? editedPost!.content : generatedPost.content);
     setHasCopied(true);
     toast({ title: 'Content Copied!' });
     setTimeout(() => setHasCopied(false), 2000);
@@ -115,7 +120,13 @@ function BlogGenerator() {
 
   const handlePublish = () => {
     if (!generatedPost) return;
-    const newPost = addBlogPost(generatedPost);
+    // Use edited content if available
+    const postToPublish = {
+      ...generatedPost,
+      title: editedPost?.title || generatedPost.title,
+      content: editedPost?.content || generatedPost.content,
+    };
+    const newPost = addBlogPost(postToPublish);
     toast({
         title: "Post Published!",
         description: `"${newPost.title}" is now on the blog.`,
@@ -126,8 +137,17 @@ function BlogGenerator() {
         )
     })
     setGeneratedPost(null);
+    setEditedPost(null);
+    setIsEditing(false);
     form.reset();
   };
+
+  const handleSaveChanges = () => {
+    if (!editedPost) return;
+    setGeneratedPost(prev => prev ? ({...prev, title: editedPost.title, content: editedPost.content}) : null);
+    setIsEditing(false);
+    toast({ title: 'Changes saved locally.' });
+  }
 
   return (
     <Card className="shadow-lg bg-background">
@@ -175,24 +195,51 @@ function BlogGenerator() {
           </div>
         )}
 
-        {generatedPost && (
+        {generatedPost && editedPost && (
           <Card className="mt-6 animate-in fade-in-50 duration-500 bg-secondary/50">
             <CardHeader>
               <div className="relative aspect-video w-full rounded-md overflow-hidden mb-4">
                 <Image src={generatedPost.imageDataUri} alt={generatedPost.title} layout="fill" objectFit="cover" />
               </div>
               <Badge variant="secondary" className="w-fit mb-2">{generatedPost.category}</Badge>
-              <CardTitle className="font-headline text-3xl text-primary">{generatedPost.title}</CardTitle>
+              {isEditing ? (
+                  <Input 
+                      value={editedPost.title}
+                      onChange={(e) => setEditedPost(prev => ({...prev!, title: e.target.value}))}
+                      className="text-3xl font-headline font-bold h-auto p-2"
+                  />
+              ) : (
+                <CardTitle className="font-headline text-3xl text-primary">{generatedPost.title}</CardTitle>
+              )}
             </CardHeader>
             <CardContent>
-              <div className="prose lg:prose-xl max-w-none text-foreground/90 prose-headings:text-primary prose-h3:font-headline"
-                   dangerouslySetInnerHTML={{ __html: generatedPost.content }} />
+              {isEditing ? (
+                  <Textarea
+                     value={editedPost.content}
+                     onChange={(e) => setEditedPost(prev => ({...prev!, content: e.target.value}))}
+                     className="min-h-[300px] text-base"
+                  />
+              ) : (
+                <div className="prose lg:prose-xl max-w-none text-foreground/90 prose-headings:text-primary prose-h3:font-headline"
+                     dangerouslySetInnerHTML={{ __html: generatedPost.content }} />
+              )}
               <div className="flex flex-wrap gap-2 mt-6">
+                {isEditing ? (
+                  <Button onClick={handleSaveChanges}>
+                    <Save className="mr-2"/>
+                    Save Changes
+                  </Button>
+                ) : (
+                  <Button onClick={() => setIsEditing(true)} variant="outline">
+                    <Edit className="mr-2"/>
+                    Edit
+                  </Button>
+                )}
                 <Button onClick={handleCopyToClipboard} variant="outline">
                   {hasCopied ? <Check className="mr-2"/> : <Clipboard className="mr-2"/>}
                   Copy HTML
                 </Button>
-                 <Button onClick={handlePublish}>
+                 <Button onClick={handlePublish} disabled={isEditing}>
                   <Send className="mr-2"/>
                   Publish to Blog
                 </Button>
