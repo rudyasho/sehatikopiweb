@@ -1,13 +1,18 @@
+
 // src/app/blog/[slug]/page.tsx
 'use client';
 
 import Image from 'next/image';
-import { notFound, useParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { getBlogPosts, type BlogPost as BlogPostType } from '../page';
 import { useEffect, useState } from 'react';
+import { products, type Product } from '@/lib/products-data';
+import { Card, CardContent, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/ui/button';
 
 const staticContent: Record<string, {author: string, date: string, content: string}> = {
   'v60-guide': {
@@ -78,6 +83,41 @@ const staticContent: Record<string, {author: string, date: string, content: stri
 
 type PostWithContent = BlogPostType & { content: string, author: string, date: string };
 
+const RecommendedProducts = () => {
+  const topProducts = products
+    .sort((a, b) => b.reviews - a.reviews)
+    .slice(0, 3);
+
+  return (
+    <div className="mt-12">
+      <Separator />
+      <div className="py-12">
+        <h2 className="font-headline text-3xl text-primary text-center mb-8">You Might Also Like</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {topProducts.map(product => (
+            <Card key={product.slug} className="overflow-hidden shadow-lg transform hover:-translate-y-1 transition-transform duration-300 bg-secondary/50">
+              <Link href={`/products/${product.slug}`} className="block">
+                <div className="relative h-52 w-full">
+                  <Image src={product.image} alt={product.name} layout="fill" objectFit="cover" data-ai-hint={product.aiHint}/>
+                </div>
+              </Link>
+              <CardContent className="p-4">
+                <Link href={`/products/${product.slug}`}>
+                  <CardTitle className="font-headline text-xl text-primary hover:underline">{product.name}</CardTitle>
+                </Link>
+                <p className="text-foreground/80 text-sm mt-1">{product.origin}</p>
+                <Button asChild className="w-full mt-4">
+                  <Link href={`/products/${product.slug}`}>View Product</Link>
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 
 export default function BlogPostPage() {
   const params = useParams<{ slug: string }>();
@@ -146,6 +186,7 @@ export default function BlogPostPage() {
             className="prose lg:prose-xl max-w-none text-foreground/90 prose-headings:text-primary prose-h3:font-headline"
             dangerouslySetInnerHTML={{ __html: post.content }}
           />
+           <RecommendedProducts />
         </article>
       </div>
     </div>
