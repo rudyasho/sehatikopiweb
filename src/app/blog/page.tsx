@@ -8,7 +8,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/context/auth-context';
-import { BlogPostGenerator, type GeneratedPost } from './blog-post-generator';
 import { useToast } from '@/hooks/use-toast';
 
 const initialBlogPosts = [
@@ -49,26 +48,7 @@ const initialBlogPosts = [
 type BlogPost = typeof initialBlogPosts[0];
 
 const BlogPage = () => {
-  const { user } = useAuth();
-  const { toast } = useToast();
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>(initialBlogPosts);
-
-  const handlePublishPost = (post: GeneratedPost) => {
-    const newPost: BlogPost = {
-      title: post.title,
-      category: post.category,
-      excerpt: post.content.substring(0, 150).replace(/<[^>]+>/g, '') + '...', // Simple excerpt generation
-      image: 'https://placehold.co/600x400.png',
-      aiHint: 'coffee blog',
-      slug: post.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, ''),
-    };
-
-    setBlogPosts(prevPosts => [newPost, ...prevPosts]);
-    toast({
-      title: 'Post Published!',
-      description: `"${post.title}" is now live on the blog.`,
-    });
-  };
 
   return (
     <div className="bg-secondary/50">
@@ -77,8 +57,6 @@ const BlogPage = () => {
           <h1 className="font-headline text-4xl md:text-5xl font-bold text-primary">From the Journal</h1>
           <p className="mt-2 text-lg text-foreground/80">Stories, guides, and insights from the world of coffee.</p>
         </div>
-
-        {user && <BlogPostGenerator onPublish={handlePublishPost} />}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {blogPosts.map((post) => (
