@@ -1,3 +1,4 @@
+
 import { MetadataRoute } from 'next'
 import { products } from '@/lib/products-data';
 
