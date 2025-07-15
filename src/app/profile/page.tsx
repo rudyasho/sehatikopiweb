@@ -10,7 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, User, Mail, LogOut } from 'lucide-react';
+import { Loader2, Mail, LogOut } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 // This is a client-side only page, so we can't export metadata directly.
 // In a real-world scenario with server-side rendering, you would export this.
@@ -28,6 +29,15 @@ const mockOrderHistory = [
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
+}
+
+const getStatusVariant = (status: string) => {
+    switch(status.toLowerCase()) {
+        case 'shipped': return 'default';
+        case 'delivered': return 'secondary';
+        case 'pending': return 'outline';
+        default: return 'secondary';
+    }
 }
 
 const ProfilePage = () => {
@@ -58,19 +68,19 @@ const ProfilePage = () => {
       <div className="container mx-auto px-4 py-12 md:py-16">
         <div className="max-w-4xl mx-auto">
           <Card className="shadow-xl bg-background">
-            <CardHeader className="flex flex-col md:flex-row items-start md:items-center gap-6">
+            <CardHeader className="flex flex-col md:flex-row items-start md:items-center gap-6 p-6">
                <Avatar className="h-24 w-24 border-4 border-primary">
                   <AvatarImage src={user.avatar} alt={user.name} data-ai-hint="person smiling"/>
                   <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <div className="flex-grow">
                   <CardTitle className="font-headline text-4xl text-primary">{user.name}</CardTitle>
-                  <CardDescription className="text-lg flex items-center gap-2 mt-1">
+                  <CardDescription className="text-lg flex items-center gap-2 mt-1 text-muted-foreground">
                     <Mail className="h-4 w-4"/> {user.email}
                   </CardDescription>
                 </div>
                 <Button variant="outline" onClick={() => {logout(); router.push('/');}}>
-                  <LogOut className="mr-2"/> Logout
+                  <LogOut/> Logout
                 </Button>
             </CardHeader>
             <Separator/>
@@ -82,7 +92,7 @@ const ProfilePage = () => {
                             <TableRow>
                                 <TableHead>Order ID</TableHead>
                                 <TableHead>Date</TableHead>
-                                <TableHead>Status</TableHead>
+                                <TableHead className="text-center">Status</TableHead>
                                 <TableHead className="text-right">Total</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -91,7 +101,9 @@ const ProfilePage = () => {
                                 <TableRow key={order.id}>
                                     <TableCell className="font-medium">{order.id}</TableCell>
                                     <TableCell>{order.date}</TableCell>
-                                    <TableCell>{order.status}</TableCell>
+                                    <TableCell className="text-center">
+                                        <Badge variant={getStatusVariant(order.status) as any}>{order.status}</Badge>
+                                    </TableCell>
                                     <TableCell className="text-right">{formatCurrency(order.total)}</TableCell>
                                 </TableRow>
                             ))}
