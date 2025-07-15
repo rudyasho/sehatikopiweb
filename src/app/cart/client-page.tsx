@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { Minus, Plus, Trash2, ArrowLeft, ShoppingCart, Loader2 } from 'lucide-react';
 import { useCart } from '@/context/cart-context';
 import { useState, useEffect } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
