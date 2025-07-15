@@ -1,3 +1,4 @@
+
 // src/lib/products-data.ts
 import { app } from './firebase';
 import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, writeBatch, limit } from "firebase/firestore";
@@ -17,7 +18,7 @@ export interface Product {
   roast: string;
 }
 
-export type ProductFormData = Omit<Product, 'id' | 'slug' | 'rating' | 'reviews' | 'tags'> & { tags: string };
+export type ProductFormData = Omit<Product, 'id' | 'slug' | 'rating' | 'reviews'>;
 
 
 const initialProducts: Omit<Product, 'id' | 'slug'>[] = [
@@ -179,7 +180,7 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
     return product || null;
 }
 
-export async function addProduct(productData: ProductFormData): Promise<Product> {
+export async function addProduct(productData: Omit<ProductFormData, 'tags'> & { tags: string }): Promise<Product> {
   const slug = productData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
   
   const newProductData = {
@@ -202,14 +203,14 @@ export async function addProduct(productData: ProductFormData): Promise<Product>
   return createdProduct;
 }
 
-export async function updateProduct(id: string, productData: ProductFormData): Promise<void> {
+export async function updateProduct(id: string, productData: Omit<ProductFormData, 'tags'> & { tags: string }): Promise<void> {
     const productRef = doc(db, 'products', id);
     const updatedData = {
         ...productData,
         tags: productData.tags.split(',').map(tag => tag.trim()),
         slug: productData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, ''),
     };
-    await updateDoc(productRef, updatedData);
+    await updateDoc(productRef, updatedData as any); // Cast to any to avoid type issues with Firestore
     invalidateCache();
 }
 

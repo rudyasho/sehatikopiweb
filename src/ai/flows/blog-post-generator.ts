@@ -48,7 +48,7 @@ Instructions:
 1.  Generate a compelling title for the post.
 2.  Choose the best category from the available options.
 3.  Write the body of the blog post, at least 3-4 paragraphs long.
-4.  Structure the content using Markdown. Use '##' for subheadings, '*' for list items, blockquotes, etc.
+4.  **Important**: Structure the entire content using **Markdown syntax**. Use '##' for subheadings, '*' for list items, blockquotes, etc. Do not use HTML tags.
 5.  Based on the topic and content, write a short, descriptive, and artistic prompt to generate a feature image for this blog post.
 6.  Ensure the output is a single, valid JSON object matching the defined schema. The 'content' field must be a single string containing all the Markdown.`,
     });

@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth, type User } from '@/context/auth-context';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ProductPopularityChart } from './product-popularity-chart';
-import { Coffee, Star, Calendar, Newspaper, Loader2, PlusCircle, Wand2, Edit, BarChart3, Bot, LayoutGrid, Send, Clipboard, Check, Save, ListOrdered, Trash2, BookText, Image as ImageIcon } from 'lucide-react';
+import { Coffee, Star, Calendar, Newspaper, Loader2, PlusCircle, Wand2, Edit, BarChart3, Bot, LayoutGrid, Send, Clipboard, Check, Save, ListOrdered, Trash2, BookText, Image as ImageIcon, FileText } from 'lucide-react';
 import { addProduct, getProducts, updateProduct, deleteProduct, type Product } from '@/lib/products-data';
 import { RoastDistributionChart } from './roast-distribution-chart';
 import { OriginDistributionChart } from './origin-distribution-chart';
@@ -31,7 +31,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { BlogEditor } from './blog-editor';
-import { marked } from 'marked';
 
 
 const totalEvents = 3; 
@@ -118,22 +117,40 @@ function BlogGenerator({ currentUser, onPostPublished }: { currentUser: User, on
     defaultValues: { topic: '' },
   });
 
-  const blogContentForm = useForm<Omit<BlogPostFormValues, 'image' | 'aiHint'>>({
-      defaultValues: { title: '', category: 'News', content: ''}
+  const blogContentForm = useForm<BlogPostFormValues>({
+      resolver: zodResolver(blogPostFormSchema),
+      defaultValues: { title: '', category: 'News', content: '', image: '', aiHint: ''}
   });
+  
+  useEffect(() => {
+    if (generatedPost) {
+        blogContentForm.reset({
+            title: generatedPost.title,
+            category: generatedPost.category,
+            content: generatedPost.content,
+            image: imageState.url,
+            aiHint: generatedPost.imagePrompt
+        });
+    }
+  }, [generatedPost, blogContentForm]);
+
+  useEffect(() => {
+      blogContentForm.setValue('image', imageState.url);
+  }, [imageState.url, blogContentForm]);
+  
+   useEffect(() => {
+      blogContentForm.setValue('aiHint', imageState.prompt);
+  }, [imageState.prompt, blogContentForm]);
+
 
   async function onTopicSubmit(data: BlogGeneratorFormValues) {
     setIsGeneratingText(true);
     setGeneratedPost(null);
+    setImageState({ url: 'https://placehold.co/800x450.png', prompt: '', isLoading: false });
     try {
       const result = await generateBlogPost(data.topic);
       setGeneratedPost(result);
-      blogContentForm.reset({
-          title: result.title,
-          category: result.category,
-          content: result.content
-      });
-      setImageState(prev => ({ ...prev, prompt: result.imagePrompt, url: 'https://placehold.co/800x450.png' }));
+      setImageState(prev => ({ ...prev, prompt: result.imagePrompt }));
     } catch (error) {
       console.error('Error generating blog post:', error);
       toast({
@@ -160,20 +177,11 @@ function BlogGenerator({ currentUser, onPostPublished }: { currentUser: User, on
     }
   }
 
-  const handlePublish = async (data: Omit<BlogPostFormValues, 'image' | 'aiHint'>) => {
+  const handlePublish = async (data: BlogPostFormValues) => {
     if (!generatedPost) return;
     setIsPublishing(true);
     try {
-      const htmlContent = await marked.parse(data.content);
-      const newPostData = {
-          title: data.title,
-          category: data.category,
-          content: htmlContent,
-          image: imageState.url,
-          aiHint: imageState.prompt.split(' ').slice(0,2).join(' ')
-      };
-      
-      const newPost = await addBlogPost(newPostData, currentUser.name);
+      const newPost = await addBlogPost(data, currentUser.name);
       toast({
           title: "Post Published!",
           description: `"${newPost.title}" is now on the blog.`,
@@ -253,7 +261,7 @@ function BlogGenerator({ currentUser, onPostPublished }: { currentUser: User, on
               <div className="mt-6 animate-in fade-in-50 duration-500 space-y-6">
                 
                 <Card className="bg-secondary/50 p-6 space-y-4">
-                    <h3 className="font-headline text-xl text-primary mb-2">Featured Image</h3>
+                    <h3 className="font-headline text-xl text-primary mb-2 flex items-center gap-2"><ImageIcon /> Featured Image</h3>
                     <Card className="p-4 bg-background/50">
                         <div className="w-full aspect-video relative bg-muted rounded-md flex items-center justify-center overflow-hidden">
                             {imageState.isLoading ? (
@@ -263,35 +271,57 @@ function BlogGenerator({ currentUser, onPostPublished }: { currentUser: User, on
                             )}
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                             <div>
-                                <Label htmlFor="imageUrl">Image URL</Label>
-                                <Input 
-                                    id="imageUrl"
-                                    value={imageState.url}
-                                    onChange={(e) => setImageState(prev => ({ ...prev, url: e.target.value }))}
-                                    placeholder="https://example.com/image.png"
-                                />
-                             </div>
-                             <div>
-                                <Label htmlFor="imagePrompt">AI Image Prompt</Label>
-                                <div className="flex gap-2">
-                                    <Input
-                                        id="imagePrompt"
-                                        value={imageState.prompt}
-                                        onChange={(e) => setImageState(prev => ({...prev, prompt: e.target.value}))}
-                                        placeholder="AI prompt for generating an image"
+                            <FormField
+                                control={blogContentForm.control}
+                                name="image"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Image URL</FormLabel>
+                                    <FormControl>
+                                    <Input 
+                                        {...field}
+                                        onChange={(e) => {
+                                            field.onChange(e);
+                                            setImageState(prev => ({ ...prev, url: e.target.value }))
+                                        }}
+                                        placeholder="https://example.com/image.png"
                                     />
-                                    <Button type="button" variant="outline" onClick={handleGenerateImage} disabled={imageState.isLoading}>
-                                        <Wand2 className="h-4 w-4"/>
-                                    </Button>
-                                </div>
-                             </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={blogContentForm.control}
+                                name="aiHint"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>AI Image Prompt</FormLabel>
+                                    <FormControl>
+                                    <div className="flex gap-2">
+                                        <Input
+                                            {...field}
+                                            onChange={(e) => {
+                                                field.onChange(e);
+                                                setImageState(prev => ({...prev, prompt: e.target.value}))
+                                            }}
+                                            placeholder="AI prompt for generating an image"
+                                        />
+                                        <Button type="button" variant="outline" onClick={handleGenerateImage} disabled={imageState.isLoading}>
+                                            <Wand2 className="h-4 w-4"/>
+                                        </Button>
+                                    </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
                         </div>
                     </Card>
                 </Card>
                   
                 <Card className="bg-secondary/50 p-6 space-y-4">
-                   <h3 className="font-headline text-xl text-primary mb-2">Post Content</h3>
+                   <h3 className="font-headline text-xl text-primary mb-2 flex items-center gap-2"><FileText /> Post Content</h3>
                     <div className="space-y-4">
                         <FormField
                             control={blogContentForm.control}
@@ -330,6 +360,7 @@ function BlogGenerator({ currentUser, onPostPublished }: { currentUser: User, on
                             name="content"
                             render={({ field }) => (
                                 <FormItem>
+                                    <FormLabel>Content (Markdown)</FormLabel>
                                     <FormControl>
                                         <BlogEditor 
                                             value={field.value} 
@@ -656,13 +687,16 @@ const ManageProductsView = ({ onProductsChanged }: { onProductsChanged: () => vo
 const BlogPostForm = ({ post, onFormSubmit, closeDialog }: { post: BlogPost, onFormSubmit: () => void, closeDialog?: () => void }) => {
     const { toast } = useToast();
     const [isSubmitting, setIsSubmitting] = useState(false);
-
+    
+    // The initial content might be HTML. For the editor, we pass it as-is.
+    // The BlogEditor component will render it as a preview.
+    // For new edits, it's treated as Markdown.
     const form = useForm<BlogPostFormValues>({
         resolver: zodResolver(blogPostFormSchema),
         defaultValues: {
             title: post?.title || '',
             category: post?.category || 'Coffee Education',
-            content: post?.content || '',
+            content: post?.content || '', 
             image: post?.image || '',
             aiHint: post?.aiHint || '',
         },
@@ -671,12 +705,7 @@ const BlogPostForm = ({ post, onFormSubmit, closeDialog }: { post: BlogPost, onF
     const onSubmit = async (data: BlogPostFormValues) => {
         setIsSubmitting(true);
         try {
-            const htmlContent = await marked.parse(data.content);
-
-            await updateBlogPost(post.id, {
-                ...data,
-                content: htmlContent,
-            });
+            await updateBlogPost(post.id, data);
             toast({
                 title: "Post Updated!",
                 description: `"${data.title}" has been successfully updated.`,
@@ -745,6 +774,7 @@ const BlogPostForm = ({ post, onFormSubmit, closeDialog }: { post: BlogPost, onF
                         name="content"
                         render={({ field }) => (
                             <FormItem>
+                                <FormLabel>Content</FormLabel>
                                 <FormControl>
                                     <BlogEditor 
                                         value={field.value} 

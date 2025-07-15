@@ -1,3 +1,4 @@
+
 // src/app/blog/[slug]/page.tsx
 'use client';
 
@@ -247,7 +248,7 @@ export default function BlogPostPage() {
         const result = await generateCoffeeStory({
           name: post.title,
           origin: "Indonesia",
-          description: post.content || post.excerpt,
+          description: post.content, // Pass the full content for better story context
         });
         setStoryText(result.storyText);
         setAudioStory(result.audioDataUri);
@@ -299,7 +300,7 @@ export default function BlogPostPage() {
           </div>
 
           <div
-            className="prose lg:prose-xl max-w-none text-foreground/90 prose-headings:text-primary prose-h3:font-headline"
+            className="prose dark:prose-invert lg:prose-xl max-w-none text-foreground/90 prose-headings:text-primary prose-h2:font-headline"
             dangerouslySetInnerHTML={{ __html: post.content }}
           />
           

@@ -1,7 +1,8 @@
 
 // src/lib/blog-data.ts
 import { app } from './firebase';
-import { getFirestore, collection, getDocs, addDoc, query, where, writeBatch, limit, doc, updateDoc, deleteDoc } from "firebase/firestore";
+import { getFirestore, collection, getDocs, addDoc, query, writeBatch, limit, doc, updateDoc, deleteDoc } from "firebase/firestore";
+import { marked } from 'marked';
 
 export type BlogPost = {
     id: string;
@@ -11,15 +12,15 @@ export type BlogPost = {
     image: string; // Can be a URL or a data URI
     aiHint?: string;
     slug: string;
-    content: string; // Full HTML content
+    content: string; // Stored as Markdown, rendered as HTML
     author: string;
     date: string; // ISO 8601 date string
 };
 
-type NewBlogPostData = {
+export type NewBlogPostData = {
     title: string;
     category: "Brewing Tips" | "Storytelling" | "Coffee Education" | "News";
-    content: string;
+    content: string; // Markdown content
     image: string;
     aiHint: string;
 }
@@ -33,28 +34,25 @@ const initialBlogPosts: Omit<BlogPost, 'id' | 'slug'>[] = [
     aiHint: 'v60 coffee',
     author: 'Adi Prasetyo',
     date: '2024-07-28T10:00:00Z',
-    content: `
-      <p class="text-lg mb-4">The V60 is a fantastic brewing device that highlights the clarity and nuances of a coffee. Its conical shape and large single hole allow for great control over the brewing process. Let's dive into how to master it.</p>
-      <h3 class="font-headline text-2xl text-primary mt-8 mb-4">What You'll Need</h3>
-      <ul class="list-disc list-inside mb-4 space-y-2">
-        <li>Hario V60 Dripper</li>
-        <li>V60 Paper Filter</li>
-        <li>Gooseneck Kettle</li>
-        <li>20g of high-quality, medium-fine ground coffee</li>
-        <li>320g of water at 92-96°C (198-205°F)</li>
-        <li>Digital Scale and Timer</li>
-        <li>Your favorite mug</li>
-      </ul>
-      <h3 class="font-headline text-2xl text-primary mt-8 mb-4">Step-by-Step Guide</h3>
-      <ol class="list-decimal list-inside space-y-4">
-        <li><strong>Rinse the Filter:</strong> Place the filter in the V60 and rinse it thoroughly with hot water. This removes any paper taste and preheats the brewer and your mug. Discard the rinse water.</li>
-        <li><strong>Add Coffee:</strong> Add your 20g of ground coffee to the filter and give it a gentle shake to level the bed.</li>
-        <li><strong>The Bloom (0:00 - 0:45):</strong> Start your timer and pour about 60g of water, ensuring all grounds are saturated. Let it 'bloom' for 45 seconds. This releases CO2 from the beans.</li>
-        <li><strong>Main Pour (0:45 - 2:00):</strong> Begin pouring the rest of the water in slow, concentric circles. Avoid pouring on the very edge of the filter. Keep a steady pace until you reach 320g of water.</li>
-        <li><strong>Drawdown (2:00 - 3:00):</strong> Allow all the water to drain through the coffee bed. The entire process should take around 3 minutes. If it's too fast, grind finer. If it's too slow, grind coarser.</li>
-      </ol>
-      <p class="text-lg mt-8">Enjoy your perfectly brewed cup of coffee! The V60 method rewards precision and experimentation, so don't be afraid to tweak your variables to suit your taste.</p>
-    `,
+    content: `The V60 is a fantastic brewing device that highlights the clarity and nuances of a coffee. Its conical shape and large single hole allow for great control over the brewing process. Let's dive into how to master it.
+
+## What You'll Need
+*   Hario V60 Dripper
+*   V60 Paper Filter
+*   Gooseneck Kettle
+*   20g of high-quality, medium-fine ground coffee
+*   320g of water at 92-96°C (198-205°F)
+*   Digital Scale and Timer
+*   Your favorite mug
+
+## Step-by-Step Guide
+1.  **Rinse the Filter:** Place the filter in the V60 and rinse it thoroughly with hot water. This removes any paper taste and preheats the brewer and your mug. Discard the rinse water.
+2.  **Add Coffee:** Add your 20g of ground coffee to the filter and give it a gentle shake to level the bed.
+3.  **The Bloom (0:00 - 0:45):** Start your timer and pour about 60g of water, ensuring all grounds are saturated. Let it 'bloom' for 45 seconds. This releases CO2 from the beans.
+4.  **Main Pour (0:45 - 2:00):** Begin pouring the rest of the water in slow, concentric circles. Avoid pouring on the very edge of the filter. Keep a steady pace until you reach 320g of water.
+5.  **Drawdown (2:00 - 3:00):** Allow all the water to drain through the coffee bed. The entire process should take around 3 minutes. If it's too fast, grind finer. If it's too slow, grind coarser.
+
+Enjoy your perfectly brewed cup of coffee! The V60 method rewards precision and experimentation, so don't be afraid to tweak your variables to suit your taste.`,
   },
   {
     title: 'A Journey to the Gayo Highlands',
@@ -64,12 +62,13 @@ const initialBlogPosts: Omit<BlogPost, 'id' | 'slug'>[] = [
     aiHint: 'coffee plantation landscape',
     author: 'Siti Aminah',
     date: '2024-07-22T10:00:00Z',
-    content: `
-      <p class="text-lg mb-4">The Gayo Highlands in Aceh, Sumatra, are a place of breathtaking beauty and incredible coffee. The region's high altitude, volcanic soil, and unique microclimates create the perfect conditions for growing Arabica beans with a distinct, beloved character.</p>
-      <p class="text-lg mb-4">Our journey took us to meet the families who have been cultivating coffee here for generations. They practice a unique processing method called 'Giling Basah' (wet-hulling), which contributes to the coffee's signature full body and earthy, spicy notes. It's a method born of the region's humid climate, and it's what makes Gayo coffee so special.</p>
-      <blockquote class="border-l-4 border-primary pl-4 italic my-8">"We don't just grow coffee; we grow our family's legacy. Each bean holds a story of the land and our hands." - Pak Iwan, Gayo Farmer</blockquote>
-      <p class="text-lg mb-4">Walking through the plantations, you see coffee growing harmoniously alongside shade trees and other crops. This commitment to biodiversity isn't just good for the environment; it enriches the soil and the final flavor of the coffee. At Sehati Kopi, we are proud to partner with these farmers, ensuring they receive a fair price for their incredible work and bringing their story to your cup.</p>
-    `,
+    content: `The Gayo Highlands in Aceh, Sumatra, are a place of breathtaking beauty and incredible coffee. The region's high altitude, volcanic soil, and unique microclimates create the perfect conditions for growing Arabica beans with a distinct, beloved character.
+
+Our journey took us to meet the families who have been cultivating coffee here for generations. They practice a unique processing method called 'Giling Basah' (wet-hulling), which contributes to the coffee's signature full body and earthy, spicy notes. It's a method born of the region's humid climate, and it's what makes Gayo coffee so special.
+
+> "We don't just grow coffee; we grow our family's legacy. Each bean holds a story of the land and our hands." - Pak Iwan, Gayo Farmer
+
+Walking through the plantations, you see coffee growing harmoniously alongside shade trees and other crops. This commitment to biodiversity isn't just good for the environment; it enriches the soil and the final flavor of the coffee. At Sehati Kopi, we are proud to partner with these farmers, ensuring they receive a fair price for their incredible work and bringing their story to your cup.`,
   },
   {
     title: 'Understanding Coffee Processing Methods',
@@ -79,16 +78,18 @@ const initialBlogPosts: Omit<BlogPost, 'id' | 'slug'>[] = [
     aiHint: 'coffee cherry',
     author: 'Budi Santoso',
     date: '2024-07-15T10:00:00Z',
-    content: `
-      <p class="text-lg mb-4">Have you ever wondered what 'washed', 'natural', or 'honey' means on a bag of coffee? These terms refer to the processing method used to remove the coffee bean from the cherry after it's picked. This step has a massive impact on the coffee's final flavor.</p>
-      <h3 class="font-headline text-2xl text-primary mt-8 mb-4">Washed Process</h3>
-      <p class="mb-4">In this method, all the fruit pulp is washed off the bean before it's dried. This results in a clean, crisp, and bright cup that showcases the coffee's inherent acidity and origin characteristics.</p>
-      <h3 class="font-headline text-2xl text-primary mt-8 mb-4">Natural Process</h3>
-      <p class="mb-4">Here, the entire coffee cherry is dried intact, with the bean inside. This is the oldest method of processing. The bean absorbs sugars from the drying fruit, leading to a heavy-bodied, sweet, and fruity cup, often with wine-like or fermented notes.</p>
-      <h3 class="font-headline text-2xl text-primary mt-8 mb-4">Honey Process</h3>
-      <p class="mb-4">A hybrid of the two, the honey process involves removing the skin of the cherry but leaving some of the sticky mucilage (the 'honey') on the bean during drying. This creates a cup that balances the clarity of a washed coffee with the sweetness and body of a natural.</p>
-      <p class="text-lg mt-8">Each method offers a unique sensory experience. We encourage you to try coffees with different processing methods to discover your personal preference!</p>
-    `,
+    content: `Have you ever wondered what 'washed', 'natural', or 'honey' means on a bag of coffee? These terms refer to the processing method used to remove the coffee bean from the cherry after it's picked. This step has a massive impact on the coffee's final flavor.
+
+## Washed Process
+In this method, all the fruit pulp is washed off the bean before it's dried. This results in a clean, crisp, and bright cup that showcases the coffee's inherent acidity and origin characteristics.
+
+## Natural Process
+Here, the entire coffee cherry is dried intact, with the bean inside. This is the oldest method of processing. The bean absorbs sugars from the drying fruit, leading to a heavy-bodied, sweet, and fruity cup, often with wine-like or fermented notes.
+
+## Honey Process
+A hybrid of the two, the honey process involves removing the skin of the cherry but leaving some of the sticky mucilage (the 'honey') on the bean during drying. This creates a cup that balances the clarity of a washed coffee with the sweetness and body of a natural.
+
+Each method offers a unique sensory experience. We encourage you to try coffees with different processing methods to discover your personal preference!`,
   },
   {
     title: 'Why Single-Origin Coffee Matters',
@@ -98,16 +99,18 @@ const initialBlogPosts: Omit<BlogPost, 'id' | 'slug'>[] = [
     aiHint: 'coffee cup beans',
     author: 'Budi Santoso',
     date: '2024-07-08T10:00:00Z',
-    content: `
-      <p class="text-lg mb-4">The term 'single-origin' simply means that the coffee comes from a single known geographical location. This could be a single farm, a specific cooperative of farmers, or a particular region in a country. But why does this matter?</p>
-      <h3 class="font-headline text-2xl text-primary mt-8 mb-4">Traceability and Story</h3>
-      <p class="mb-4">Single-origin coffee connects you directly to the source. You know where your coffee came from, who grew it, and the conditions it was grown in. This transparency ensures quality and ethical sourcing, allowing us to build meaningful relationships with our farming partners.</p>
-      <h3 class="font-headline text-2xl text-primary mt-8 mb-4">Distinctive Flavor</h3>
-      <p class="mb-4">Unlike blends, which are designed for consistency, single-origin coffees celebrate uniqueness. The specific soil, climate, altitude, and processing methods (the 'terroir') of a region impart a distinct flavor profile that can't be replicated. It's a taste of a specific place and time. You might taste the volcanic soil of Flores or the citrusy notes of Bali Kintamani.</p>
-      <h3 class="font-headline text-2xl text-primary mt-8 mb-4">Seasonal Freshness</h3>
-      <p class="mb-4">Coffee is a seasonal fruit. By focusing on single origins, we can offer you the freshest beans at their peak flavor, following the harvest seasons around Indonesia.</p>
-      <p class="text-lg mt-8">Choosing single-origin is choosing to experience the full spectrum of what coffee can be—an agricultural product with a rich story and a unique sense of place.</p>
-    `,
+    content: `The term 'single-origin' simply means that the coffee comes from a single known geographical location. This could be a single farm, a specific cooperative of farmers, or a particular region in a country. But why does this matter?
+
+## Traceability and Story
+Single-origin coffee connects you directly to the source. You know where your coffee came from, who grew it, and the conditions it was grown in. This transparency ensures quality and ethical sourcing, allowing us to build meaningful relationships with our farming partners.
+
+## Distinctive Flavor
+Unlike blends, which are designed for consistency, single-origin coffees celebrate uniqueness. The specific soil, climate, altitude, and processing methods (the 'terroir') of a region impart a distinct flavor profile that can't be replicated. It's a taste of a specific place and time. You might taste the volcanic soil of Flores or the citrusy notes of Bali Kintamani.
+
+## Seasonal Freshness
+Coffee is a seasonal fruit. By focusing on single origins, we can offer you the freshest beans at their peak flavor, following the harvest seasons around Indonesia.
+
+Choosing single-origin is choosing to experience the full spectrum of what coffee can be—an agricultural product with a rich story and a unique sense of place.`,
   },
 ].map(post => ({
     ...post,
@@ -185,7 +188,16 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
 
 export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
     const posts = await getBlogPosts();
+    // To display the content correctly, we convert Markdown to HTML here.
     const post = posts.find(p => p.slug === slug);
+    if (post) {
+      try {
+        post.content = await marked.parse(post.content);
+      } catch (e) {
+        console.error("Error parsing markdown for slug:", slug, e);
+        post.content = "Error displaying content."
+      }
+    }
     return post || null;
 }
 
@@ -214,13 +226,14 @@ export type BlogPostUpdateData = Partial<Pick<BlogPost, 'title' | 'category' | '
 
 export async function updateBlogPost(id: string, data: BlogPostUpdateData): Promise<void> {
     const postRef = doc(db, 'blog', id);
-    const updateData: Partial<BlogPost> = { ...data };
+    const updateData: { [key: string]: any } = { ...data };
     
     if (data.title) {
         updateData.slug = data.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
     }
     if (data.content) {
-        updateData.excerpt = `${(data.content.replace(/<[^>]+>/g, '').substring(0, 150))}...`;
+        // Generate excerpt from Markdown content
+        updateData.excerpt = `${(data.content.replace(/#+\s/g, '').replace(/[*_>]/g, '').substring(0, 150))}...`;
     }
 
     await updateDoc(postRef, updateData);
