@@ -5,14 +5,17 @@
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, BookAudio, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { getBlogPosts, type BlogPost as BlogPostType } from '../page';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useTransition } from 'react';
 import { products, type Product } from '@/lib/products-data';
 import { Card, CardContent, CardTitle, CardDescription, CardFooter, CardHeader } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { generateCoffeeStory } from '@/ai/flows/story-teller-flow';
+import { useToast } from '@/hooks/use-toast';
 
 const staticContent: Record<string, {author: string, date: string, content: string}> = {
   'v60-guide': {
@@ -170,6 +173,10 @@ const RecommendedProducts = () => {
 export default function BlogPostPage() {
   const params = useParams<{ slug: string }>();
   const [post, setPost] = useState<PostWithContent | null>(null);
+  const { toast } = useToast();
+  const [isStoryLoading, startStoryTransition] = useTransition();
+  const [storyText, setStoryText] = useState<string | null>(null);
+  const [audioStory, setAudioStory] = useState<string | null>(null);
 
   useEffect(() => {
     const allPosts = getBlogPosts();
@@ -192,15 +199,35 @@ export default function BlogPostPage() {
       };
       setPost(fullPost);
     } else {
-        // Handle case where post is not found after client-side hydration
-        // We can't use notFound() directly in useEffect, but we can render a not found state
-        setPost(null); // Or some indicator to show a "not found" message
+        setPost(null); 
     }
   }, [params.slug]);
 
+  const handleGenerateStory = () => {
+    if (!post) return;
+    startStoryTransition(async () => {
+      setStoryText(null);
+      setAudioStory(null);
+      try {
+        const result = await generateCoffeeStory({
+          name: post.title,
+          origin: "Indonesia",
+          description: post.excerpt,
+        });
+        setStoryText(result.storyText);
+        setAudioStory(result.audioDataUri);
+      } catch (error) {
+        console.error("Error generating audio story:", error);
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Could not generate the audio story. Please try again.',
+        });
+      }
+    });
+  };
 
   if (!post) {
-    // This can be a loading state or a "not found" message
     return (
         <div className="bg-secondary/50">
           <div className="container mx-auto px-4 py-8 md:py-12 text-center">
@@ -227,6 +254,52 @@ export default function BlogPostPage() {
               <span>By {post.author}</span> | <span>{post.date}</span>
             </div>
           </header>
+
+           <Alert className="mb-8">
+              <BookAudio className="h-4 w-4" />
+              <AlertTitle className="font-headline">AI Story Teller</AlertTitle>
+              <AlertDescription>
+                Want an audio version of this story? Let our AI narrator read it for you.
+              </AlertDescription>
+                <div className="mt-4">
+                    <Button variant="outline" onClick={handleGenerateStory} disabled={isStoryLoading} className="w-full">
+                    {isStoryLoading ? (
+                        <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Generating Story...
+                        </>
+                    ) : (
+                        "Listen to the Story"
+                    )}
+                    </Button>
+                </div>
+
+                {isStoryLoading && !storyText && (
+                    <div className="text-center p-4 text-sm text-muted-foreground">
+                        <p>The storyteller is clearing their throat... Please wait.</p>
+                    </div>
+                )}
+                
+                {storyText && (
+                  <Card className="mt-4 bg-background/50 animate-in fade-in-50 duration-500">
+                      <CardContent className="p-4 space-y-4">
+                        <p className="text-foreground/90 italic whitespace-pre-wrap">{storyText}</p>
+                        {audioStory ? (
+                          <audio controls autoPlay className="w-full">
+                              <source src={audioStory} type="audio/wav" />
+                              Your browser does not support the audio element.
+                          </audio>
+                        ) : (
+                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                               <Loader2 className="h-4 w-4 animate-spin" />
+                               <span>Preparing audio...</span>
+                           </div>
+                        )}
+                      </CardContent>
+                  </Card>
+                )}
+            </Alert>
+
           <div className="relative aspect-video w-full mb-8 rounded-lg overflow-hidden">
             <Image src={post.image} alt={post.title} layout="fill" objectFit="cover" data-ai-hint={post.aiHint ?? 'coffee blog'} />
           </div>
