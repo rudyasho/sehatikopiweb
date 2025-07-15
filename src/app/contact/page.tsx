@@ -54,17 +54,17 @@ const ContactPage = () => {
               </CardContent>
             </Card>
             
-            <div className="relative h-80 w-full rounded-lg overflow-hidden shadow-xl">
-              <Image 
-                src="https://placehold.co/800x600.png" 
-                alt="Map of Sehati Kopi location" 
-                layout="fill" 
-                objectFit="cover"
-                data-ai-hint="indonesia map"
-              />
-              <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                <p className="text-white bg-black/50 p-2 rounded">Map Placeholder</p>
-              </div>
+            <div className="w-full rounded-lg overflow-hidden shadow-xl">
+               <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3598.7384168657313!2d119.5848007!3d-4.6412198!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dbe373914eb2a7f%3A0xf7fe281c34f57e72!2sSehati%20Kopi%20Indonesia!5e1!3m2!1sid!2sid!4v1752583564301!5m2!1sid!2sid"
+                width="100%"
+                height="450"
+                style={{ border: 0 }}
+                allowFullScreen={true}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Sehati Kopi Location"
+              ></iframe>
             </div>
           </div>
         </div>
