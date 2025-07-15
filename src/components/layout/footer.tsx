@@ -1,3 +1,5 @@
+"use client";
+
 import Link from 'next/link';
 import { Coffee, Instagram, Facebook, Twitter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
