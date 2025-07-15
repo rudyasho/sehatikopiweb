@@ -34,6 +34,7 @@ export async function generateCoffeeStory(input: CoffeeStoryInput): Promise<Coff
 const textGenerationPrompt = ai.definePrompt({
     name: 'storyTellerTextPrompt',
     input: {schema: CoffeeStoryInputSchema},
+    output: {schema: z.string()},
     prompt: `You are a wise, elderly Indonesian storyteller. Create a short, enchanting story (around 2-3 paragraphs) about a coffee named "{{name}}" from "{{origin}}".
 
 Use the following description as inspiration: "{{description}}".
@@ -50,10 +51,10 @@ const storyTellerFlow = ai.defineFlow(
   },
   async (input) => {
     // 1. Generate the story text
-    const {text: storyText} = await ai.generate({
-      prompt: await textGenerationPrompt.render({input: input}),
-      model: 'googleai/gemini-2.5-flash',
-    });
+    const {output: storyText} = await textGenerationPrompt(input);
+    if (!storyText) {
+        throw new Error('Failed to generate story text.');
+    }
     
     // 2. Convert text to speech
     const {media} = await ai.generate({
