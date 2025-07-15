@@ -1,10 +1,13 @@
+// src/app/blog/[slug]/page.tsx
+'use client';
+
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import type { Metadata, ResolvingMetadata } from 'next';
 import { getBlogPosts, type BlogPost as BlogPostType } from '../page';
+import { useEffect, useState } from 'react';
 
 const staticContent: Record<string, {author: string, date: string, content: string}> = {
   'v60-guide': {
@@ -75,71 +78,48 @@ const staticContent: Record<string, {author: string, date: string, content: stri
 
 type PostWithContent = BlogPostType & { content: string, author: string, date: string };
 
-type Props = {
-  params: { slug: string };
-};
-
-export async function generateMetadata(
-  { params }: Props,
-  parent: ResolvingMetadata
-): Promise<Metadata> {
-  const blogPosts = getBlogPosts();
-  const post = blogPosts.find((p) => p.slug === params.slug);
-
-  if (!post) {
-    return {
-      title: 'Post Not Found',
-    };
-  }
-  
-  const previousImages = (await parent).openGraph?.images || [];
-  
-  // This is a temporary solution for the demo. In a real app, this data would come from a database.
-  const postDetails = staticContent[post.slug] ?? { 
-      author: 'Sehati Kopi Team', 
-      date: new Date().toISOString() 
-  };
-
-  return {
-    title: post.title,
-    description: post.excerpt,
-    openGraph: {
-      title: post.title,
-      description: post.excerpt,
-      images: [post.image, ...previousImages],
-      type: 'article',
-      publishedTime: new Date(postDetails.date).toISOString(),
-      authors: [postDetails.author],
-    },
-  };
-}
-
 
 export default function BlogPostPage({ params }: { params: { slug: string } }) {
-  const blogPosts = getBlogPosts();
-  const postData = blogPosts.find((p) => p.slug === params.slug);
+  const [post, setPost] = useState<PostWithContent | null>(null);
 
-  if (!postData) {
-    notFound();
+  useEffect(() => {
+    const allPosts = getBlogPosts();
+    const postData = allPosts.find((p) => p.slug === params.slug);
+
+    if (postData) {
+      const isAiGenerated = !staticContent[postData.slug];
+      
+      const postDetails = isAiGenerated
+        ? {
+            author: 'Sehati Kopi AI',
+            date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+            content: postData.content || `<p>This AI-generated post's content is not available.</p>`,
+          }
+        : staticContent[postData.slug];
+      
+      const fullPost: PostWithContent = {
+        ...postData,
+        ...postDetails,
+      };
+      setPost(fullPost);
+    } else {
+        // Handle case where post is not found after client-side hydration
+        // We can't use notFound() directly in useEffect, but we can render a not found state
+        setPost(null); // Or some indicator to show a "not found" message
+    }
+  }, [params.slug]);
+
+
+  if (!post) {
+    // This can be a loading state or a "not found" message
+    return (
+        <div className="bg-secondary/50">
+          <div className="container mx-auto px-4 py-8 md:py-12 text-center">
+            <p>Loading post...</p>
+          </div>
+        </div>
+    );
   }
-
-  // This logic is messy because we're mixing static and dynamic data without a DB.
-  // In a real app, the API would return the full post object.
-  const isAiGenerated = !staticContent[postData.slug];
-  
-  const postDetails = isAiGenerated
-    ? {
-        author: 'Sehati Kopi AI',
-        date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-        // For AI posts, the excerpt *is* the full content, as stored in our "database".
-        content: postData.content || `<p>This AI-generated post's content is not available in the detail view in this demo.</p>`,
-      }
-    : staticContent[postData.slug];
-  
-  const post: PostWithContent = {
-    ...postData,
-    ...postDetails,
-  };
 
   return (
     <div className="bg-secondary/50">
