@@ -131,7 +131,7 @@ export default function Home() {
           </div>
           <div className="relative h-80 rounded-lg overflow-hidden shadow-xl">
              <Image
-              src="https://placehold.co/600x400.png"
+              src="https://cdn1.img.sputniknews.africa/img/07e8/03/0f/1065560665_0:257:2730:1793_1920x0_80_0_0_c6054183140f04a74f71ff022dc30346.jpg.webp"
               alt="Roasting coffee beans"
               layout="fill"
               objectFit="cover"
