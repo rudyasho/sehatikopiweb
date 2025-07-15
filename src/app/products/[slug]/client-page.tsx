@@ -19,6 +19,14 @@ export function ProductClientPage({ product }: { product: Product }) {
   const { toast } = useToast();
 
   const handleAddToCart = () => {
+    if (quantity < 1) {
+      toast({
+        variant: 'destructive',
+        title: 'Invalid Quantity',
+        description: `Please enter a quantity of 1 or more.`,
+      });
+      return;
+    }
     addToCart(product, quantity);
     setIsAdded(true);
     toast({
@@ -79,21 +87,21 @@ export function ProductClientPage({ product }: { product: Product }) {
             <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                 <span className="font-semibold flex-shrink-0">Quantity:</span>
                 <div className="flex items-center border rounded-md self-start">
-                    <Button variant="ghost" size="icon" className="h-10 w-10" onClick={() => setQuantity(q => Math.max(1, q-1))}><Minus className="h-4 w-4"/></Button>
+                    <Button variant="ghost" size="icon" className="h-10 w-10" onClick={() => setQuantity(q => Math.max(1, q-1))}><Minus/></Button>
                     <span className="px-4 font-bold text-lg">{quantity}</span>
-                    <Button variant="ghost" size="icon" className="h-10 w-10" onClick={() => setQuantity(q => q+1)}><Plus className="h-4 w-4"/></Button>
+                    <Button variant="ghost" size="icon" className="h-10 w-10" onClick={() => setQuantity(q => q+1)}><Plus/></Button>
                 </div>
             </div>
 
             <Button size="lg" className="w-full sm:w-auto" onClick={handleAddToCart} disabled={isAdded}>
               {isAdded ? (
                 <>
-                  <Check className="mr-2 h-4 w-4" />
+                  <Check/>
                   Added!
                 </>
               ) : (
                 <>
-                  <ShoppingCart className="mr-2 h-4 w-4" />
+                  <ShoppingCart/>
                   Add to Cart
                 </>
               )}
