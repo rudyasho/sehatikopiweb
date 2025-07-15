@@ -70,7 +70,7 @@ const BlogPage = () => {
         {latestPost && (
             <Card className="mb-12 shadow-xl grid md:grid-cols-2 overflow-hidden bg-background">
                 <div className="relative min-h-[300px] md:h-full">
-                     <Image src={latestPost.image} alt={latestPost.title} layout="fill" objectFit="cover" data-ai-hint={latestPost.aiHint ?? 'coffee'} />
+                     <Image src={latestPost.image || 'https://placehold.co/600x400.png'} alt={latestPost.title} layout="fill" objectFit="cover" data-ai-hint={latestPost.aiHint ?? 'coffee'} />
                 </div>
                 <div className="p-8 flex flex-col justify-center">
                     <Badge variant="secondary" className="mb-4 w-fit">{latestPost.category}</Badge>
@@ -93,7 +93,7 @@ const BlogPage = () => {
               <CardHeader className="p-0">
                 <Link href={`/blog/${post.slug}`}>
                   <div className="relative h-60 w-full">
-                    <Image src={post.image} alt={post.title} layout="fill" objectFit="cover" data-ai-hint={post.aiHint ?? 'coffee'} />
+                    <Image src={post.image || 'https://placehold.co/600x400.png'} alt={post.title} layout="fill" objectFit="cover" data-ai-hint={post.aiHint ?? 'coffee'} />
                   </div>
                 </Link>
               </CardHeader>
