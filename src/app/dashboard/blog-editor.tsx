@@ -7,8 +7,13 @@ import hljs from 'highlight.js';
 import 'highlight.js/styles/atom-one-dark.css';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Bold, Italic, Link, List, Quote, Code } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Bold, Italic, Link, List, Quote, Code, Image as ImageIcon, Wand2, Loader2 } from 'lucide-react';
+import { generateImage } from '@/ai/flows/image-generator';
+import { useToast } from '@/hooks/use-toast';
+import Image from 'next/image';
 
 // Configure marked to use highlight.js
 marked.setOptions({
@@ -26,8 +31,95 @@ interface BlogEditorProps {
   onChange: (value: string) => void;
 }
 
+const ImageInsertionDialog = ({ onInsertImage }: { onInsertImage: (url: string, alt: string) => void }) => {
+    const [imageUrl, setImageUrl] = useState('');
+    const [imageAlt, setImageAlt] = useState('');
+    const [aiPrompt, setAiPrompt] = useState('');
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [generatedImageUrl, setGeneratedImageUrl] = useState('');
+    const { toast } = useToast();
+
+    const handleGenerateImage = async () => {
+        if (!aiPrompt) return;
+        setIsGenerating(true);
+        setGeneratedImageUrl('');
+        try {
+            const result = await generateImage(aiPrompt);
+            setGeneratedImageUrl(result.imageDataUri);
+        } catch (error) {
+            console.error('Error generating image for blog content:', error);
+            toast({ variant: 'destructive', title: 'Image Generation Failed' });
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+
+    const handleInsert = () => {
+        const finalUrl = generatedImageUrl || imageUrl;
+        if (finalUrl) {
+            onInsertImage(finalUrl, imageAlt || aiPrompt || 'blog image');
+        }
+    };
+    
+    return (
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>Insert Image</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+                <div>
+                    <label className="text-sm font-medium">From URL</label>
+                    <div className="flex gap-2 mt-1">
+                        <Input 
+                            placeholder="Image URL" 
+                            value={imageUrl} 
+                            onChange={(e) => {
+                                setImageUrl(e.target.value);
+                                setGeneratedImageUrl('');
+                            }}
+                        />
+                        <Input 
+                            placeholder="Alt text (description)" 
+                            value={imageAlt}
+                            onChange={(e) => setImageAlt(e.target.value)}
+                        />
+                    </div>
+                </div>
+                 <div className="text-center text-xs text-muted-foreground">OR</div>
+                 <div>
+                    <label className="text-sm font-medium">Generate with AI</label>
+                    <div className="flex gap-2 mt-1">
+                        <Input 
+                            placeholder="Describe the image you want..." 
+                            value={aiPrompt}
+                            onChange={(e) => setAiPrompt(e.target.value)}
+                        />
+                        <Button variant="outline" size="icon" onClick={handleGenerateImage} disabled={isGenerating}>
+                            {isGenerating ? <Loader2 className="animate-spin" /> : <Wand2 />}
+                        </Button>
+                    </div>
+                 </div>
+                 
+                {(isGenerating || generatedImageUrl) && (
+                     <div className="w-full aspect-video relative bg-muted rounded-md flex items-center justify-center overflow-hidden">
+                        {isGenerating ? (
+                                <Loader2 className="h-8 w-8 mx-auto animate-spin text-primary" />
+                        ) : (
+                            <Image src={generatedImageUrl} alt="Generated image preview" layout="fill" objectFit="cover" />
+                        )}
+                    </div>
+                )}
+
+                 <Button onClick={handleInsert} disabled={!(imageUrl || generatedImageUrl)}>Insert Image</Button>
+            </div>
+        </DialogContent>
+    )
+}
+
 const MarkdownToolbar = ({ textareaRef, onContentChange }: { textareaRef: React.RefObject<HTMLTextAreaElement>, onContentChange: (value: string) => void }) => {
-  const insertText = (before: string, after: string = '') => {
+  const [isImageDialogOpen, setImageDialogOpen] = useState(false);
+
+  const insertText = (before: string, after: string = '', block: boolean = false) => {
     const textarea = textareaRef.current;
     if (!textarea) return;
 
@@ -35,23 +127,38 @@ const MarkdownToolbar = ({ textareaRef, onContentChange }: { textareaRef: React.
     const end = textarea.selectionEnd;
     const text = textarea.value;
     const selectedText = text.substring(start, end);
+
+    let prefix = block && start > 0 && text[start - 1] !== '\n' ? '\n\n' : '';
+    let suffix = after;
     
-    const newText = `${text.substring(0, start)}${before}${selectedText}${after}${text.substring(end)}`;
+    const newText = `${text.substring(0, start)}${prefix}${before}${selectedText}${suffix}${text.substring(end)}`;
     
     textarea.value = newText;
     textarea.focus();
-    textarea.selectionStart = start + before.length;
-    textarea.selectionEnd = end + before.length;
+
+    if (selectedText) {
+        textarea.selectionStart = start + prefix.length + before.length;
+        textarea.selectionEnd = end + prefix.length + before.length;
+    } else {
+        textarea.selectionStart = start + prefix.length + before.length;
+        textarea.selectionEnd = start + prefix.length + before.length;
+    }
+
 
     onContentChange(newText);
   };
+  
+  const handleInsertImage = (url: string, alt: string) => {
+    insertText(`![${alt}](${url})`, '', true);
+    setImageDialogOpen(false);
+  }
 
   const toolbarItems = [
     { icon: Bold, tooltip: 'Bold', action: () => insertText('**', '**') },
     { icon: Italic, tooltip: 'Italic', action: () => insertText('*', '*') },
-    { icon: Quote, tooltip: 'Blockquote', action: () => insertText('> ') },
-    { icon: List, tooltip: 'Unordered List', action: () => insertText('\n- ') },
-    { icon: Code, tooltip: 'Code Block', action: () => insertText('\n```\n', '\n```\n') },
+    { icon: Quote, tooltip: 'Blockquote', action: () => insertText('> ', '', true) },
+    { icon: List, tooltip: 'Unordered List', action: () => insertText('\n- ', '', true) },
+    { icon: Code, tooltip: 'Code Block', action: () => insertText('\n```\n', '\n```\n', true) },
     { icon: Link, tooltip: 'Link', action: () => insertText('[', '](https://)') },
   ];
 
@@ -70,6 +177,21 @@ const MarkdownToolbar = ({ textareaRef, onContentChange }: { textareaRef: React.
                 </TooltipContent>
             </Tooltip>
         ))}
+         <Dialog open={isImageDialogOpen} onOpenChange={setImageDialogOpen}>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <DialogTrigger asChild>
+                        <Button type="button" variant="ghost" size="icon" className="h-8 w-8">
+                            <ImageIcon className="h-4 w-4" />
+                        </Button>
+                    </DialogTrigger>
+                </TooltipTrigger>
+                <TooltipContent>
+                    <p>Insert Image</p>
+                </TooltipContent>
+            </Tooltip>
+            <ImageInsertionDialog onInsertImage={handleInsertImage} />
+         </Dialog>
         </div>
     </TooltipProvider>
   );
@@ -81,9 +203,6 @@ export const BlogEditor: React.FC<BlogEditorProps> = ({ value, onChange }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   
   useEffect(() => {
-    // If the initial value is HTML, we won't try to convert it back to Markdown
-    // as it's a complex and unreliable process. We'll show the raw HTML for editing.
-    // New content generated by AI will be in Markdown.
     setContent(value);
   }, [value]);
 
@@ -100,8 +219,6 @@ export const BlogEditor: React.FC<BlogEditorProps> = ({ value, onChange }) => {
 
   const renderedHtml = useMemo(() => {
     try {
-      // The content from AI is Markdown, the content from old posts might be HTML.
-      // `marked.parse` is robust enough to handle both reasonably well for preview.
       return marked.parse(content || '');
     } catch (error) {
       console.error("Markdown parsing error:", error);
