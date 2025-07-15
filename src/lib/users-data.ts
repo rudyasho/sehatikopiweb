@@ -3,6 +3,8 @@
 
 import { admin } from './firebase-admin';
 
+export const SUPER_ADMIN_UID = "n7P0ALYxjSWIYZdybJWB7udBjvP2";
+
 export type AppUser = {
   uid: string;
   email: string | undefined;
@@ -39,6 +41,9 @@ export async function updateUserDisabledStatus(uid: string, disabled: boolean): 
     if (!admin) {
         throw new Error("Firebase Admin SDK is not initialized.");
     }
+    if (uid === SUPER_ADMIN_UID) {
+        throw new Error("Cannot modify the Super Admin account.");
+    }
     await admin.auth().updateUser(uid, { disabled });
 }
 
@@ -50,6 +55,9 @@ export async function updateUserDisabledStatus(uid: string, disabled: boolean): 
 export async function deleteUserAccount(uid: string): Promise<void> {
     if (!admin) {
         throw new Error("Firebase Admin SDK is not initialized.");
+    }
+    if (uid === SUPER_ADMIN_UID) {
+        throw new Error("Cannot delete the Super Admin account.");
     }
     await admin.auth().deleteUser(uid);
 }

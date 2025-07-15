@@ -32,7 +32,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { BlogEditor } from './blog-editor';
 import { addEvent, getEvents, updateEvent, deleteEvent, type Event, type EventFormData } from '@/lib/events-data';
 import { format } from 'date-fns';
-import { listAllUsers, updateUserDisabledStatus, deleteUserAccount, type AppUser } from '@/lib/users-data';
+import { listAllUsers, updateUserDisabledStatus, deleteUserAccount, type AppUser, SUPER_ADMIN_UID } from '@/lib/users-data';
 
 
 const totalEvents = 3; 
@@ -1303,8 +1303,8 @@ const ManageUsersView = ({ currentUser }: { currentUser: User }) => {
         setIsLoading(true);
         try {
             const usersData = await listAllUsers();
-            // Filter out the current admin user from the list
-            setUsers(usersData.filter(user => user.uid !== currentUser.uid));
+            // Filter out the current admin and the super admin from the list
+            setUsers(usersData.filter(user => user.uid !== currentUser.uid && user.uid !== SUPER_ADMIN_UID));
         } catch (error) {
             console.error("Failed to fetch users:", error);
             toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch users.' });
@@ -1322,9 +1322,9 @@ const ManageUsersView = ({ currentUser }: { currentUser: User }) => {
             await updateUserDisabledStatus(uid, !disabled);
             toast({ title: 'User Updated', description: `User has been ${!disabled ? 'disabled' : 'enabled'}.` });
             fetchUsers();
-        } catch (error) {
+        } catch (error: any) {
             console.error("Failed to update user status:", error);
-            toast({ variant: 'destructive', title: 'Error', description: 'Could not update user status.' });
+            toast({ variant: 'destructive', title: 'Error', description: error.message || 'Could not update user status.' });
         }
     };
 
@@ -1333,9 +1333,9 @@ const ManageUsersView = ({ currentUser }: { currentUser: User }) => {
             await deleteUserAccount(uid);
             toast({ title: 'User Deleted', description: 'User account has been permanently deleted.' });
             fetchUsers();
-        } catch (error) {
+        } catch (error: any) {
             console.error("Failed to delete user:", error);
-            toast({ variant: 'destructive', title: 'Error', description: 'Could not delete user account.' });
+            toast({ variant: 'destructive', title: 'Error', description: error.message || 'Could not delete user account.' });
         }
     };
 
