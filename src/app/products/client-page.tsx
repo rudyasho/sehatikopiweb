@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Card,
   CardContent,
@@ -16,7 +16,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useCart } from '@/context/cart-context';
 import { useToast } from '@/hooks/use-toast';
-import { ShoppingCart, Check } from 'lucide-react';
+import { ShoppingCart, Check, ListFilter } from 'lucide-react';
+import { ProductFilters, type Filters } from './product-filters';
 
 export function ProductsClientPage() {
   const { addToCart } = useCart();
@@ -24,6 +25,11 @@ export function ProductsClientPage() {
   const [addedProducts, setAddedProducts] = useState<Record<string, boolean>>(
     {}
   );
+  const [filters, setFilters] = useState<Filters>({
+    roasts: [],
+    origins: [],
+    sort: 'name-asc',
+  });
 
   const handleAddToCart = (product: Product) => {
     addToCart(product, 1);
@@ -36,6 +42,39 @@ export function ProductsClientPage() {
       setAddedProducts((prev) => ({ ...prev, [product.slug]: false }));
     }, 2000);
   };
+  
+  const filteredAndSortedProducts = useMemo(() => {
+    let filtered = [...products];
+
+    // Filter by roast
+    if (filters.roasts.length > 0) {
+      filtered = filtered.filter(p => filters.roasts.includes(p.roast));
+    }
+
+    // Filter by origin
+    if (filters.origins.length > 0) {
+      filtered = filtered.filter(p => filters.origins.includes(p.origin));
+    }
+
+    // Sort
+    switch (filters.sort) {
+      case 'price-asc':
+        filtered.sort((a, b) => a.price - b.price);
+        break;
+      case 'price-desc':
+        filtered.sort((a, b) => b.price - a.price);
+        break;
+      case 'rating-desc':
+        filtered.sort((a, b) => b.rating - a.rating);
+        break;
+      case 'name-asc':
+      default:
+        filtered.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+    }
+
+    return filtered;
+  }, [filters]);
 
   return (
     <div className="bg-secondary/50">
@@ -49,61 +88,75 @@ export function ProductsClientPage() {
             Indonesian beans.
           </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {products.map((product) => (
-            <Card
-              key={product.slug}
-              className="text-left overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 shadow-lg bg-background flex flex-col"
-            >
-              <CardHeader className="p-0">
-                <Link href={`/products/${product.slug}`}>
-                  <div className="relative h-60 w-full">
-                    <Image
-                      src={product.image}
-                      alt={product.name}
-                      layout="fill"
-                      objectFit="cover"
-                      data-ai-hint={product.aiHint}
-                    />
+        
+        <ProductFilters onFilterChange={setFilters} />
+
+        {filteredAndSortedProducts.length > 0 ? (
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredAndSortedProducts.map((product) => (
+              <Card
+                key={product.slug}
+                className="text-left overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 shadow-lg bg-background flex flex-col"
+              >
+                <CardHeader className="p-0">
+                  <Link href={`/products/${product.slug}`}>
+                    <div className="relative h-60 w-full">
+                      <Image
+                        src={product.image}
+                        alt={product.name}
+                        layout="fill"
+                        objectFit="cover"
+                        data-ai-hint={product.aiHint}
+                      />
+                    </div>
+                  </Link>
+                </CardHeader>
+                <CardContent className="p-6 flex-grow">
+                  <CardTitle className="font-headline text-2xl text-primary">
+                    {product.name}
+                  </CardTitle>
+                  <CardDescription className="mt-2 h-16">
+                    {product.description.substring(0, 100)}...
+                  </CardDescription>
+                </CardContent>
+                <CardFooter className="flex flex-col sm:flex-row justify-between items-center p-6 bg-secondary/50 gap-4">
+                  <span className="text-xl font-bold text-primary self-center sm:self-auto">
+                    {new Intl.NumberFormat('id-ID', {
+                      style: 'currency',
+                      currency: 'IDR',
+                      minimumFractionDigits: 0,
+                    }).format(product.price)}
+                  </span>
+                  <div className="flex gap-2 w-full sm:w-auto">
+                    <Button asChild variant="outline" className="flex-1">
+                      <Link href={`/products/${product.slug}`}>View</Link>
+                    </Button>
+                    <Button
+                      onClick={() => handleAddToCart(product)}
+                      disabled={addedProducts[product.slug]}
+                      className="flex-1"
+                    >
+                      {addedProducts[product.slug] ? (
+                        <Check />
+                      ) : (
+                        <ShoppingCart />
+                      )}
+                    </Button>
                   </div>
-                </Link>
-              </CardHeader>
-              <CardContent className="p-6 flex-grow">
-                <CardTitle className="font-headline text-2xl text-primary">
-                  {product.name}
-                </CardTitle>
-                <CardDescription className="mt-2 h-16">
-                  {product.description.substring(0, 100)}...
-                </CardDescription>
-              </CardContent>
-              <CardFooter className="flex flex-col sm:flex-row justify-between items-center p-6 bg-secondary/50 gap-4">
-                <span className="text-xl font-bold text-primary self-center sm:self-auto">
-                  {new Intl.NumberFormat('id-ID', {
-                    style: 'currency',
-                    currency: 'IDR',
-                    minimumFractionDigits: 0,
-                  }).format(product.price)}
-                </span>
-                <div className="flex gap-2 w-full sm:w-auto">
-                  <Button asChild variant="outline" className="flex-1">
-                    <Link href={`/products/${product.slug}`}>View</Link>
-                  </Button>
-                  <Button
-                    onClick={() => handleAddToCart(product)}
-                    disabled={addedProducts[product.slug]}
-                    className="flex-1"
-                  >
-                    {addedProducts[product.slug] ? (
-                      <Check />
-                    ) : (
-                      <ShoppingCart />
-                    )}
-                  </Button>
-                </div>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-16">
+            <ListFilter className="mx-auto h-24 w-24 text-foreground/30" />
+            <h2 className="mt-6 text-2xl font-semibold">No Products Found</h2>
+            <p className="mt-2 text-foreground/60">
+              Try adjusting your filters to find what you're looking for.
+            </p>
+          </div>
+        )}
+
       </div>
     </div>
   );
