@@ -10,20 +10,24 @@ const hasServiceAccount =
 
 if (hasServiceAccount && !admin.apps.length) {
     try {
+        const serviceAccount = {
+            projectId: process.env.FIREBASE_PROJECT_ID,
+            clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+            // Replace escaped newlines in the private key
+            privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+        } as admin.ServiceAccount;
+
         admin.initializeApp({
-            credential: admin.credential.cert({
-                projectId: process.env.FIREBASE_PROJECT_ID,
-                clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-                // Replace escaped newlines in the private key
-                privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-            }),
+            credential: admin.credential.cert(serviceAccount),
         });
+        
         console.log("Firebase Admin SDK initialized successfully.");
-    } catch (error) {
-        console.error("Firebase Admin SDK initialization error:", error);
+
+    } catch (error: any) {
+        console.error("Firebase Admin SDK initialization error:", error.message);
     }
 } else if (!hasServiceAccount) {
-    console.warn("Firebase Admin environment variables are not set. Skipping Admin SDK initialization.");
+    console.warn("Firebase Admin environment variables are not set. Skipping Admin SDK initialization. Server-side Firebase operations will fail.");
 }
 
 const dbAdmin = admin.apps.length ? getFirestore() : null;

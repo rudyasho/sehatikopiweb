@@ -1,6 +1,7 @@
 
 import { initializeApp, getApps, getApp, FirebaseOptions } from "firebase/app";
 
+// Client-side Firebase configuration should ONLY use public environment variables.
 const firebaseConfig: FirebaseOptions = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -11,23 +12,19 @@ const firebaseConfig: FirebaseOptions = {
 };
 
 function initializeFirebaseApp(config: FirebaseOptions) {
-    // Check if all required environment variables are set
-    if (
-        !config.apiKey ||
-        !config.authDomain ||
-        !config.projectId ||
-        !config.storageBucket ||
-        !config.messagingSenderId ||
-        !config.appId
-    ) {
-        console.warn("Firebase config is incomplete. Using fallback or expecting emulator. Some features might not work.");
-        // You might want to throw an error here in a production environment
-        // throw new Error("Firebase configuration is missing in environment variables.");
+    // Check if all necessary keys are present
+    const isConfigured = config && config.apiKey && config.projectId;
+
+    if (!isConfigured) {
+        console.warn("Client-side Firebase config is incomplete or missing. Firebase features like Auth will be disabled. Please check your NEXT_PUBLIC_ environment variables.");
+        return null;
     }
 
+    // Initialize Firebase only if it hasn't been initialized yet
     return !getApps().length ? initializeApp(config) : getApp();
 }
 
+// Initialize the app and export it
 const app = initializeFirebaseApp(firebaseConfig);
 
 export { app };

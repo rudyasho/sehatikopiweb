@@ -1,3 +1,4 @@
+
 // src/context/auth-context.tsx
 'use client';
 
@@ -23,23 +24,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
 
   useEffect(() => {
-    const auth = getAuth(app);
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      setUser(firebaseUser);
+    // Only initialize auth if the app object was created successfully
+    if (app) {
+      const auth = getAuth(app);
+      const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+        setUser(firebaseUser);
+        setLoading(false);
+      });
+      return () => unsubscribe();
+    } else {
+      // If firebase app is not initialized, stop loading and do nothing.
       setLoading(false);
-    });
-
-    return () => unsubscribe();
+    }
   }, []);
 
   const loginWithGoogle = async () => {
+    if (!app) {
+        console.error("Firebase not initialized, cannot log in.");
+        return;
+    }
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
     setLoading(true);
     try {
       await signInWithPopup(auth, provider);
       // onAuthStateChanged will handle setting the user
-      // Redirect to dashboard if the user is the admin
       const currentUser = auth.currentUser;
       if (currentUser && currentUser.email === 'dev@sidepe.com') {
         router.push('/dashboard');
@@ -54,6 +63,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = async () => {
+    if (!app) {
+        console.error("Firebase not initialized, cannot log out.");
+        return;
+    }
     const auth = getAuth(app);
     await signOut(auth);
     setUser(null);
