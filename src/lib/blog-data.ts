@@ -1,6 +1,6 @@
 // src/lib/blog-data.ts
 import { app } from './firebase';
-import { getFirestore, collection, getDocs, addDoc, query, where, writeBatch, limit } from "firebase/firestore";
+import { getFirestore, collection, getDocs, addDoc, query, where, writeBatch, limit, doc } from "firebase/firestore";
 import type { GenerateBlogPostOutput } from '@/ai/flows/blog-post-generator';
 
 export type BlogPost = {
