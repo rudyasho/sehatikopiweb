@@ -302,14 +302,25 @@ export default function BlogPostPage() {
             <ShareButtons title={post.title} slug={post.slug} />
           </header>
 
-            {user && (
-              <Alert className="mb-8">
+          <div className="relative aspect-video w-full mb-8 rounded-lg overflow-hidden">
+            <Image src={post.image} alt={post.title} layout="fill" objectFit="cover" data-ai-hint={post.aiHint ?? 'coffee blog'} />
+          </div>
+
+          <div
+            className="prose lg:prose-xl max-w-none text-foreground/90 prose-headings:text-primary prose-h3:font-headline"
+            dangerouslySetInnerHTML={{ __html: post.content }}
+          />
+          
+          {user && (
+            <div className="mt-12">
+              <Separator />
+              <Alert className="mt-12">
                   <BookAudio className="h-4 w-4" />
                   <AlertTitle className="font-headline">AI Story Teller</AlertTitle>
                   {!storyGenerated && !isStoryLoading && (
                     <>
                     <AlertDescription>
-                      Logged in users can listen to an AI-narrated version of this story.
+                      Listen to an AI-narrated version of this story.
                     </AlertDescription>
                     <div className="mt-4">
                         <Button variant="outline" onClick={handleGenerateStory} disabled={isStoryLoading}>
@@ -338,17 +349,11 @@ export default function BlogPostPage() {
                       </Card>
                   )}
                 </Alert>
-            )}
+            </div>
+          )}
 
-          <div className="relative aspect-video w-full mb-8 rounded-lg overflow-hidden">
-            <Image src={post.image} alt={post.title} layout="fill" objectFit="cover" data-ai-hint={post.aiHint ?? 'coffee blog'} />
-          </div>
-          <div
-            className="prose lg:prose-xl max-w-none text-foreground/90 prose-headings:text-primary prose-h3:font-headline"
-            dangerouslySetInnerHTML={{ __html: post.content }}
-          />
-           <RecommendedBlogs currentSlug={post.slug} />
-           <RecommendedProducts />
+          <RecommendedBlogs currentSlug={post.slug} />
+          <RecommendedProducts />
         </article>
       </div>
     </div>
