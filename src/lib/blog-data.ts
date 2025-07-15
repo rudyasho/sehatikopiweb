@@ -1,7 +1,7 @@
+
 // src/lib/blog-data.ts
 import { app } from './firebase';
 import { getFirestore, collection, getDocs, addDoc, query, where, writeBatch, limit, doc, updateDoc, deleteDoc } from "firebase/firestore";
-import type { GenerateBlogPostOutput } from '@/ai/flows/blog-post-generator';
 
 export type BlogPost = {
     id: string;
@@ -16,12 +16,20 @@ export type BlogPost = {
     date: string; // ISO 8601 date string
 };
 
+type NewBlogPostData = {
+    title: string;
+    category: "Brewing Tips" | "Storytelling" | "Coffee Education" | "News";
+    content: string;
+    image: string;
+    aiHint: string;
+}
+
 const initialBlogPosts: Omit<BlogPost, 'id' | 'slug'>[] = [
   {
     title: 'The Ultimate Guide to V60 Brewing',
     category: 'Brewing Tips',
     excerpt: 'Master the art of the V60 pour-over with our step-by-step guide. From grind size to pouring technique, we cover everything you need to know for the perfect cup.',
-    image: 'https://placehold.co/600x400.png',
+    image: 'https://images.unsplash.com/photo-1593963654879-24b533a31936?q=80&w=1287&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     aiHint: 'v60 coffee',
     author: 'Adi Prasetyo',
     date: '2024-07-28T10:00:00Z',
@@ -52,7 +60,7 @@ const initialBlogPosts: Omit<BlogPost, 'id' | 'slug'>[] = [
     title: 'A Journey to the Gayo Highlands',
     category: 'Storytelling',
     excerpt: 'Travel with us to the highlands of Aceh, the home of our Gayo coffee. Discover the stories of the farmers and the unique terroir that gives this coffee its distinct flavor.',
-    image: 'https://placehold.co/600x400.png',
+    image: 'https://images.unsplash.com/photo-1599819149454-98445100e495?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     aiHint: 'coffee plantation landscape',
     author: 'Siti Aminah',
     date: '2024-07-22T10:00:00Z',
@@ -67,7 +75,7 @@ const initialBlogPosts: Omit<BlogPost, 'id' | 'slug'>[] = [
     title: 'Understanding Coffee Processing Methods',
     category: 'Coffee Education',
     excerpt: 'Washed, natural, or honey-processed? Learn how different processing methods impact the final taste of your coffee and find your preferred style.',
-    image: 'https://placehold.co/600x400.png',
+    image: 'https://images.unsplash.com/photo-1621282276039-3a13a0342637?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     aiHint: 'coffee cherry',
     author: 'Budi Santoso',
     date: '2024-07-15T10:00:00Z',
@@ -86,7 +94,7 @@ const initialBlogPosts: Omit<BlogPost, 'id' | 'slug'>[] = [
     title: 'Why Single-Origin Coffee Matters',
     category: 'Coffee Education',
     excerpt: 'Explore the benefits of single-origin coffee, from its traceable roots to its unique and complex flavor profiles that tell the story of its origin.',
-    image: 'https://placehold.co/600x400.png',
+    image: 'https://plus.unsplash.com/premium_photo-1673984542253-96e3d7756e15?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     aiHint: 'coffee cup beans',
     author: 'Budi Santoso',
     date: '2024-07-08T10:00:00Z',
@@ -187,17 +195,13 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
     return { id: doc.id, ...doc.data() } as BlogPost;
 }
 
-export async function addBlogPost(post: GenerateBlogPostOutput, authorName: string): Promise<BlogPost> {
+export async function addBlogPost(post: NewBlogPostData, authorName: string): Promise<BlogPost> {
     const slug = post.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
     
     const newPostData = {
-        title: post.title,
-        category: post.category,
+        ...post,
         excerpt: `${(post.content.replace(/<[^>]+>/g, '').substring(0, 150))}...`,
-        image: post.imageDataUri,
-        aiHint: post.title.toLowerCase().split(' ').slice(0,2).join(' '),
         slug: slug,
-        content: post.content,
         author: authorName,
         date: new Date().toISOString(),
     };
@@ -212,17 +216,17 @@ export async function addBlogPost(post: GenerateBlogPostOutput, authorName: stri
     } as BlogPost;
 }
 
-type BlogPostUpdateData = Partial<Pick<BlogPost, 'title' | 'category' | 'content'>>;
+type BlogPostUpdateData = Partial<Pick<BlogPost, 'title' | 'category' | 'content' | 'image' | 'aiHint'>>;
 
 export async function updateBlogPost(id: string, data: BlogPostUpdateData): Promise<void> {
     const postRef = doc(db, 'blog', id);
-    const updateData: BlogPostUpdateData = { ...data };
+    const updateData: Partial<BlogPost> = { ...data };
     
     if (data.title) {
-        (updateData as Partial<BlogPost>).slug = data.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+        updateData.slug = data.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
     }
     if (data.content) {
-        (updateData as Partial<BlogPost>).excerpt = `${(data.content.replace(/<[^>]+>/g, '').substring(0, 150))}...`;
+        updateData.excerpt = `${(data.content.replace(/<[^>]+>/g, '').substring(0, 150))}...`;
     }
 
     await updateDoc(postRef, updateData);

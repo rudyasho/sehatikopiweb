@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth, type User } from '@/context/auth-context';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ProductPopularityChart } from './product-popularity-chart';
-import { Coffee, Star, Calendar, Newspaper, Loader2, PlusCircle, Wand2, Edit, BarChart3, Bot, LayoutGrid, Send, Clipboard, Check, Save, ListOrdered, Trash2, BookText } from 'lucide-react';
+import { Coffee, Star, Calendar, Newspaper, Loader2, PlusCircle, Wand2, Edit, BarChart3, Bot, LayoutGrid, Send, Clipboard, Check, Save, ListOrdered, Trash2, BookText, Image as ImageIcon } from 'lucide-react';
 import { addProduct, getProducts, updateProduct, deleteProduct, type Product } from '@/lib/products-data';
 import { RoastDistributionChart } from './roast-distribution-chart';
 import { OriginDistributionChart } from './origin-distribution-chart';
@@ -24,6 +24,7 @@ import Image from 'next/image';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { addBlogPost, getBlogPosts, updateBlogPost, deleteBlogPost, type BlogPost } from '@/lib/blog-data';
 import { generateBlogPost, type GenerateBlogPostOutput } from '@/ai/flows/blog-post-generator';
+import { generateImage } from '@/ai/flows/image-generator';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -61,6 +62,8 @@ const blogPostFormSchema = z.object({
     title: z.string().min(5, "Title is required."),
     category: z.enum(['Brewing Tips', 'Storytelling', 'Coffee Education', 'News']),
     content: z.string().min(50, "Content needs to be at least 50 characters."),
+    image: z.string().url("Please provide a valid image URL."),
+    aiHint: z.string().min(2, "AI hint is required for image search."),
 });
 
 type BlogPostFormValues = z.infer<typeof blogPostFormSchema>;
@@ -97,28 +100,43 @@ const MetricCard = ({ title, value, icon: Icon, isLoading }: { title: string, va
 
 function BlogGenerator({ currentUser }: { currentUser: User }) {
   const [generatedPost, setGeneratedPost] = useState<GeneratedPost | null>(null);
-  const [editedPost, setEditedPost] = useState<{title: string, content: string} | null>(null);
+  const [imageState, setImageState] = useState({
+      url: 'https://placehold.co/800x450.png', // Default placeholder
+      prompt: '',
+      isLoading: false,
+  });
+
   const [isEditing, setIsEditing] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isGeneratingText, setIsGeneratingText] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [hasCopied, setHasCopied] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
 
-  const form = useForm<BlogGeneratorFormValues>({
+  const blogTopicForm = useForm<BlogGeneratorFormValues>({
     resolver: zodResolver(blogGeneratorSchema),
     defaultValues: { topic: '' },
   });
 
-  async function onSubmit(data: BlogGeneratorFormValues) {
-    setIsLoading(true);
+  const blogContentForm = useForm<Omit<BlogPostFormValues, 'image' | 'aiHint'>>({
+      defaultValues: { title: '', category: 'News', content: ''}
+  });
+
+  async function onTopicSubmit(data: BlogGeneratorFormValues) {
+    setIsGeneratingText(true);
     setGeneratedPost(null);
     setIsEditing(false);
-    setEditedPost(null);
     try {
       const result = await generateBlogPost(data.topic);
       setGeneratedPost(result);
-      setEditedPost({ title: result.title, content: result.content });
+      // Populate the content form with generated data
+      blogContentForm.reset({
+          title: result.title,
+          category: result.category,
+          content: result.content
+      });
+      // Populate the image management state
+      setImageState(prev => ({ ...prev, prompt: result.imagePrompt, url: 'https://placehold.co/800x450.png' }));
     } catch (error) {
       console.error('Error generating blog post:', error);
       toast({
@@ -127,28 +145,37 @@ function BlogGenerator({ currentUser }: { currentUser: User }) {
         description: 'Could not generate the blog post. Please try again.',
       });
     } finally {
-      setIsLoading(false);
+      setIsGeneratingText(false);
     }
   }
 
-  const handleCopyToClipboard = () => {
-    if (!generatedPost?.content) return;
-    navigator.clipboard.writeText(isEditing ? editedPost!.content : generatedPost.content);
-    setHasCopied(true);
-    toast({ title: 'Content Copied!' });
-    setTimeout(() => setHasCopied(false), 2000);
-  };
+  const handleGenerateImage = async () => {
+    if (!imageState.prompt) return;
+    setImageState(prev => ({...prev, isLoading: true}));
+    try {
+        const { imageDataUri } = await generateImage(imageState.prompt);
+        setImageState(prev => ({...prev, url: imageDataUri}));
+    } catch (error) {
+        console.error('Error generating image:', error);
+        toast({ variant: 'destructive', title: 'Image Generation Failed', description: 'Could not create image. Please try again.' });
+    } finally {
+        setImageState(prev => ({...prev, isLoading: false}));
+    }
+  }
 
-  const handlePublish = async () => {
+  const handlePublish = async (data: Omit<BlogPostFormValues, 'image' | 'aiHint'>) => {
     if (!generatedPost) return;
     setIsPublishing(true);
     try {
-      const postToPublish = {
-        ...generatedPost,
-        title: editedPost?.title || generatedPost.title,
-        content: editedPost?.content || generatedPost.content,
+      const newPostData = {
+          title: data.title,
+          category: data.category,
+          content: data.content,
+          image: imageState.url,
+          aiHint: imageState.prompt.split(' ').slice(0,2).join(' ')
       };
-      const newPost = await addBlogPost(postToPublish, currentUser.name);
+      
+      const newPost = await addBlogPost(newPostData, currentUser.name);
       toast({
           title: "Post Published!",
           description: `"${newPost.title}" is now on the blog.`,
@@ -159,9 +186,9 @@ function BlogGenerator({ currentUser }: { currentUser: User }) {
           )
       });
       setGeneratedPost(null);
-      setEditedPost(null);
-      setIsEditing(false);
-      form.reset();
+      blogTopicForm.reset();
+      blogContentForm.reset();
+      setImageState({ url: 'https://placehold.co/800x450.png', prompt: '', isLoading: false });
     } catch (error) {
         console.error("Error publishing post:", error);
         toast({
@@ -174,12 +201,6 @@ function BlogGenerator({ currentUser }: { currentUser: User }) {
     }
   };
 
-  const handleSaveChanges = () => {
-    if (!editedPost) return;
-    setGeneratedPost(prev => prev ? ({...prev, title: editedPost.title, content: editedPost.content}) : null);
-    setIsEditing(false);
-    toast({ title: 'Changes saved locally.' });
-  }
 
   return (
     <Card className="shadow-lg bg-background">
@@ -188,14 +209,14 @@ function BlogGenerator({ currentUser }: { currentUser: User }) {
           <Wand2 /> AI Blog Post Generator
         </CardTitle>
         <CardDescription>
-          Enter a topic and let our AI create a draft and a feature image for you.
+          Enter a topic and let our AI create a draft for you. Then manage the content and image before publishing.
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <Form {...blogTopicForm}>
+          <form onSubmit={blogTopicForm.handleSubmit(onTopicSubmit)} className="space-y-4">
             <FormField
-              control={form.control}
+              control={blogTopicForm.control}
               name="topic"
               render={({ field }) => (
                 <FormItem>
@@ -207,77 +228,128 @@ function BlogGenerator({ currentUser }: { currentUser: User }) {
                 </FormItem>
               )}
             />
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? (
+            <Button type="submit" disabled={isGeneratingText}>
+              {isGeneratingText ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Generating...
                 </>
               ) : (
-                'Generate Post'
+                'Generate Post Content'
               )}
             </Button>
           </form>
         </Form>
 
-        {isLoading && (
+        {isGeneratingText && (
           <div className="text-center p-8">
             <Loader2 className="h-8 w-8 mx-auto animate-spin text-primary" />
-            <p className="mt-2 text-muted-foreground">The AI is writing and drawing, please wait...</p>
+            <p className="mt-2 text-muted-foreground">The AI is writing, please wait...</p>
           </div>
         )}
 
-        {generatedPost && editedPost && (
-          <Card className="mt-6 animate-in fade-in-50 duration-500 bg-secondary/50">
-            <CardHeader>
-              <div className="relative aspect-video w-full rounded-md overflow-hidden mb-4">
-                <Image src={generatedPost.imageDataUri} alt={generatedPost.title} layout="fill" objectFit="cover" />
-              </div>
-              <Badge variant="secondary" className="w-fit mb-2">{generatedPost.category}</Badge>
-              {isEditing ? (
-                  <Input 
-                      value={editedPost.title}
-                      onChange={(e) => setEditedPost(prev => ({...prev!, title: e.target.value}))}
-                      className="text-3xl font-headline font-bold h-auto p-2"
-                  />
-              ) : (
-                <CardTitle className="font-headline text-3xl text-primary">{generatedPost.title}</CardTitle>
-              )}
-            </CardHeader>
-            <CardContent>
-              {isEditing ? (
-                  <Textarea
-                     value={editedPost.content}
-                     onChange={(e) => setEditedPost(prev => ({...prev!, content: e.target.value}))}
-                     className="min-h-[300px] text-base"
-                  />
-              ) : (
-                <div className="prose lg:prose-xl max-w-none text-foreground/90 prose-headings:text-primary prose-h3:font-headline"
-                     dangerouslySetInnerHTML={{ __html: generatedPost.content }} />
-              )}
-              <div className="flex flex-wrap gap-2 mt-6">
-                {isEditing ? (
-                  <Button onClick={handleSaveChanges}>
-                    <Save className="mr-2"/>
-                    Save Changes
-                  </Button>
-                ) : (
-                  <Button onClick={() => setIsEditing(true)} variant="outline">
-                    <Edit className="mr-2"/>
-                    Edit
-                  </Button>
-                )}
-                <Button onClick={handleCopyToClipboard} variant="outline">
-                  {hasCopied ? <Check className="mr-2"/> : <Clipboard className="mr-2"/>}
-                  Copy HTML
-                </Button>
-                 <Button onClick={handlePublish} disabled={isEditing || isPublishing}>
+        {generatedPost && (
+          <Form {...blogContentForm}>
+            <form onSubmit={blogContentForm.handleSubmit(handlePublish)}>
+              <Card className="mt-6 animate-in fade-in-50 duration-500 bg-secondary/50 p-6 space-y-6">
+                
+                {/* Image Management */}
+                <div>
+                    <h3 className="font-headline text-xl text-primary mb-2">Featured Image</h3>
+                    <Card className="p-4 bg-background/50">
+                        <div className="w-full aspect-video relative bg-muted rounded-md flex items-center justify-center overflow-hidden">
+                            {imageState.isLoading ? (
+                                 <Loader2 className="h-8 w-8 mx-auto animate-spin text-primary" />
+                            ) : (
+                                <Image src={imageState.url} alt="Blog post featured image" layout="fill" objectFit="cover" />
+                            )}
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                             <div>
+                                <Label htmlFor="imageUrl">Image URL</Label>
+                                <Input 
+                                    id="imageUrl"
+                                    value={imageState.url}
+                                    onChange={(e) => setImageState(prev => ({ ...prev, url: e.target.value }))}
+                                    placeholder="https://example.com/image.png"
+                                />
+                             </div>
+                             <div>
+                                <Label htmlFor="imagePrompt">AI Image Prompt</Label>
+                                <div className="flex gap-2">
+                                    <Input
+                                        id="imagePrompt"
+                                        value={imageState.prompt}
+                                        onChange={(e) => setImageState(prev => ({...prev, prompt: e.target.value}))}
+                                        placeholder="AI prompt for generating an image"
+                                    />
+                                    <Button type="button" variant="outline" onClick={handleGenerateImage} disabled={imageState.isLoading}>
+                                        <Wand2 className="h-4 w-4"/>
+                                    </Button>
+                                </div>
+                             </div>
+                        </div>
+                    </Card>
+                </div>
+                  
+                {/* Content Editing */}
+                <div>
+                   <h3 className="font-headline text-xl text-primary mb-2">Post Content</h3>
+                    <div className="space-y-4">
+                        <FormField
+                            control={blogContentForm.control}
+                            name="title"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Title</FormLabel>
+                                    <FormControl><Input {...field} className="text-xl font-bold h-11"/></FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={blogContentForm.control}
+                            name="category"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Category</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="Brewing Tips">Brewing Tips</SelectItem>
+                                        <SelectItem value="Storytelling">Storytelling</SelectItem>
+                                        <SelectItem value="Coffee Education">Coffee Education</SelectItem>
+                                        <SelectItem value="News">News</SelectItem>
+                                    </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={blogContentForm.control}
+                            name="content"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Content (HTML)</FormLabel>
+                                    <FormControl><Textarea {...field} rows={12} /></FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+                </div>
+
+                <Button type="submit" disabled={isPublishing} size="lg">
                    {isPublishing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Send className="mr-2"/>}
                    {isPublishing ? 'Publishing...' : 'Publish to Blog'}
                 </Button>
-              </div>
-            </CardContent>
-          </Card>
+
+              </Card>
+            </form>
+          </Form>
         )}
       </CardContent>
     </Card>
@@ -584,6 +656,8 @@ const BlogPostForm = ({ post, onFormSubmit, closeDialog }: { post: BlogPost, onF
             title: post?.title || '',
             category: post?.category || 'Coffee Education',
             content: post?.content || '',
+            image: post?.image || '',
+            aiHint: post?.aiHint || '',
         },
     });
 
@@ -636,6 +710,21 @@ const BlogPostForm = ({ post, onFormSubmit, closeDialog }: { post: BlogPost, onF
                                 <SelectItem value="News">News</SelectItem>
                                 </SelectContent>
                             </Select>
+                            <FormMessage />
+                        </FormItem>
+                    )} />
+                    <FormField control={form.control} name="image" render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Image URL</FormLabel>
+                            <FormControl><Input type="url" placeholder="https://example.com/image.png" {...field} /></FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )} />
+                    <FormField control={form.control} name="aiHint" render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>AI Hint</FormLabel>
+                            <FormControl><Input placeholder="e.g., coffee cup" {...field} /></FormControl>
+                             <CardDescription className="text-xs pt-1">Keywords for Unsplash search.</CardDescription>
                             <FormMessage />
                         </FormItem>
                     )} />
