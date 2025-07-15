@@ -376,7 +376,7 @@ const AnalyticsOverview = () => (
                         <BarChart3 /> Business Analytics
                     </CardTitle>
                      <CardDescription>An overview of product performance and distribution.</CardDescription>
-                </Header>
+                </CardHeader>
                 <CardContent className="space-y-8">
                      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
                         <div>
