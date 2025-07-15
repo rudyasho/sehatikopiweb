@@ -12,6 +12,7 @@ import type { Product } from '@/lib/products-data';
 import { useToast } from '@/hooks/use-toast';
 import { generateCoffeeStory } from '@/ai/flows/story-teller-flow';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Card, CardContent } from '@/components/ui/card';
 
 
 export function ProductClientPage({ product }: { product: Product }) {
@@ -20,6 +21,7 @@ export function ProductClientPage({ product }: { product: Product }) {
   const [isAdded, setIsAdded] = useState(false);
   const { toast } = useToast();
   const [isStoryLoading, startStoryTransition] = useTransition();
+  const [storyText, setStoryText] = useState<string | null>(null);
   const [audioStory, setAudioStory] = useState<string | null>(null);
 
   const handleAddToCart = () => {
@@ -34,12 +36,15 @@ export function ProductClientPage({ product }: { product: Product }) {
   
   const handleGenerateStory = () => {
     startStoryTransition(async () => {
+      setStoryText(null);
+      setAudioStory(null);
       try {
         const result = await generateCoffeeStory({
           name: product.name,
           origin: product.origin,
           description: product.description,
         });
+        setStoryText(result.storyText);
         setAudioStory(result.audioDataUri);
       } catch (error) {
         console.error("Error generating audio story:", error);
@@ -125,25 +130,46 @@ export function ProductClientPage({ product }: { product: Product }) {
              <Alert>
               <BookAudio className="h-4 w-4" />
               <AlertTitle className="font-headline">AI Story Teller</AlertTitle>
-              <AlertDescription className="flex flex-col gap-4 mt-2">
+              <AlertDescription>
                 Want to hear the story of this coffee? Let our AI narrator tell you.
-                 <Button variant="outline" onClick={handleGenerateStory} disabled={isStoryLoading}>
-                  {isStoryLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Generating Story...
-                    </>
-                  ) : (
-                    "Listen to the Story"
-                  )}
-                </Button>
-                {audioStory && !isStoryLoading && (
-                  <audio controls autoPlay className="w-full mt-2">
-                    <source src={audioStory} type="audio/wav" />
-                    Your browser does not support the audio element.
-                  </audio>
-                )}
               </AlertDescription>
+                <div className="mt-4">
+                    <Button variant="outline" onClick={handleGenerateStory} disabled={isStoryLoading} className="w-full">
+                    {isStoryLoading ? (
+                        <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Generating Story...
+                        </>
+                    ) : (
+                        "Listen to the Story"
+                    )}
+                    </Button>
+                </div>
+
+                {isStoryLoading && !storyText && (
+                    <div className="text-center p-4 text-sm text-muted-foreground">
+                        <p>The storyteller is clearing their throat... Please wait.</p>
+                    </div>
+                )}
+                
+                {storyText && (
+                  <Card className="mt-4 bg-background/50 animate-in fade-in-50 duration-500">
+                      <CardContent className="p-4 space-y-4">
+                        <p className="text-foreground/90 italic whitespace-pre-wrap">{storyText}</p>
+                        {audioStory ? (
+                          <audio controls autoPlay className="w-full">
+                              <source src={audioStory} type="audio/wav" />
+                              Your browser does not support the audio element.
+                          </audio>
+                        ) : (
+                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                               <Loader2 className="h-4 w-4 animate-spin" />
+                               <span>Preparing audio...</span>
+                           </div>
+                        )}
+                      </CardContent>
+                  </Card>
+                )}
             </Alert>
           </div>
         </div>

@@ -21,6 +21,7 @@ const CoffeeStoryInputSchema = z.object({
 export type CoffeeStoryInput = z.infer<typeof CoffeeStoryInputSchema>;
 
 const CoffeeStoryOutputSchema = z.object({
+  storyText: z.string().describe('The generated story in text format.'),
   audioDataUri: z.string().describe("The generated audio story as a data URI in WAV format. Expected format: 'data:audio/wav;base64,<encoded_data>'."),
 });
 export type CoffeeStoryOutput = z.infer<typeof CoffeeStoryOutputSchema>;
@@ -81,6 +82,7 @@ const storyTellerFlow = ai.defineFlow(
     const wavData = await toWav(audioBuffer);
     
     return {
+        storyText: storyText,
         audioDataUri: 'data:audio/wav;base64,' + wavData,
     };
   }
