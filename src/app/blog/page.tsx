@@ -7,8 +7,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useAuth } from '@/context/auth-context';
-import { useToast } from '@/hooks/use-toast';
+import type { GeneratedPost } from '@/app/dashboard/page';
 
 const initialBlogPosts = [
   {
@@ -45,10 +44,63 @@ const initialBlogPosts = [
   },
 ];
 
-type BlogPost = typeof initialBlogPosts[0];
+export type BlogPost = {
+    title: string;
+    category: string;
+    excerpt: string;
+    image: string; // Can be a URL or a data URI
+    aiHint?: string;
+    slug: string;
+};
+
+// Singleton pattern to hold posts in memory
+class PostStore {
+  private static instance: PostStore;
+  private posts: BlogPost[];
+
+  private constructor() {
+    this.posts = initialBlogPosts;
+  }
+
+  public static getInstance(): PostStore {
+    if (!PostStore.instance) {
+      PostStore.instance = new PostStore();
+    }
+    return PostStore.instance;
+  }
+
+  public getPosts(): BlogPost[] {
+    return this.posts;
+  }
+
+  public addPost(post: GeneratedPost): BlogPost {
+    const newPost: BlogPost = {
+      title: post.title,
+      category: post.category,
+      // Create a simple excerpt from the HTML content
+      excerpt: `${(post.content.replace(/<[^>]+>/g, '').substring(0, 150))}...`,
+      image: post.imageDataUri,
+      slug: post.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, ''),
+    };
+    this.posts.unshift(newPost); // Add to the beginning
+    return newPost;
+  }
+}
+
+// Function to add a post from another component
+export const addBlogPost = (post: GeneratedPost) => {
+  return PostStore.getInstance().addPost(post);
+}
+
+// Function to get all posts (for blog detail page)
+export const getBlogPosts = () => {
+    return PostStore.getInstance().getPosts();
+}
+
 
 const BlogPage = () => {
-  const [blogPosts, setBlogPosts] = useState<BlogPost[]>(initialBlogPosts);
+  // We use state to trigger re-renders when the singleton's data changes.
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>(PostStore.getInstance().getPosts());
 
   return (
     <div className="bg-secondary/50">
@@ -64,7 +116,7 @@ const BlogPage = () => {
               <CardHeader className="p-0">
                 <Link href={`/blog/${post.slug}`}>
                   <div className="relative h-60 w-full">
-                    <Image src={post.image} alt={post.title} layout="fill" objectFit="cover" data-ai-hint={post.aiHint} />
+                    <Image src={post.image} alt={post.title} layout="fill" objectFit="cover" data-ai-hint={post.aiHint ?? 'coffee'} />
                   </div>
                 </Link>
               </CardHeader>

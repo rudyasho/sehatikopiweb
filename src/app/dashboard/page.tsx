@@ -7,12 +7,11 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ProductPopularityChart } from './product-popularity-chart';
-import { Coffee, Star, Calendar, Newspaper, Loader2, PlusCircle, Upload, Link as LinkIcon, Edit, BarChart3, Settings, Bot, LayoutGrid } from 'lucide-react';
+import { Coffee, Star, Calendar, Newspaper, Loader2, PlusCircle, Upload, Link as LinkIcon, Edit, BarChart3, Settings, Bot, LayoutGrid, Send, Clipboard, Check, Wand2 } from 'lucide-react';
 import { products } from '@/lib/products-data';
 import { RoastDistributionChart } from './roast-distribution-chart';
 import { OriginDistributionChart } from './origin-distribution-chart';
 import { TopProductsTable } from './top-products-table';
-import { BlogPostGenerator, type GeneratedPost } from '@/app/blog/blog-post-generator';
 import { useToast } from '@/hooks/use-toast';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -31,14 +30,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { addBlogPost } from '@/app/blog/page';
+import { generateBlogPost, type GenerateBlogPostOutput } from '@/ai/flows/blog-post-generator';
+import { Badge } from '@/components/ui/badge';
 
 
 const totalProducts = products.length;
 const totalReviews = products.reduce((acc, product) => acc + product.reviews, 0);
 const totalEvents = 3; 
-const totalBlogPosts = 4;
+const totalBlogPosts = 4; // This will become dynamic later
 
 type DashboardView = 'overview' | 'addProduct' | 'blogGenerator';
+export type GeneratedPost = GenerateBlogPostOutput;
 
 
 const newProductSchema = z.object({
@@ -53,6 +56,12 @@ const newProductSchema = z.object({
 
 type NewProductFormValues = z.infer<typeof newProductSchema>;
 
+const blogPostSchema = z.object({
+  topic: z.string().min(5, 'Please provide a more detailed topic.'),
+});
+
+type BlogPostFormValues = z.infer<typeof blogPostSchema>;
+
 
 const MetricCard = ({ title, value, icon: Icon }: { title: string, value: string | number, icon: React.ElementType }) => (
     <Card className="shadow-lg bg-background">
@@ -65,6 +74,137 @@ const MetricCard = ({ title, value, icon: Icon }: { title: string, value: string
         </CardContent>
     </Card>
 );
+
+function BlogGenerator() {
+  const [generatedPost, setGeneratedPost] = useState<GeneratedPost | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasCopied, setHasCopied] = useState(false);
+  const { toast } = useToast();
+  const router = useRouter();
+
+  const form = useForm<BlogPostFormValues>({
+    resolver: zodResolver(blogPostSchema),
+    defaultValues: { topic: '' },
+  });
+
+  async function onSubmit(data: BlogPostFormValues) {
+    setIsLoading(true);
+    setGeneratedPost(null);
+    try {
+      const result = await generateBlogPost(data.topic);
+      setGeneratedPost(result);
+    } catch (error) {
+      console.error('Error generating blog post:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Could not generate the blog post. Please try again.',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  const handleCopyToClipboard = () => {
+    if (!generatedPost?.content) return;
+    navigator.clipboard.writeText(generatedPost.content);
+    setHasCopied(true);
+    toast({ title: 'Content Copied!' });
+    setTimeout(() => setHasCopied(false), 2000);
+  };
+
+  const handlePublish = () => {
+    if (!generatedPost) return;
+    const newPost = addBlogPost(generatedPost);
+    toast({
+        title: "Post Published!",
+        description: `"${newPost.title}" is now on the blog.`,
+        action: (
+            <Button variant="outline" size="sm" onClick={() => router.push(`/blog/${newPost.slug}`)}>
+                View Post
+            </Button>
+        )
+    })
+    setGeneratedPost(null);
+    form.reset();
+  };
+
+  return (
+    <Card className="shadow-lg bg-background">
+      <CardHeader>
+        <CardTitle className="font-headline text-2xl text-primary flex items-center gap-2">
+          <Wand2 /> AI Blog Post Generator
+        </CardTitle>
+        <CardDescription>
+          Enter a topic and let our AI create a draft and a feature image for you.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="topic"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Blog Post Topic</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., The history of coffee in West Java" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                'Generate Post'
+              )}
+            </Button>
+          </form>
+        </Form>
+
+        {isLoading && (
+          <div className="text-center p-8">
+            <Loader2 className="h-8 w-8 mx-auto animate-spin text-primary" />
+            <p className="mt-2 text-muted-foreground">The AI is writing and drawing, please wait...</p>
+          </div>
+        )}
+
+        {generatedPost && (
+          <Card className="mt-6 animate-in fade-in-50 duration-500 bg-secondary/50">
+            <CardHeader>
+              <div className="relative aspect-video w-full rounded-md overflow-hidden mb-4">
+                <Image src={generatedPost.imageDataUri} alt={generatedPost.title} layout="fill" objectFit="cover" />
+              </div>
+              <Badge variant="secondary" className="w-fit mb-2">{generatedPost.category}</Badge>
+              <CardTitle className="font-headline text-3xl text-primary">{generatedPost.title}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="prose lg:prose-xl max-w-none text-foreground/90 prose-headings:text-primary prose-h3:font-headline"
+                   dangerouslySetInnerHTML={{ __html: generatedPost.content }} />
+              <div className="flex flex-wrap gap-2 mt-6">
+                <Button onClick={handleCopyToClipboard} variant="outline">
+                  {hasCopied ? <Check className="mr-2"/> : <Clipboard className="mr-2"/>}
+                  Copy HTML
+                </Button>
+                 <Button onClick={handlePublish}>
+                  <Send className="mr-2"/>
+                  Publish to Blog
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 
 const AddProductForm = () => {
     const { toast } = useToast();
@@ -236,7 +376,7 @@ const AnalyticsOverview = () => (
                         <BarChart3 /> Business Analytics
                     </CardTitle>
                      <CardDescription>An overview of product performance and distribution.</CardDescription>
-                </CardHeader>
+                </Header>
                 <CardContent className="space-y-8">
                      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
                         <div>
@@ -273,13 +413,6 @@ const DashboardPage = () => {
   const { toast } = useToast();
   const [activeView, setActiveView] = useState<DashboardView>('overview');
 
-  const handlePublishPost = (post: GeneratedPost) => {
-    toast({
-      title: 'Post Published (Simulated)!',
-      description: `"${post.title}" has been created and is now available on the blog page.`,
-    });
-  };
-
   useEffect(() => {
     if (!loading && !user) {
       router.push('/');
@@ -301,7 +434,7 @@ const DashboardPage = () => {
         case 'addProduct':
             return <AddProductForm />;
         case 'blogGenerator':
-            return <BlogPostGenerator onPublish={handlePublishPost} />;
+            return <BlogGenerator />;
         default:
             return <AnalyticsOverview />;
     }

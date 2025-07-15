@@ -4,15 +4,10 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import type { Metadata, ResolvingMetadata } from 'next';
+import { getBlogPosts, type BlogPost as BlogPostType } from '../page';
 
-const blogPosts = [
-  {
-    title: 'The Ultimate Guide to V60 Brewing',
-    category: 'Brewing Tips',
-    excerpt: 'Master the art of the V60 pour-over with our step-by-step guide. From grind size to pouring technique, we cover everything you need to know for the perfect cup.',
-    image: 'https://placehold.co/1200x600.png',
-    aiHint: 'v60 coffee',
-    slug: 'v60-guide',
+const staticContent: Record<string, {author: string, date: string, content: string}> = {
+  'v60-guide': {
     author: 'Adi Prasetyo',
     date: 'July 28, 2024',
     content: `
@@ -38,13 +33,7 @@ const blogPosts = [
       <p class="text-lg mt-8">Enjoy your perfectly brewed cup of coffee! The V60 method rewards precision and experimentation, so don't be afraid to tweak your variables to suit your taste.</p>
     `,
   },
-  {
-    title: 'A Journey to the Gayo Highlands',
-    category: 'Storytelling',
-    excerpt: 'Travel with us to the highlands of Aceh, the home of our Gayo coffee. Discover the stories of the farmers and the unique terroir that gives this coffee its distinct flavor.',
-    image: 'https://placehold.co/1200x600.png',
-    aiHint: 'coffee plantation landscape',
-    slug: 'gayo-journey',
+  'gayo-journey': {
     author: 'Siti Aminah',
     date: 'July 22, 2024',
     content: `
@@ -54,13 +43,7 @@ const blogPosts = [
       <p class="text-lg mb-4">Walking through the plantations, you see coffee growing harmoniously alongside shade trees and other crops. This commitment to biodiversity isn't just good for the environment; it enriches the soil and the final flavor of the coffee. At Sehati Kopi, we are proud to partner with these farmers, ensuring they receive a fair price for their incredible work and bringing their story to your cup.</p>
     `,
   },
-  {
-    title: 'Understanding Coffee Processing Methods',
-    category: 'Coffee Education',
-    excerpt: 'Washed, natural, or honey-processed? Learn how different processing methods impact the final taste of your coffee and find your preferred style.',
-    image: 'https://placehold.co/1200x600.png',
-    aiHint: 'coffee cherry',
-    slug: 'processing-methods',
+  'processing-methods': {
     author: 'Budi Santoso',
     date: 'July 15, 2024',
     content: `
@@ -74,13 +57,7 @@ const blogPosts = [
       <p class="text-lg mt-8">Each method offers a unique sensory experience. We encourage you to try coffees with different processing methods to discover your personal preference!</p>
     `,
   },
-  {
-    title: 'Why Single-Origin Coffee Matters',
-    category: 'Coffee Education',
-    excerpt: 'Explore the benefits of single-origin coffee, from its traceable roots to its unique and complex flavor profiles that tell the story of its origin.',
-    image: 'https://placehold.co/1200x600.png',
-    aiHint: 'coffee cup beans',
-    slug: 'single-origin',
+  'single-origin': {
     author: 'Budi Santoso',
     date: 'July 8, 2024',
     content: `
@@ -94,7 +71,10 @@ const blogPosts = [
       <p class="text-lg mt-8">Choosing single-origin is choosing to experience the full spectrum of what coffee can be—an agricultural product with a rich story and a unique sense of place.</p>
     `,
   },
-];
+};
+
+type PostWithContent = BlogPostType & { content: string, author: string, date: string };
+
 
 type Props = {
   params: { slug: string };
@@ -104,6 +84,7 @@ export async function generateMetadata(
   { params }: Props,
   parent: ResolvingMetadata
 ): Promise<Metadata> {
+  const blogPosts = getBlogPosts();
   const post = blogPosts.find((p) => p.slug === params.slug);
 
   if (!post) {
@@ -113,6 +94,7 @@ export async function generateMetadata(
   }
   
   const previousImages = (await parent).openGraph?.images || [];
+  const postDetails = staticContent[post.slug] ?? { author: 'Sehati Kopi Team', date: new Date().toISOString() };
 
   return {
     title: post.title,
@@ -122,19 +104,51 @@ export async function generateMetadata(
       description: post.excerpt,
       images: [post.image, ...previousImages],
       type: 'article',
-      publishedTime: new Date(post.date).toISOString(),
-      authors: [post.author],
+      publishedTime: new Date(postDetails.date).toISOString(),
+      authors: [postDetails.author],
     },
   };
 }
 
 
 export default function BlogPostPage({ params }: { params: { slug: string } }) {
-  const post = blogPosts.find((p) => p.slug === params.slug);
+  const blogPosts = getBlogPosts();
+  const postData = blogPosts.find((p) => p.slug === params.slug);
 
-  if (!post) {
+  if (!postData) {
     notFound();
   }
+
+  // For AI-generated posts, the 'content' is in the excerpt. For others, it's in staticContent.
+  const postDetails = staticContent[postData.slug] ?? {
+      author: 'AI Author',
+      date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+      // A bit of a hack: if content isn't in static map, we assume it's AI-generated
+      // and the full content was stored in 'excerpt'. This needs a proper DB to be clean.
+      content: postData.excerpt,
+  }
+
+  // This logic is messy because we're mixing static and dynamic data without a DB.
+  // In a real app, the API would return the full post object.
+  const post: PostWithContent = {
+    ...postData,
+    ...postDetails,
+  };
+
+  // If the post is AI-generated and not in the static map, the excerpt *is* the content.
+  // This is a workaround for not having a proper CMS/database.
+  const isAiGenerated = !staticContent[post.slug];
+  if(isAiGenerated) {
+    const tempPost = getBlogPosts().find(p => p.slug === post.slug);
+    if(tempPost && tempPost.excerpt.endsWith('...')) {
+        // This is a hacky way to check if it's an AI post from the main page
+        // A better solution needs a database.
+        post.content = `<p>${tempPost.excerpt.slice(0, -3)}</p><p>...</p><p><i>[Full content for AI posts is not stored in this demo.]</i></p>`;
+    } else {
+        post.content = `<p>This AI generated post's content is not available in detail view in this demo.</p>`;
+    }
+  }
+
 
   return (
     <div className="bg-secondary/50">
@@ -154,7 +168,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
             </div>
           </header>
           <div className="relative aspect-video w-full mb-8 rounded-lg overflow-hidden">
-            <Image src={post.image} alt={post.title} layout="fill" objectFit="cover" data-ai-hint={post.aiHint} />
+            <Image src={post.image} alt={post.title} layout="fill" objectFit="cover" data-ai-hint={post.aiHint ?? 'coffee blog'} />
           </div>
           <div
             className="prose lg:prose-xl max-w-none text-foreground/90 prose-headings:text-primary prose-h3:font-headline"
