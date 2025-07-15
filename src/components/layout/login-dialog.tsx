@@ -3,6 +3,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -44,6 +45,7 @@ export function LoginDialog({ onLoginSuccess, isMobile = false }: LoginDialogPro
   const [open, setOpen] = useState(false);
   const { login, loading } = useAuth();
   const { toast } = useToast();
+  const router = useRouter();
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -55,13 +57,14 @@ export function LoginDialog({ onLoginSuccess, isMobile = false }: LoginDialogPro
     if (success) {
         toast({
             title: 'Login Successful',
-            description: 'Welcome back!',
+            description: 'Welcome back! Redirecting to dashboard...',
         });
         setOpen(false);
         form.reset();
         if (onLoginSuccess) {
             onLoginSuccess();
         }
+        router.push('/dashboard');
     } else {
         toast({
             variant: 'destructive',
