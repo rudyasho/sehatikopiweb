@@ -49,6 +49,10 @@ const blogPostGeneratorFlow = ai.defineFlow(
     outputSchema: GenerateBlogPostOutputSchema,
   },
   async (topic) => {
+    if (typeof topic !== 'string' || !topic) {
+      throw new Error('Invalid topic provided for blog post generation.');
+    }
+    
     // Generate text and image in parallel to speed things up
     const [textResult, imageResult] = await Promise.all([
       prompt(topic),
