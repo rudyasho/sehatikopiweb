@@ -17,6 +17,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { generateCoffeeStory } from '@/ai/flows/story-teller-flow';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/auth-context';
+import { marked } from 'marked';
 
 const ShareButtons = ({ title, slug }: { title: string, slug: string }) => {
   const { toast } = useToast();
@@ -238,6 +239,12 @@ export default function BlogPostPage() {
     }
   }, [params.slug]);
 
+  const renderedContent = useMemo(() => {
+    if (!post?.content) return '';
+    return marked.parse(post.content);
+  }, [post?.content]);
+
+
   const handleGenerateStory = () => {
     if (!post) return;
     setStoryStarted(true);
@@ -301,7 +308,7 @@ export default function BlogPostPage() {
 
           <div
             className="prose dark:prose-invert lg:prose-xl max-w-none text-foreground/90 prose-headings:text-primary prose-h2:font-headline"
-            dangerouslySetInnerHTML={{ __html: post.content }}
+            dangerouslySetInnerHTML={{ __html: renderedContent }}
           />
           
           {user && (
@@ -349,5 +356,3 @@ export default function BlogPostPage() {
     </div>
   );
 }
-
-    

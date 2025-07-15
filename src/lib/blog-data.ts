@@ -2,7 +2,6 @@
 // src/lib/blog-data.ts
 import { app } from './firebase';
 import { getFirestore, collection, getDocs, addDoc, query, writeBatch, limit, doc, updateDoc, deleteDoc } from "firebase/firestore";
-import { marked } from 'marked';
 
 export type BlogPost = {
     id: string;
@@ -12,7 +11,7 @@ export type BlogPost = {
     image: string; // Can be a URL or a data URI
     aiHint?: string;
     slug: string;
-    content: string; // Stored as Markdown, rendered as HTML
+    content: string; // Stored as Markdown
     author: string;
     date: string; // ISO 8601 date string
 };
@@ -188,16 +187,7 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
 
 export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
     const posts = await getBlogPosts();
-    // To display the content correctly, we convert Markdown to HTML here.
     const post = posts.find(p => p.slug === slug);
-    if (post) {
-      try {
-        post.content = await marked.parse(post.content);
-      } catch (e) {
-        console.error("Error parsing markdown for slug:", slug, e);
-        post.content = "Error displaying content."
-      }
-    }
     return post || null;
 }
 
@@ -245,5 +235,3 @@ export async function deleteBlogPost(id: string): Promise<void> {
     await deleteDoc(postRef);
     invalidateCache();
 }
-
-    
