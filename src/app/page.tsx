@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const featuredProducts = [
   {
+    slug: 'aceh-gayo',
     name: 'Aceh Gayo',
     description: 'A rich, full-bodied coffee with earthy notes and a hint of spice.',
     price: 'Rp 120.000',
@@ -14,6 +15,7 @@ const featuredProducts = [
     aiHint: 'coffee beans',
   },
   {
+    slug: 'bali-kintamani',
     name: 'Bali Kintamani',
     description: 'A smooth, sweet coffee with a clean finish and citrus undertones.',
     price: 'Rp 135.000',
@@ -21,6 +23,7 @@ const featuredProducts = [
     aiHint: 'coffee plantation',
   },
   {
+    slug: 'flores-bajawa',
     name: 'Flores Bajawa',
     description: 'A complex coffee with floral aromas, chocolate notes, and a syrupy body.',
     price: 'Rp 150.000',
@@ -136,7 +139,9 @@ export default function Home() {
                 </CardContent>
                 <CardFooter className="flex justify-between items-center p-6 bg-background">
                   <span className="text-xl font-bold text-primary">{product.price}</span>
-                  <Button variant="secondary">View Details</Button>
+                  <Button asChild variant="secondary">
+                    <Link href={`/products/${product.slug}`}>View Details</Link>
+                  </Button>
                 </CardFooter>
               </Card>
             ))}

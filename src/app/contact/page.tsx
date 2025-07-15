@@ -1,9 +1,7 @@
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
 import { Phone, Mail, MapPin, Share2 } from 'lucide-react';
+import { ContactForm } from './contact-form';
 
 const ContactPage = () => {
   return (
@@ -20,15 +18,7 @@ const ContactPage = () => {
               <CardTitle className="font-headline text-2xl text-primary">Send a Message</CardTitle>
             </CardHeader>
             <CardContent>
-              <form className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Input placeholder="Your Name" />
-                  <Input type="email" placeholder="Your Email" />
-                </div>
-                <Input placeholder="Subject" />
-                <Textarea placeholder="Your Message" rows={6} />
-                <Button type="submit" size="lg" className="w-full">Send Message</Button>
-              </form>
+              <ContactForm />
             </CardContent>
           </Card>
 

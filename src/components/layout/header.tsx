@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { Coffee, Menu, X } from 'lucide-react';
+import { Coffee, Menu, X, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
@@ -13,6 +13,7 @@ const navLinks = [
   { href: '/menu', label: 'Menu' },
   { href: '/events', label: 'Events' },
   { href: '/blog', label: 'Blog' },
+  { href: '/about', label: 'About' },
   { href: '/contact', label: 'Contact' },
   { href: '/recommendations', label: 'AI Recommender'},
 ];
@@ -30,26 +31,29 @@ export function Header() {
             <span className="font-bold font-headline text-lg">Sehati Kopi</span>
           </Link>
         </div>
-        <nav className="hidden items-center space-x-6 text-sm font-medium md:flex">
-          {navLinks.map(({ href, label }) => (
-            <Link
-              key={href}
-              href={href}
-              className={cn(
-                'transition-colors hover:text-primary',
-                pathname === href ? 'text-primary' : 'text-foreground/60'
-              )}
-            >
-              {label}
-            </Link>
-          ))}
-        </nav>
-        <div className="flex flex-1 items-center justify-end space-x-4">
-          <Button asChild>
-            <Link href="/#">
-              Shop Now
-            </Link>
-          </Button>
+        
+        <div className="flex flex-1 items-center justify-end space-x-2 md:space-x-4">
+          <nav className="hidden items-center space-x-6 text-sm font-medium md:flex">
+            {navLinks.map(({ href, label }) => (
+              <Link
+                key={href}
+                href={href}
+                className={cn(
+                  'transition-colors hover:text-primary',
+                  pathname === href ? 'text-primary' : 'text-foreground/60'
+                )}
+              >
+                {label}
+              </Link>
+            ))}
+          </nav>
+          <div className="hidden md:flex items-center">
+            <Button variant="ghost" size="icon">
+              <ShoppingCart className="h-5 w-5" />
+              <span className="sr-only">Shopping Cart</span>
+            </Button>
+          </div>
+          
           <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
             <SheetTrigger asChild className="md:hidden">
               <Button variant="ghost" size="icon">
@@ -88,6 +92,12 @@ export function Header() {
                     </Link>
                   ))}
                 </nav>
+                <div className="mt-auto border-t pt-4">
+                  <Button className="w-full">
+                    <ShoppingCart className="mr-2 h-5 w-5" />
+                    Shopping Cart
+                  </Button>
+                </div>
               </div>
             </SheetContent>
           </Sheet>

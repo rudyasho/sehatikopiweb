@@ -4,8 +4,25 @@ import Link from 'next/link';
 import { Coffee, Instagram, Facebook, Twitter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
+import { FormEvent } from 'react';
 
 export function Footer() {
+  const { toast } = useToast();
+
+  const handleNewsletterSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const email = (event.currentTarget.elements.namedItem('email') as HTMLInputElement).value;
+    
+    if (email) {
+      toast({
+        title: "Subscribed!",
+        description: `Thank you for subscribing, ${email}!`,
+      });
+      (event.target as HTMLFormElement).reset();
+    }
+  };
+
   return (
     <footer className="bg-secondary border-t">
       <div className="container py-12">
@@ -30,6 +47,7 @@ export function Footer() {
               <li><Link href="/about" className="hover:text-primary">About Us</Link></li>
               <li><Link href="/menu" className="hover:text-primary">Menu</Link></li>
               <li><Link href="/blog" className="hover:text-primary">Blog</Link></li>
+              <li><Link href="/events" className="hover:text-primary">Events</Link></li>
               <li><Link href="/contact" className="hover:text-primary">Contact</Link></li>
             </ul>
           </div>
@@ -46,8 +64,8 @@ export function Footer() {
             <p className="text-sm text-foreground/80 mb-2">
               Get the latest news and special offers.
             </p>
-            <form className="flex space-x-2">
-              <Input type="email" placeholder="Your email" className="bg-background" />
+            <form className="flex space-x-2" onSubmit={handleNewsletterSubmit}>
+              <Input name="email" type="email" placeholder="Your email" className="bg-background" required />
               <Button type="submit">Subscribe</Button>
             </form>
           </div>
