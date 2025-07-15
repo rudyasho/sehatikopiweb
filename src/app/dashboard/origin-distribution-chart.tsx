@@ -3,13 +3,14 @@
 
 import * as React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
-import { products } from '@/lib/products-data';
+import { getProducts } from '@/lib/products-data';
 import { useMemo } from 'react';
 
 const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
 export function OriginDistributionChart() {
   const chartData = useMemo(() => {
+    const products = getProducts();
     const originCounts = products.reduce((acc, product) => {
       const originName = product.origin.split(',')[0]; // Simplify name e.g., "Gayo Highlands, Aceh" -> "Gayo Highlands"
       acc[originName] = (acc[originName] || 0) + 1;

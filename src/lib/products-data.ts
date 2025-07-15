@@ -1,3 +1,4 @@
+
 export interface Product {
   slug: string;
   name: string;
@@ -12,7 +13,7 @@ export interface Product {
   roast: string;
 }
 
-export const products: Product[] = [
+const initialProducts: Product[] = [
   {
     slug: 'aceh-gayo',
     name: 'Aceh Gayo',
@@ -105,3 +106,47 @@ export const products: Product[] = [
     roast: 'Medium'
   },
 ];
+
+
+// Singleton pattern to hold products in memory
+class ProductStore {
+  private static instance: ProductStore;
+  private products: Product[];
+
+  private constructor() {
+    this.products = initialProducts;
+  }
+
+  public static getInstance(): ProductStore {
+    if (!ProductStore.instance) {
+      ProductStore.instance = new ProductStore();
+    }
+    return ProductStore.instance;
+  }
+
+  public getProducts(): Product[] {
+    return this.products;
+  }
+
+  public addProduct(productData: Omit<Product, 'slug' | 'rating' | 'reviews' | 'tags'> & { tags: string }): Product {
+    const newProduct: Product = {
+      ...productData,
+      slug: productData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, ''),
+      rating: 0, // Default value for new products
+      reviews: 0, // Default value
+      tags: productData.tags.split(',').map(tag => tag.trim()),
+    };
+    this.products.unshift(newProduct); // Add to the beginning
+    return newProduct;
+  }
+}
+
+// Function to add a product from another component
+export const addProduct = (productData: Omit<Product, 'slug' | 'rating' | 'reviews' | 'tags'> & { tags: string }) => {
+  return ProductStore.getInstance().addProduct(productData);
+}
+
+// Function to get all products
+export const getProducts = () => {
+    return ProductStore.getInstance().getProducts();
+}

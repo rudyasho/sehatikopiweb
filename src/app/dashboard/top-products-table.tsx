@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { products } from '@/lib/products-data';
+import { getProducts } from '@/lib/products-data';
 import { useMemo } from 'react';
 import { Star } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -20,6 +20,7 @@ const formatCurrency = (amount: number) => {
 
 export function TopProductsTable() {
   const topProducts = useMemo(() => {
+    const products = getProducts();
     return [...products]
       .sort((a, b) => b.reviews - a.reviews)
       .slice(0, 5);

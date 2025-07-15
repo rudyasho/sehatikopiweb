@@ -8,7 +8,7 @@ import { ArrowLeft, BookAudio, Loader2, Twitter, Facebook, MessageCircle, Link2,
 import Link from 'next/link';
 import { getBlogPosts, type BlogPost as BlogPostType } from '../page';
 import { useEffect, useState, useMemo, useTransition, useRef } from 'react';
-import { products } from '@/lib/products-data';
+import { getProducts } from '@/lib/products-data';
 import { Card, CardContent, CardTitle, CardDescription, CardFooter, CardHeader } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
@@ -177,6 +177,7 @@ const RecommendedBlogs = ({ currentSlug }: { currentSlug: string }) => {
 }
 
 const RecommendedProducts = () => {
+  const products = getProducts();
   const topProducts = products
     .sort((a, b) => b.reviews - a.reviews)
     .slice(0, 3);

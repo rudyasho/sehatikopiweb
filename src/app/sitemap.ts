@@ -1,10 +1,11 @@
 
 import { MetadataRoute } from 'next'
-import { products } from '@/lib/products-data';
+import { getProducts } from '@/lib/products-data';
 
 const BASE_URL = 'https://sehatikopi.id'; // Replace with your actual domain
 
 export default function sitemap(): MetadataRoute.Sitemap {
+  const products = getProducts();
   const staticRoutes = [
     '',
     '/about',

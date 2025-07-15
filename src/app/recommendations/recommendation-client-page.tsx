@@ -15,7 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, Wand2, Coffee, ArrowRight } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { products, type Product } from '@/lib/products-data';
+import { getProducts, type Product } from '@/lib/products-data';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -35,6 +35,7 @@ const recommendationSchema = z.object({
 type RecommendationFormValues = z.infer<typeof recommendationSchema>;
 
 function RecommendedProductCard({ slug }: { slug: string }) {
+  const products = getProducts();
   const product = products.find((p) => p.slug === slug);
 
   if (!product) {

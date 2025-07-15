@@ -1,3 +1,4 @@
+
 // src/ai/flows/coffee-recommendation.ts
 'use server';
 /**
@@ -10,7 +11,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { products } from '@/lib/products-data';
+import { getProducts } from '@/lib/products-data';
 
 const RecommendCoffeeInputSchema = z.object({
   flavorPreferences: z
@@ -36,7 +37,10 @@ export async function recommendCoffee(input: RecommendCoffeeInput): Promise<Reco
   return recommendCoffeeFlow(input);
 }
 
-const productContext = products.map(p => ` - Name: ${p.name}, Slug: ${p.slug}, Description: ${p.description}, Roast: ${p.roast}`).join('\n');
+const getProductContext = () => {
+  const products = getProducts();
+  return products.map(p => ` - Name: ${p.name}, Slug: ${p.slug}, Description: ${p.description}, Roast: ${p.roast}`).join('\n');
+}
 
 const prompt = ai.definePrompt({
   name: 'recommendCoffeePrompt',
@@ -45,7 +49,7 @@ const prompt = ai.definePrompt({
   prompt: `You are an expert coffee sommelier for an Indonesian coffee brand called "Sehati Kopi". A customer has provided their preferences. Based on this, recommend a specific Indonesian coffee bean from the list provided below and a roast level. Provide a compelling reason for your choice in the notes.
 
 Available Coffees:
-${productContext}
+${getProductContext()}
 
 Customer Preferences:
 *   Flavour: {{{flavorPreferences}}}

@@ -3,13 +3,14 @@
 
 import * as React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
-import { products } from '@/lib/products-data';
+import { getProducts } from '@/lib/products-data';
 import { useMemo } from 'react';
 
 const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
 export function RoastDistributionChart() {
   const chartData = useMemo(() => {
+    const products = getProducts();
     const roastCounts = products.reduce((acc, product) => {
       acc[product.roast] = (acc[product.roast] || 0) + 1;
       return acc;

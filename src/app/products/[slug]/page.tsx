@@ -1,5 +1,6 @@
+
 import { notFound } from 'next/navigation';
-import { products } from '@/lib/products-data';
+import { getProducts } from '@/lib/products-data';
 import { ProductClientPage } from './client-page';
 import type { Metadata, ResolvingMetadata } from 'next';
 
@@ -11,6 +12,7 @@ export async function generateMetadata(
   { params }: Props,
   parent: ResolvingMetadata
 ): Promise<Metadata> {
+  const products = getProducts();
   const product = products.find((p) => p.slug === params.slug);
 
   if (!product) {
@@ -33,6 +35,7 @@ export async function generateMetadata(
 }
 
 export default function ProductDetailPage({ params }: { params: { slug: string } }) {
+  const products = getProducts();
   const product = products.find((p) => p.slug === params.slug);
 
   if (!product) {

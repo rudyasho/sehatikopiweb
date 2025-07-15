@@ -1,9 +1,11 @@
+
 'use client';
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { products } from '@/lib/products-data';
+import { getProducts } from '@/lib/products-data';
 
 export function ProductPopularityChart() {
+  const products = getProducts();
   const chartData = products.map(product => ({
     name: product.name,
     reviews: product.reviews,

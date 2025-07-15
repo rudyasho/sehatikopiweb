@@ -8,7 +8,7 @@ import { useAuth } from '@/context/auth-context';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ProductPopularityChart } from './product-popularity-chart';
 import { Coffee, Star, Calendar, Newspaper, Loader2, PlusCircle, Upload, Link as LinkIcon, Edit, BarChart3, Settings, Bot, LayoutGrid, Send, Clipboard, Check, Wand2, Save } from 'lucide-react';
-import { products } from '@/lib/products-data';
+import { addProduct, getProducts } from '@/lib/products-data';
 import { RoastDistributionChart } from './roast-distribution-chart';
 import { OriginDistributionChart } from './origin-distribution-chart';
 import { TopProductsTable } from './top-products-table';
@@ -35,8 +35,6 @@ import { generateBlogPost, type GenerateBlogPostOutput } from '@/ai/flows/blog-p
 import { Badge } from '@/components/ui/badge';
 
 
-const totalProducts = products.length;
-const totalReviews = products.reduce((acc, product) => acc + product.reviews, 0);
 const totalEvents = 3; 
 const totalBlogPosts = 4; // This will become dynamic later
 
@@ -51,7 +49,8 @@ const newProductSchema = z.object({
   price: z.coerce.number().min(1, "Price must be greater than 0."),
   roast: z.string().min(3, "Roast level is required."),
   tags: z.string().min(3, "Please add at least one tag, comma separated."),
-  photo: z.string().optional(),
+  image: z.string().url("Please provide a valid image URL."),
+  aiHint: z.string().min(2, "AI hint is required for image search.")
 });
 
 type NewProductFormValues = z.infer<typeof newProductSchema>;
@@ -255,41 +254,34 @@ function BlogGenerator() {
 
 const AddProductForm = () => {
     const { toast } = useToast();
+    const router = useRouter();
     const [imagePreview, setImagePreview] = useState<string | null>(null);
 
     const form = useForm<NewProductFormValues>({
         resolver: zodResolver(newProductSchema),
-        defaultValues: { name: '', origin: '', description: '', price: 0, roast: '', tags: '', photo: '' },
+        defaultValues: { name: '', origin: '', description: '', price: 0, roast: '', tags: '', image: '', aiHint: '' },
     });
-
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const result = reader.result as string;
-                setImagePreview(result);
-                form.setValue('photo', result);
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-
+    
     const handleUrlChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const url = event.target.value;
         if (url) {
             setImagePreview(url);
-            form.setValue('photo', url);
+            form.setValue('image', url);
         } else {
             setImagePreview(null);
         }
     }
 
     const onSubmit = (data: NewProductFormValues) => {
-        console.log("New Product Data:", data);
+        const newProduct = addProduct(data);
         toast({
-            title: "Product Added (Simulated)!",
+            title: "Product Added!",
             description: `${data.name} has been added to the product list.`,
+            action: (
+                <Button variant="outline" size="sm" onClick={() => router.push(`/products/${newProduct.slug}`)}>
+                    View Product
+                </Button>
+            )
         });
         form.reset();
         setImagePreview(null);
@@ -368,32 +360,23 @@ const AddProductForm = () => {
                                 )}
                                 </div>
                             </Card>
-                            <Tabs defaultValue="local" className="w-full">
-                                <TabsList className="grid w-full grid-cols-2">
-                                    <TabsTrigger value="local"><Upload className="mr-2 h-4 w-4"/>Local</TabsTrigger>
-                                    <TabsTrigger value="url"><LinkIcon className="mr-2 h-4 w-4"/>URL</TabsTrigger>
-                                </TabsList>
-                                <TabsContent value="local" className="pt-2">
-                                    <FormField control={form.control} name="photo" render={() => (
-                                        <FormItem>
-                                            <FormControl>
-                                                <Input type="file" accept="image/*" onChange={handleFileChange} className="file:text-primary file:font-semibold" />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )} />
-                                </TabsContent>
-                                <TabsContent value="url" className="pt-2">
-                                    <FormField control={form.control} name="photo" render={() => (
-                                        <FormItem>
-                                            <FormControl>
-                                                <Input type="url" placeholder="https://example.com/image.png" onChange={handleUrlChange} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )} />
-                                </TabsContent>
-                            </Tabs>
+                            <FormField control={form.control} name="image" render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Image URL</FormLabel>
+                                    <FormControl>
+                                        <Input type="url" placeholder="https://example.com/image.png" {...field} onChange={(e) => {field.onChange(e); handleUrlChange(e);}} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )} />
+                             <FormField control={form.control} name="aiHint" render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>AI Hint</FormLabel>
+                                    <FormControl><Input placeholder="e.g., coffee cup" {...field} /></FormControl>
+                                    <CardDescription className="text-xs pt-1">Keywords for image search.</CardDescription>
+                                    <FormMessage />
+                                </FormItem>
+                            )} />
                         </div>
                     </div>
 
@@ -405,7 +388,12 @@ const AddProductForm = () => {
     )
 }
 
-const AnalyticsOverview = () => (
+const AnalyticsOverview = () => {
+    const products = getProducts();
+    const totalProducts = products.length;
+    const totalReviews = products.reduce((acc, product) => acc + product.reviews, 0);
+
+    return (
     <div className="space-y-8">
         <section>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -451,7 +439,8 @@ const AnalyticsOverview = () => (
             </Card>
         </section>
     </div>
-);
+    )
+};
 
 
 const DashboardPage = () => {

@@ -1,15 +1,12 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { products } from '@/lib/products-data';
+import { getProducts } from '@/lib/products-data';
 import { X } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-
-const allRoasts = [...new Set(products.map(p => p.roast))];
-const allOrigins = [...new Set(products.map(p => p.origin))];
 
 export interface Filters {
   roasts: string[];
@@ -25,6 +22,14 @@ export function ProductFilters({ onFilterChange }: ProductFiltersProps) {
   const [selectedRoasts, setSelectedRoasts] = useState<string[]>([]);
   const [selectedOrigin, setSelectedOrigin] = useState<string>('all');
   const [sortOrder, setSortOrder] = useState('name-asc');
+  
+  const { allRoasts, allOrigins } = useMemo(() => {
+    const products = getProducts();
+    const roasts = [...new Set(products.map(p => p.roast))];
+    const origins = [...new Set(products.map(p => p.origin))];
+    return { allRoasts: roasts, allOrigins: origins };
+  }, []);
+
 
   useEffect(() => {
     onFilterChange({

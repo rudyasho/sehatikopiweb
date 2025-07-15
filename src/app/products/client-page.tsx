@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { products, type Product } from '@/lib/products-data';
+import { getProducts, type Product } from '@/lib/products-data';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useCart } from '@/context/cart-context';
@@ -20,6 +20,7 @@ import { ShoppingCart, Check, ListFilter } from 'lucide-react';
 import { ProductFilters, type Filters } from './product-filters';
 
 export function ProductsClientPage() {
+  const [products, setProducts] = useState<Product[]>([]);
   const { addToCart } = useCart();
   const { toast } = useToast();
   const [addedProducts, setAddedProducts] = useState<Record<string, boolean>>(
@@ -30,6 +31,11 @@ export function ProductsClientPage() {
     origins: [],
     sort: 'name-asc',
   });
+
+  useEffect(() => {
+    // This will run on client side and get the most up-to-date list
+    setProducts(getProducts());
+  }, []);
 
   const handleAddToCart = (product: Product) => {
     addToCart(product, 1);
@@ -74,7 +80,7 @@ export function ProductsClientPage() {
     }
 
     return filtered;
-  }, [filters]);
+  }, [filters, products]);
 
   return (
     <div className="bg-secondary/50">

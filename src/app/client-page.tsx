@@ -7,10 +7,10 @@ import { ArrowRight, Coffee, Leaf, Star, ShoppingCart, Check } from 'lucide-reac
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { products, Product } from '@/lib/products-data';
+import { getProducts, Product } from '@/lib/products-data';
 import { useCart } from '@/context/cart-context';
 import { useToast } from '@/hooks/use-toast';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 
 const testimonials = [
   {
@@ -37,7 +37,8 @@ const testimonials = [
 ];
 
 function FeaturedProducts() {
-  const featuredProducts = products.slice(0, 3);
+  const allProducts = useMemo(() => getProducts(), []);
+  const featuredProducts = allProducts.slice(0, 3);
   const { addToCart } = useCart();
   const { toast } = useToast();
   const [addedProducts, setAddedProducts] = useState<Record<string, boolean>>({});
