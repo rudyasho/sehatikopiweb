@@ -187,7 +187,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
     return { id: doc.id, ...doc.data() } as BlogPost;
 }
 
-export async function addBlogPost(post: GenerateBlogPostOutput): Promise<BlogPost> {
+export async function addBlogPost(post: GenerateBlogPostOutput, authorName: string): Promise<BlogPost> {
     const slug = post.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
     
     const newPostData = {
@@ -198,7 +198,7 @@ export async function addBlogPost(post: GenerateBlogPostOutput): Promise<BlogPos
         aiHint: post.title.toLowerCase().split(' ').slice(0,2).join(' '),
         slug: slug,
         content: post.content,
-        author: 'Sehati Kopi AI',
+        author: authorName,
         date: new Date().toISOString(),
     };
 

@@ -4,7 +4,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/auth-context';
+import { useAuth, type User } from '@/context/auth-context';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ProductPopularityChart } from './product-popularity-chart';
 import { Coffee, Star, Calendar, Newspaper, Loader2, PlusCircle, Wand2, Edit, BarChart3, Bot, LayoutGrid, Send, Clipboard, Check, Save, ListOrdered, Trash2, BookText } from 'lucide-react';
@@ -95,7 +95,7 @@ const MetricCard = ({ title, value, icon: Icon, isLoading }: { title: string, va
     )
 };
 
-function BlogGenerator() {
+function BlogGenerator({ currentUser }: { currentUser: User }) {
   const [generatedPost, setGeneratedPost] = useState<GeneratedPost | null>(null);
   const [editedPost, setEditedPost] = useState<{title: string, content: string} | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -148,7 +148,7 @@ function BlogGenerator() {
         title: editedPost?.title || generatedPost.title,
         content: editedPost?.content || generatedPost.content,
       };
-      const newPost = await addBlogPost(postToPublish);
+      const newPost = await addBlogPost(postToPublish, currentUser.name);
       toast({
           title: "Post Published!",
           description: `"${newPost.title}" is now on the blog.`,
@@ -874,7 +874,7 @@ const DashboardPage = () => {
         case 'addProduct':
             return <AddProductView onProductAdded={handleDataChange} />;
         case 'blogGenerator':
-            return <BlogGenerator />;
+            return <BlogGenerator currentUser={user} />;
         case 'manageProducts':
             return <ManageProductsView />;
         case 'manageBlog':
