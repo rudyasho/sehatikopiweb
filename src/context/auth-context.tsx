@@ -2,17 +2,16 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut, type User as FirebaseUser } from 'firebase/auth';
+import { app } from '@/lib/firebase';
+import { useRouter } from 'next/navigation';
 
-export interface User {
-  name: string;
-  email: string;
-  avatar: string;
-}
+export type User = FirebaseUser;
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (credentials: {email: string; password: string;}) => Promise<boolean>;
+  loginWithGoogle: () => Promise<void>;
   logout: () => void;
 }
 
@@ -21,59 +20,48 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
-    // Simulate checking for an existing session
+    const auth = getAuth(app);
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(firebaseUser);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const loginWithGoogle = async () => {
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+    setLoading(true);
     try {
-      const storedUser = localStorage.getItem('sehati-user');
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
+      await signInWithPopup(auth, provider);
+      // onAuthStateChanged will handle setting the user
+      // Redirect to dashboard if the user is the admin
+      const currentUser = auth.currentUser;
+      if (currentUser && currentUser.email === 'dev@sidepe.com') {
+        router.push('/dashboard');
+      } else {
+        router.push('/profile');
       }
     } catch (error) {
-      console.error("Failed to parse user from localStorage", error);
-      setUser(null);
+      console.error("Error during Google sign-in:", error);
     } finally {
       setLoading(false);
     }
-  }, []);
-
-  const login = async (credentials: {email: string; password: string;}): Promise<boolean> => {
-    setLoading(true);
-    
-    // Check mock credentials
-    if (credentials.email !== 'dev@sidepe.com' || credentials.password !== 'admin123') {
-        setLoading(false);
-        return false;
-    }
-
-    try {
-        // Since this is a mock auth system, we'll create the user object statically
-        const loggedInUser: User = {
-            name: 'Super Admin',
-            email: credentials.email,
-            avatar: 'https://placehold.co/100x100.png',
-        };
-
-        // Set user state and save to localStorage
-        localStorage.setItem('sehati-user', JSON.stringify(loggedInUser));
-        setUser(loggedInUser);
-        return true;
-
-    } catch (error) {
-        console.error("Error during login process:", error);
-        return false;
-    } finally {
-        setLoading(false);
-    }
   };
 
-  const logout = () => {
-    localStorage.removeItem('sehati-user');
+  const logout = async () => {
+    const auth = getAuth(app);
+    await signOut(auth);
     setUser(null);
+    router.push('/');
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, loginWithGoogle, logout }}>
       {children}
     </AuthContext.Provider>
   );

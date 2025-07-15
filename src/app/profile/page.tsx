@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, Mail, LogOut } from 'lucide-react';
+import { Loader2, Mail, LogOut, LayoutDashboard } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 // This is a client-side only page, so we can't export metadata directly.
@@ -70,18 +70,25 @@ const ProfilePage = () => {
           <Card className="shadow-xl bg-background">
             <CardHeader className="flex flex-col md:flex-row items-start md:items-center gap-6 p-6">
                <Avatar className="h-24 w-24 border-4 border-primary">
-                  <AvatarImage src={user.avatar} alt={user.name} data-ai-hint="person smiling"/>
-                  <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                  <AvatarImage src={user.photoURL || undefined} alt={user.displayName || 'User'} data-ai-hint="person smiling"/>
+                  <AvatarFallback>{user.displayName?.charAt(0) || 'U'}</AvatarFallback>
                 </Avatar>
                 <div className="flex-grow">
-                  <CardTitle className="font-headline text-4xl text-primary">{user.name}</CardTitle>
+                  <CardTitle className="font-headline text-4xl text-primary">{user.displayName}</CardTitle>
                   <CardDescription className="text-lg flex items-center gap-2 mt-1 text-muted-foreground">
                     <Mail className="h-4 w-4"/> {user.email}
                   </CardDescription>
                 </div>
-                <Button variant="outline" onClick={() => {logout(); router.push('/');}}>
-                  <LogOut/> Logout
-                </Button>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  {user.email === 'dev@sidepe.com' && (
+                    <Button variant="outline" onClick={() => router.push('/dashboard')}>
+                      <LayoutDashboard /> Dashboard
+                    </Button>
+                  )}
+                  <Button variant="outline" onClick={logout}>
+                    <LogOut/> Logout
+                  </Button>
+                </div>
             </CardHeader>
             <Separator/>
             <CardContent className="p-6">

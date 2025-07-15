@@ -20,7 +20,8 @@ import {
   Wand2,
   User,
   LogOut,
-  Search
+  Search,
+  LogIn
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -45,14 +46,13 @@ import {
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { useCart } from '@/context/cart-context';
 import { useAuth } from '@/context/auth-context';
-import { LoginDialog } from './login-dialog';
 import { ThemeToggle } from './theme-toggle';
 
 export function Header() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { cart } = useCart();
-  const { user, loading, logout } = useAuth();
+  const { user, loading, loginWithGoogle, logout } = useAuth();
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -81,15 +81,15 @@ export function Header() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-10 w-10 rounded-full">
               <Avatar className="h-10 w-10">
-                 <AvatarImage src={user.avatar} alt={user.name} />
-                 <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                 <AvatarImage src={user.photoURL || undefined} alt={user.displayName || 'User'} />
+                 <AvatarFallback>{user.displayName?.charAt(0) || 'U'}</AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56" align="end" forceMount>
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">{user.name}</p>
+                <p className="text-sm font-medium leading-none">{user.displayName}</p>
                 <p className="text-xs leading-none text-muted-foreground">
                   {user.email}
                 </p>
@@ -102,12 +102,14 @@ export function Header() {
                 <span>Profile</span>
               </Link>
             </DropdownMenuItem>
-             <DropdownMenuItem asChild>
-              <Link href="/dashboard">
-                <LayoutDashboard />
-                <span>Dashboard</span>
-              </Link>
-            </DropdownMenuItem>
+            {user.email === 'dev@sidepe.com' && (
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard">
+                  <LayoutDashboard />
+                  <span>Dashboard</span>
+                </Link>
+              </DropdownMenuItem>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={logout}>
               <LogOut />
@@ -118,7 +120,12 @@ export function Header() {
       );
     }
 
-    return <LoginDialog />;
+    return (
+      <Button onClick={loginWithGoogle}>
+        <LogIn />
+        Login
+      </Button>
+    );
   }
 
   const MobileAuth = () => {
@@ -128,6 +135,7 @@ export function Header() {
     if (user) {
       return (
         <Button 
+          variant="secondary"
           className="w-full justify-start text-lg p-6"
           onClick={() => {
               logout();
@@ -140,7 +148,16 @@ export function Header() {
       );
     }
     return (
-      <LoginDialog onLoginSuccess={() => setIsMobileMenuOpen(false)} isMobile={true} />
+      <Button 
+        className="w-full justify-start text-lg p-6"
+        onClick={() => {
+          loginWithGoogle();
+          setIsMobileMenuOpen(false);
+        }}
+      >
+        <LogIn />
+        Login with Google
+      </Button>
     )
   }
 
@@ -249,6 +266,7 @@ export function Header() {
                     <User />
                     <span>Profile</span>
                   </Link>
+                  {user.email === 'dev@sidepe.com' &&
                    <Link
                     href="/dashboard"
                     onClick={() => setIsMobileMenuOpen(false)}
@@ -260,6 +278,7 @@ export function Header() {
                     <LayoutDashboard />
                     <span>Dashboard</span>
                   </Link>
+                  }
                   </>
                 )}
                  <Button asChild className="w-full relative justify-start text-lg p-6">

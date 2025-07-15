@@ -191,10 +191,10 @@ function BlogGenerator({ currentUser, onPostPublished }: { currentUser: User, on
   }
 
   const handlePublish = async (data: BlogPostFormValues) => {
-    if (!generatedPost) return;
+    if (!generatedPost || !currentUser.displayName) return;
     setIsPublishing(true);
     try {
-      const newPost = await addBlogPost(data, currentUser.name);
+      const newPost = await addBlogPost(data, currentUser.displayName);
       toast({
           title: "Post Published!",
           description: `"${newPost.title}" is now on the blog.`,
@@ -846,10 +846,15 @@ const BlogPostForm = ({ post, onFormSubmit, closeDialog, isCreatingNew, currentU
     });
 
     const onSubmit = async (data: BlogPostFormValues) => {
+        if (!currentUser?.displayName) {
+            toast({ variant: 'destructive', title: "Error", description: "Author name is missing."});
+            return;
+        }
+
         setIsSubmitting(true);
         try {
-            if (isCreatingNew && currentUser) {
-                await addBlogPost(data, currentUser.name);
+            if (isCreatingNew) {
+                await addBlogPost(data, currentUser.displayName);
                 toast({ title: "Post Created!", description: `"${data.title}" has been created.` });
                 form.reset({ category: 'Coffee Education', title: '', content: '', image: '', aiHint: '' });
             } else if (post) {
@@ -1298,7 +1303,7 @@ const DashboardPage = () => {
   const [initialPostToEdit, setInitialPostToEdit] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!loading && (!user || user.email !== 'dev@sidepe.com')) {
       router.push('/');
     }
   }, [user, loading, router]);
@@ -1326,6 +1331,18 @@ const DashboardPage = () => {
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
       </div>
     );
+  }
+
+  if (user.email !== 'dev@sidepe.com') {
+    return (
+        <div className="flex h-screen items-center justify-center bg-secondary/50">
+            <Card className="p-8 text-center">
+                <CardTitle className="font-headline text-2xl text-destructive">Access Denied</CardTitle>
+                <CardDescription className="mt-2">You do not have permission to view this page.</CardDescription>
+                <Button onClick={() => router.push('/')} className="mt-4">Go to Homepage</Button>
+            </Card>
+        </div>
+    )
   }
   
   const handleDataChange = () => {
@@ -1368,7 +1385,7 @@ const DashboardPage = () => {
         <div className="container mx-auto px-4 py-8 md:py-12">
             <header className="mb-8">
                 <h1 className="font-headline text-4xl md:text-5xl font-bold text-primary">Dashboard</h1>
-                <p className="mt-1 text-lg text-foreground/80">Welcome back, {user.name}!</p>
+                <p className="mt-1 text-lg text-foreground/80">Welcome back, {user.displayName}!</p>
             </header>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8 items-start">
