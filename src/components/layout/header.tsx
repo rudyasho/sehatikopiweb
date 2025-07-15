@@ -17,9 +17,21 @@ import {
   Newspaper,
   Info,
   Mail,
-  Wand2
+  Wand2,
+  User,
+  LogOut,
+  LogIn
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import {
   Sheet,
   SheetContent,
@@ -32,6 +44,7 @@ import {
 } from '@radix-ui/react-dialog';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { useCart } from '@/context/cart-context';
+import { useAuth } from '@/context/auth-context';
 
 
 const navLinks = [
@@ -50,6 +63,7 @@ export function Header() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { cart } = useCart();
+  const { user, loading, login, logout } = useAuth();
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -57,6 +71,54 @@ export function Header() {
   }, []);
 
   const itemCount = cart.reduce((total, item) => total + item.quantity, 0);
+
+  const AuthNav = () => {
+    if (loading && !isClient) return <div className="h-10 w-24 rounded-md bg-muted animate-pulse" />;
+    
+    if (user) {
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+              <Avatar className="h-10 w-10">
+                 <AvatarImage src={user.avatar} alt={user.name} />
+                 <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+              </Avatar>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56" align="end" forceMount>
+            <DropdownMenuLabel className="font-normal">
+              <div className="flex flex-col space-y-1">
+                <p className="text-sm font-medium leading-none">{user.name}</p>
+                <p className="text-xs leading-none text-muted-foreground">
+                  {user.email}
+                </p>
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link href="/profile">
+                <User className="mr-2 h-4 w-4" />
+                <span>Profile</span>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={logout}>
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Log out</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+    }
+
+    return (
+      <Button onClick={login}>
+        <LogIn className="mr-2"/>
+        Login
+      </Button>
+    )
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -83,8 +145,8 @@ export function Header() {
               </Link>
             ))}
           </nav>
-          <div className="hidden md:flex items-center">
-            <Button asChild variant="ghost" size="icon" className="relative">
+          <div className="flex items-center gap-2">
+             <Button asChild variant="ghost" size="icon" className="relative">
               <Link href="/cart">
                 <ShoppingCart className="h-5 w-5" />
                 {isClient && itemCount > 0 && (
@@ -95,6 +157,9 @@ export function Header() {
                 <span className="sr-only">Shopping Cart</span>
               </Link>
             </Button>
+            <div className="hidden md:block">
+              <AuthNav />
+            </div>
           </div>
           
           <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
@@ -122,6 +187,19 @@ export function Header() {
                 </Button>
               </div>
               <nav className="flex flex-col space-y-2 pt-6 flex-grow">
+                {user && (
+                  <Link
+                    href="/profile"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={cn(
+                      'flex items-center gap-3 rounded-md p-3 text-lg font-medium transition-colors hover:bg-secondary',
+                      pathname === '/profile' ? 'bg-secondary text-primary' : 'text-foreground/80'
+                    )}
+                  >
+                    <User className="h-5 w-5" />
+                    <span>Profile</span>
+                  </Link>
+                )}
                 {navLinks.map(({ href, label, icon: Icon }) => (
                   <Link
                     key={href}
@@ -137,7 +215,7 @@ export function Header() {
                   </Link>
                 ))}
               </nav>
-              <div className="mt-auto border-t pt-4">
+              <div className="mt-auto border-t pt-4 space-y-2">
                 <Button asChild className="w-full relative justify-start text-lg p-6">
                   <Link href="/cart" onClick={() => setIsMobileMenuOpen(false)}>
                     <ShoppingCart className="mr-3 h-5 w-5" />
@@ -149,6 +227,16 @@ export function Header() {
                     )}
                   </Link>
                 </Button>
+                 <Button 
+                    className="w-full justify-start text-lg p-6"
+                    onClick={() => {
+                        if (user) logout(); else login();
+                        setIsMobileMenuOpen(false);
+                    }}
+                  >
+                    {user ? <LogOut className="mr-3 h-5 w-5"/> : <LogIn className="mr-3 h-5 w-5"/>}
+                    {user ? "Logout" : "Login"}
+                 </Button>
               </div>
             </SheetContent>
           </Sheet>
