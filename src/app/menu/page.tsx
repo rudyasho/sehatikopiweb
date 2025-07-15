@@ -1,13 +1,12 @@
+
+'use client';
+
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import type { Metadata } from 'next';
+import { useToast } from '@/hooks/use-toast';
 
-export const metadata: Metadata = {
-  title: 'Our Menu',
-  description: 'Explore our cafe menu, featuring classic espresso drinks, refreshing cold brews, manual brews, and our unique signature creations.',
-};
 
 const menuItems = {
   hot: [
@@ -35,6 +34,14 @@ const menuItems = {
 type MenuCategory = keyof typeof menuItems;
 
 const Page = () => {
+    const { toast } = useToast();
+
+    const handleOrderClick = (itemName: string) => {
+        toast({
+            title: "Item Added!",
+            description: `1x ${itemName}. Please confirm your order at the counter.`,
+        });
+    };
   return (
     <div className="bg-secondary/50">
       <div className="container mx-auto px-4 py-12">
@@ -65,7 +72,7 @@ const Page = () => {
                     </CardContent>
                     <CardFooter className="flex justify-between items-center p-4 bg-secondary/50">
                       <span className="text-lg font-bold text-primary">{item.price}</span>
-                      <Button variant="secondary">Order</Button>
+                      <Button variant="secondary" onClick={() => handleOrderClick(item.name)}>Order</Button>
                     </CardFooter>
                   </Card>
                 ))}
