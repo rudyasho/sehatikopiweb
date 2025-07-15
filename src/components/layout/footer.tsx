@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -37,9 +38,15 @@ export function Footer() {
               Roasting the finest Indonesian coffee with heart and passion.
             </p>
             <div className="flex space-x-4">
-              <Link href="#" aria-label="Instagram"><Instagram className="h-5 w-5 hover:text-primary" /></Link>
-              <Link href="#" aria-label="Facebook"><Facebook className="h-5 w-5 hover:text-primary" /></Link>
-              <Link href="#" aria-label="Twitter"><Twitter className="h-5 w-5 hover:text-primary" /></Link>
+              <a href="#" aria-label="Instagram" className="text-[#E4405F] transition-opacity hover:opacity-80">
+                <Instagram className="h-6 w-6" />
+              </a>
+              <a href="#" aria-label="Facebook" className="text-[#1877F2] transition-opacity hover:opacity-80">
+                <Facebook className="h-6 w-6" />
+              </a>
+              <a href="#" aria-label="Twitter" className="text-[#1DA1F2] transition-opacity hover:opacity-80">
+                <Twitter className="h-6 w-6" />
+              </a>
             </div>
           </div>
           <div>
