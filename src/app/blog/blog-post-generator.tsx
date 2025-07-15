@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Wand2, Clipboard, Check } from 'lucide-react';
-import { Badge } from '../ui/badge';
+import { Badge } from '@/components/ui/badge';
 
 const blogPostSchema = z.object({
   topic: z.string().min(5, 'Please provide a more detailed topic.'),
