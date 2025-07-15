@@ -52,7 +52,7 @@ export function Header() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { cart } = useCart();
-  const { user, loading, loginWithGoogle, logout } = useAuth();
+  const { user, loading, logout } = useAuth();
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -121,9 +121,11 @@ export function Header() {
     }
 
     return (
-      <Button onClick={loginWithGoogle}>
-        <LogIn />
-        Login
+      <Button asChild>
+        <Link href="/login">
+          <LogIn />
+          Login
+        </Link>
       </Button>
     );
   }
@@ -148,15 +150,13 @@ export function Header() {
       );
     }
     return (
-      <Button 
+      <Button asChild
         className="w-full justify-start text-lg p-6"
-        onClick={() => {
-          loginWithGoogle();
-          setIsMobileMenuOpen(false);
-        }}
       >
-        <LogIn />
-        Login with Google
+        <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
+            <LogIn />
+            Login / Sign Up
+        </Link>
       </Button>
     )
   }
