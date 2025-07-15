@@ -5,13 +5,15 @@ This is a Next.js application for "Sehati Kopi Digital", a fictional Indonesian 
 ## Core Features
 
 - **Engaging Homepage**: A welcoming landing page showcasing the brand and key offerings.
-- **Product Catalog**: A complete list of all coffee products available for purchase.
-- **Digital Menu**: An in-store menu for customers.
-- **Dynamic Shopping Cart**: Full-featured cart to add, update, and remove products.
-- **Event Schedule**: Listings for coffee cuppings, workshops, and other events.
+- **Product Catalog**: A complete list of all coffee products available for purchase, with dedicated detail pages.
+- **Digital Menu**: An in-store menu for customers, categorized for easy viewing.
+- **Dynamic Shopping Cart**: Full-featured cart to add, update, and remove products, with checkout handled via WhatsApp integration.
+- **Event Schedule**: Listings for coffee cuppings, workshops, and other community events.
 - **Informative Blog**: Articles on coffee culture with dedicated pages for each post.
 - **About & Contact Pages**: Static pages for company information and a functional contact form.
 - **AI Coffee Recommendations**: A Genkit-powered tool to suggest coffee based on user preferences.
+- **Business Dashboard**: An analytics page showing product popularity with charts.
+- **SEO Optimized**: Includes dynamic metadata, a sitemap, and `robots.txt` for optimal search engine ranking.
 
 ## Tech Stack
 
