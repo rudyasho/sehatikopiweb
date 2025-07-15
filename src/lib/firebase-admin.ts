@@ -26,7 +26,7 @@ if (hasServiceAccount && !admin.apps.length) {
     } catch (error: any) {
         console.error("Firebase Admin SDK initialization error:", error.message);
     }
-} else if (!hasServiceAccount) {
+} else if (!admin.apps.length) {
     console.warn("Firebase Admin environment variables are not set. Skipping Admin SDK initialization. Server-side Firebase operations will fail.");
 }
 
