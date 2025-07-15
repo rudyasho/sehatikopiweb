@@ -11,7 +11,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { CheckCircle, Package } from 'lucide-react';
-import type { Metadata } from 'next';
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
@@ -25,7 +24,8 @@ const formatDate = (dateString: string) => {
   });
 };
 
-// This is client-side metadata. 
+// This is a client-side only page, so we can't export metadata directly.
+// In a real-world scenario with server-side rendering, you would export this.
 // export const metadata: Metadata = {
 //   title: 'Order Confirmed',
 //   description: 'Thank you for your order from Sehati Kopi!',

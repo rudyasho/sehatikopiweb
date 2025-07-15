@@ -1,3 +1,4 @@
+
 // src/app/profile/page.tsx
 'use client';
 
@@ -10,9 +11,9 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Separator } from '@/components/ui/separator';
 import { Loader2, User, Mail, LogOut } from 'lucide-react';
-import type { Metadata } from 'next';
 
-// This is client-side metadata. For a full implementation, you'd fetch this.
+// This is a client-side only page, so we can't export metadata directly.
+// In a real-world scenario with server-side rendering, you would export this.
 // export const metadata: Metadata = {
 //   title: 'My Profile',
 //   description: 'View your profile information and order history.',
