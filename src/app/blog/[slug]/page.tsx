@@ -8,9 +8,9 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { getBlogPosts, type BlogPost as BlogPostType } from '../page';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { products, type Product } from '@/lib/products-data';
-import { Card, CardContent, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardTitle, CardDescription, CardFooter, CardHeader } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 
@@ -82,6 +82,54 @@ const staticContent: Record<string, {author: string, date: string, content: stri
 };
 
 type PostWithContent = BlogPostType & { content: string, author: string, date: string };
+
+const RecommendedBlogs = ({ currentSlug }: { currentSlug: string }) => {
+  const recommendedPosts = useMemo(() => {
+    const allPosts = getBlogPosts();
+    return allPosts
+      .filter(p => p.slug !== currentSlug) // Exclude the current post
+      .sort(() => 0.5 - Math.random()) // Shuffle the array
+      .slice(0, 3); // Take the first 3
+  }, [currentSlug]);
+
+  if (recommendedPosts.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="mt-12">
+       <Separator />
+       <div className="py-12">
+        <h2 className="font-headline text-3xl text-primary text-center mb-8">Continue Reading</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {recommendedPosts.map(post => (
+              <Card key={post.slug} className="flex flex-col overflow-hidden shadow-lg transform hover:-translate-y-1 transition-transform duration-300 bg-secondary/50">
+                <CardHeader className="p-0">
+                  <Link href={`/blog/${post.slug}`}>
+                    <div className="relative h-52 w-full">
+                      <Image src={post.image} alt={post.title} layout="fill" objectFit="cover" data-ai-hint={post.aiHint ?? 'coffee'} />
+                    </div>
+                  </Link>
+                </CardHeader>
+                <CardContent className="p-4 flex-grow">
+                  <Badge variant="secondary" className="mb-2">{post.category}</Badge>
+                  <Link href={`/blog/${post.slug}`}>
+                    <CardTitle className="font-headline text-xl text-primary hover:underline">{post.title}</CardTitle>
+                  </Link>
+                  <CardDescription className="mt-1 text-base">{post.excerpt.substring(0,80)}...</CardDescription>
+                </CardContent>
+                 <CardFooter className="p-4 pt-0">
+                   <Button asChild variant="link" className="p-0 h-auto text-primary">
+                      <Link href={`/blog/${post.slug}`}>Read More &rarr;</Link>
+                    </Button>
+                </CardFooter>
+              </Card>
+            ))}
+        </div>
+       </div>
+    </div>
+  )
+}
 
 const RecommendedProducts = () => {
   const topProducts = products
@@ -186,6 +234,7 @@ export default function BlogPostPage() {
             className="prose lg:prose-xl max-w-none text-foreground/90 prose-headings:text-primary prose-h3:font-headline"
             dangerouslySetInnerHTML={{ __html: post.content }}
           />
+           <RecommendedBlogs currentSlug={post.slug} />
            <RecommendedProducts />
         </article>
       </div>
