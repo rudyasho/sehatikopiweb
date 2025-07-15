@@ -219,6 +219,22 @@ export function Header() {
                 </Button>
               </div>
               <nav className="flex flex-col space-y-2 pt-6 flex-grow">
+                {navLinks.map(({ href, label, icon: Icon }) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={cn(
+                      'flex items-center gap-3 rounded-md p-3 text-lg font-medium transition-colors hover:bg-secondary',
+                      pathname === href ? 'bg-secondary text-primary' : 'text-foreground/80'
+                    )}
+                  >
+                    <Icon className="h-5 w-5" />
+                    <span>{label}</span>
+                  </Link>
+                ))}
+              </nav>
+              <div className="mt-auto border-t pt-4 space-y-2">
                 {isClient && user && (
                   <>
                   <Link
@@ -245,22 +261,6 @@ export function Header() {
                   </Link>
                   </>
                 )}
-                {navLinks.map(({ href, label, icon: Icon }) => (
-                  <Link
-                    key={href}
-                    href={href}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className={cn(
-                      'flex items-center gap-3 rounded-md p-3 text-lg font-medium transition-colors hover:bg-secondary',
-                      pathname === href ? 'bg-secondary text-primary' : 'text-foreground/80'
-                    )}
-                  >
-                    <Icon className="h-5 w-5" />
-                    <span>{label}</span>
-                  </Link>
-                ))}
-              </nav>
-              <div className="mt-auto border-t pt-4 space-y-2">
                  <Button asChild className="w-full relative justify-start text-lg p-6">
                   <Link href="/search" onClick={() => setIsMobileMenuOpen(false)}>
                     <Search className="mr-3 h-5 w-5" />
