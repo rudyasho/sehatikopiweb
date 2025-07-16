@@ -9,6 +9,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { CartProvider } from '@/context/cart-context';
 import { AuthProvider } from '@/context/auth-context';
 import { ThemeProvider } from '@/components/layout/theme-provider';
+import React from 'react';
 
 
 export default function RootLayout({
