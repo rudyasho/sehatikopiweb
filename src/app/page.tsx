@@ -48,9 +48,6 @@ export const metadata: Metadata = {
 
 export default function Home() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-8rem)]">
-      <h1 className="text-4xl font-headline">Welcome to Sehati Kopi Digital</h1>
-      <p className="mt-4">Our application is under construction.</p>
-    </div>
+    <HomeClient />
   );
 }
