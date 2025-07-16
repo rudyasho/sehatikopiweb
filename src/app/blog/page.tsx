@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { getBlogPosts, type BlogPost } from '@/lib/blog-data';
 import type { Metadata } from 'next';
 import { format } from 'date-fns';
@@ -17,8 +16,6 @@ export const metadata: Metadata = {
 export default async function BlogPage() {
   const blogPosts = await getBlogPosts();
   
-  const [latestPost, ...otherPosts] = blogPosts.length > 0 ? [blogPosts[0], blogPosts.slice(1)] : [null, []];
-
   if (blogPosts.length === 0) {
      return (
         <div className="bg-secondary/50">
@@ -38,32 +35,8 @@ export default async function BlogPage() {
           <p className="mt-2 text-lg text-foreground/80">Stories, guides, and insights from the world of coffee.</p>
         </div>
 
-        {/* Featured Post */}
-        {latestPost && (
-            <Card className="mb-12 shadow-xl grid md:grid-cols-2 overflow-hidden bg-background">
-                <div className="relative min-h-[300px] md:h-full">
-                     <Image src={latestPost.image || 'https://placehold.co/600x400.png'} alt={latestPost.title || 'Featured blog post image'} layout="fill" objectFit="cover" data-ai-hint={latestPost.aiHint ?? 'coffee'} />
-                </div>
-                <div className="p-8 flex flex-col justify-center">
-                    <div className="flex items-center gap-4 mb-4 text-sm">
-                      <Badge variant="secondary" className="w-fit">{latestPost.category}</Badge>
-                      {latestPost.date && <span className="text-muted-foreground">{format(new Date(latestPost.date), "MMMM d, yyyy")}</span>}
-                    </div>
-                    <h2 className="font-headline text-3xl md:text-4xl text-primary font-bold mb-4">{latestPost.title}</h2>
-                    <p className="text-lg text-foreground/80 mb-6">{latestPost.excerpt}</p>
-                    <Button asChild size="lg" className="w-fit">
-                        <Link href={`/blog/${latestPost.slug}`}>Read More &rarr;</Link>
-                    </Button>
-                </div>
-            </Card>
-        )}
-        
-        <Separator className="my-12"/>
-
-        {/* Other Posts */}
-        <h3 className="font-headline text-3xl text-primary mb-8 text-center">All Articles</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {otherPosts.map((post) => (
+          {blogPosts.map((post) => (
             <Card key={`${post.id}-${post.slug}`} className="flex flex-col overflow-hidden shadow-lg transform hover:-translate-y-1 transition-transform duration-300 bg-background">
               <CardHeader className="p-0">
                 <Link href={`/blog/${post.slug}`}>
