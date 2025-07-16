@@ -20,6 +20,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 // in a layout or use a library to manage it.
 
 export default function ProductDetailPage({ params }: { params: { slug: string } }) {
+  const [slug, setSlug] = useState<string | null>(null);
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
@@ -28,9 +29,16 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
   const { toast } = useToast();
 
   useEffect(() => {
+    // Safely set the slug from params once the component has mounted on the client.
+    setSlug(params.slug);
+  }, [params.slug]);
+
+  useEffect(() => {
+    if (!slug) return;
+
     async function fetchProduct() {
       setIsLoading(true);
-      const fetchedProduct = await getProductBySlug(params.slug);
+      const fetchedProduct = await getProductBySlug(slug);
       if (fetchedProduct) {
         setProduct(fetchedProduct);
       } else {
@@ -39,7 +47,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
       setIsLoading(false);
     }
     fetchProduct();
-  }, [params.slug]);
+  }, [slug]);
 
 
   const handleAddToCart = () => {
