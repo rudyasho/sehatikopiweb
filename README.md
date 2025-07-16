@@ -15,9 +15,14 @@ This is a Next.js application for "Sehati Kopi Digital", a fictional Indonesian 
     - **Coffee Recommender**: A Genkit-powered tool to suggest coffee based on user preferences. The recommendation result is seamlessly integrated with the product catalog.
     - **AI Story Teller**: Logged-in users can listen to an AI-generated audio story for blog posts, enhancing the reading experience.
     - **AI Content Generation**: The admin dashboard includes a tool to generate entire blog posts (text and image) from a simple topic prompt.
-- **Business Dashboard**: An analytics page for admins showing key business metrics and charts for product popularity, roast, and origin distribution. It also serves as a control panel for adding new products and generating blog content.
+- **Business Dashboard**: A comprehensive admin panel with multiple functions:
+    - **Analytics**: An overview page showing key business metrics and charts for product popularity, roast, and origin distribution.
+    - **Product Management**: A full CRUD (Create, Read, Update, Delete) interface for managing coffee products, including an AI tool for image generation.
+    - **Blog Management**: A full CRUD interface for blog posts, featuring a rich Markdown editor.
+    - **Event Management**: A full CRUD interface for creating and managing public events.
+    - **User Management**: A view for admins to see all registered users, disable/enable their accounts, or delete them.
 - **Centralized Search**: A dedicated search page to find products and blog articles efficiently.
-- **User Authentication**: A mock authentication system allowing users to "log in" and view a profile page with mock order history and access privileged features.
+- **User Authentication**: A complete authentication system using Firebase (Email/Password & Google) allowing users to sign up, log in, and view a profile page with mock order history. Admin roles grant access to protected features.
 - **SEO Optimized**: Includes dynamic metadata, a `sitemap.xml`, and `robots.txt` for optimal search engine ranking.
 - **Dark Mode**: A fully implemented dark mode for user preference.
 
@@ -29,6 +34,7 @@ This is a Next.js application for "Sehati Kopi Digital", a fictional Indonesian 
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/)
 - **UI Components**: [ShadCN UI](https://ui.shadcn.com/)
 - **Generative AI**: [Genkit](https://firebase.google.com/docs/genkit)
+- **Authentication & Database**: [Firebase](https://firebase.google.com/) (Auth, Firestore)
 - **State Management**: React Context
 - **Email Delivery**: [Resend](https://resend.com)
 
@@ -47,10 +53,26 @@ To get a local copy up and running, follow these simple steps.
    ```sh
    git clone <your-repo-url>
    ```
-2. Create a `.env` file in the root of the project and add your Resend API key:
+2. Create a `.env` file in the root of the project and add your Firebase and Resend API keys. You can get your Firebase web app config from the Firebase console.
    ```env
-   NEXT_PUBLIC_RESEND_API_KEY=re_xxxxxxxxxxxx
+   # Firebase Client SDK Keys
+   NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSy...
+   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+   NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
+   NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+   NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
+   NEXT_PUBLIC_FIREBASE_APP_ID=1:...:web:...
+
+   # Firebase Admin SDK Keys (for server-side operations)
+   FIREBASE_PROJECT_ID=your-project-id
+   FIREBASE_CLIENT_EMAIL=firebase-adminsdk-...@your-project.iam.gserviceaccount.com
+   FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMII...\n-----END PRIVATE KEY-----\n"
+
+   # Resend API Key (for contact form)
+   NEXT_PUBLIC_RESEND_API_KEY=re_...
    ```
+   **Note**: For `FIREBASE_PRIVATE_KEY`, ensure the value is enclosed in double quotes (`"`) and newlines are represented as `\n`.
+
 3. Install NPM packages
    ```sh
    npm install
@@ -64,6 +86,7 @@ The application will be available at `http://localhost:9002`.
 
 ### Admin Access
 
-To access the dashboard and other admin features, use the following credentials in the login dialog:
-- **Email**: `dev@sidepe.com` or `rd.lapawawoi@gmail.com`
-- **Password**: `admin123`
+To access the dashboard and other admin features, use one of the emails pre-configured in `src/context/auth-context.ts`:
+- **Default Emails**: `dev@sidepe.com` or `rd.lapawawoi@gmail.com`
+
+You can sign up with one of these emails and any password to gain admin access.
