@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/auth-context';
+import { useAuth, ADMIN_EMAILS } from '@/context/auth-context';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,8 +18,6 @@ import { Badge } from '@/components/ui/badge';
 //   title: 'My Profile',
 //   description: 'View your profile information and order history.',
 // };
-
-const ADMIN_EMAILS = ['dev@sidepe.com', 'rd.lapawawoi@gmail.com'];
 
 const mockOrderHistory = [
   { id: 'ORD-2024-001', date: '2024-08-10', total: 255000, status: 'Shipped' },

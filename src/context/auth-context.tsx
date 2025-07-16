@@ -1,4 +1,3 @@
-
 // src/context/auth-context.tsx
 'use client';
 
@@ -10,6 +9,7 @@ import { useRouter } from 'next/navigation';
 export type User = FirebaseUser;
 
 export const SUPER_ADMIN_UID = "n7P0ALYxjSWIYZdybJWB7udBjvP2";
+export const ADMIN_EMAILS = ['dev@sidepe.com', 'rd.lapawawoi@gmail.com'];
 
 export type AppUser = {
   uid: string;
@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   
   const handleAuthSuccess = (firebaseUser: FirebaseUser | null) => {
       if (firebaseUser) {
-          if (firebaseUser.email === 'dev@sidepe.com') {
+          if (firebaseUser.email && ADMIN_EMAILS.includes(firebaseUser.email)) {
             router.push('/dashboard');
           } else {
             router.push('/profile');
