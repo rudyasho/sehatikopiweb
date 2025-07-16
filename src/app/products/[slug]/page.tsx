@@ -20,7 +20,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 // in a layout or use a library to manage it.
 
 export default function ProductDetailPage({ params }: { params: { slug: string } }) {
-  const { slug } = params;
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
@@ -31,7 +30,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
   useEffect(() => {
     async function fetchProduct() {
       setIsLoading(true);
-      const fetchedProduct = await getProductBySlug(slug);
+      const fetchedProduct = await getProductBySlug(params.slug);
       if (fetchedProduct) {
         setProduct(fetchedProduct);
       } else {
@@ -40,7 +39,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
       setIsLoading(false);
     }
     fetchProduct();
-  }, [slug]);
+  }, [params.slug]);
 
 
   const handleAddToCart = () => {
