@@ -9,7 +9,7 @@ This is a Next.js application for "Sehati Kopi Digital", a fictional Indonesian 
 - **In-Store Digital Menu**: An elegant, categorized menu for in-store customers.
 - **Dynamic Shopping Cart & Checkout**: A full-featured cart to add, update, and remove products. Checkout is handled via WhatsApp integration, followed by a dedicated order confirmation page.
 - **Event Schedule**: Listings for coffee cuppings, workshops, and other community events with interactive registration feedback.
-- **Informative Blog**: Articles on coffee culture with dedicated pages for each post, featuring recommended articles and products.
+- **Informative Blog**: Articles on coffee culture with dedicated pages for each post, featuring recommended articles and products, and social sharing functionality.
 - **About & Contact Pages**: Static pages for company information and a functional contact form powered by Resend for email delivery.
 - **AI-Powered Features**:
     - **Coffee Recommender**: A Genkit-powered tool to suggest coffee based on user preferences. The recommendation result is seamlessly integrated with the product catalog.
@@ -21,6 +21,7 @@ This is a Next.js application for "Sehati Kopi Digital", a fictional Indonesian 
     - **Blog Management**: A full CRUD interface for blog posts, featuring a rich Markdown editor.
     - **Event Management**: A full CRUD interface for creating and managing public events.
     - **User Management**: A view for admins to see all registered users, disable/enable their accounts, or delete them.
+    - **Website Settings**: A dynamic settings panel to manage sitewide contact information and social media links without code changes.
 - **Centralized Search**: A dedicated search page to find products and blog articles efficiently.
 - **User Authentication**: A complete authentication system using Firebase (Email/Password & Google) allowing users to sign up, log in, and view a profile page with mock order history. Admin roles grant access to protected features.
 - **SEO Optimized**: Includes dynamic metadata, a `sitemap.xml`, and `robots.txt` for optimal search engine ranking.
