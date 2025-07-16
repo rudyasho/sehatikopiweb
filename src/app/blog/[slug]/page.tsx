@@ -168,7 +168,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                 <h1 className="font-headline text-3xl md:text-5xl font-bold text-primary">{post.title}</h1>
                 <div className="mt-4 text-sm text-foreground/60">
                 <span>By {post.author}</span>
-                {post.date && <span> | {format(new Date(post.date), "MMMM d, yyyy")}</span>}
+                {post.date && <span> • {format(new Date(post.date), "MMMM d, yyyy")}</span>}
                 </div>
             </header>
 

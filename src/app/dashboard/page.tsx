@@ -69,6 +69,7 @@ const blogPostFormSchema = z.object({
     content: z.string().min(50, "Content needs to be at least 50 characters.").max(500000, "Content is too long. Please reduce its size."),
     image: z.string().url("Please provide a valid image URL."),
     aiHint: z.string().min(2, "AI hint is required for image search."),
+    author: z.string().min(1, "Author name is required."),
 });
 
 type BlogPostFormValues = z.infer<typeof blogPostFormSchema>;
@@ -135,7 +136,7 @@ function BlogGenerator({ currentUser, onPostPublished }: { currentUser: User, on
 
   const blogContentForm = useForm<BlogPostFormValues>({
       resolver: zodResolver(blogPostFormSchema),
-      defaultValues: { title: '', category: 'News', content: '', image: '', aiHint: ''}
+      defaultValues: { title: '', category: 'News', content: '', image: '', aiHint: '', author: currentUser?.displayName || ''}
   });
   
   useEffect(() => {
@@ -145,10 +146,11 @@ function BlogGenerator({ currentUser, onPostPublished }: { currentUser: User, on
             category: generatedPost.category,
             content: generatedPost.content,
             image: imageState.url,
-            aiHint: generatedPost.imagePrompt
+            aiHint: generatedPost.imagePrompt,
+            author: currentUser?.displayName || ''
         });
     }
-  }, [generatedPost, blogContentForm, imageState.url]);
+  }, [generatedPost, blogContentForm, imageState.url, currentUser]);
 
   useEffect(() => {
       blogContentForm.setValue('image', imageState.url);
@@ -197,7 +199,7 @@ function BlogGenerator({ currentUser, onPostPublished }: { currentUser: User, on
     if (!generatedPost || !currentUser.displayName) return;
     setIsPublishing(true);
     try {
-      const newPost = await addBlogPost(data, currentUser.displayName);
+      const newPost = await addBlogPost(data);
       toast({
           title: "Post Published!",
           description: `"${newPost.title}" is now on the blog.`,
@@ -350,27 +352,40 @@ function BlogGenerator({ currentUser, onPostPublished }: { currentUser: User, on
                                 </FormItem>
                             )}
                         />
-                        <FormField
-                            control={blogContentForm.control}
-                            name="category"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Category</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                    <FormControl>
-                                        <SelectTrigger><SelectValue /></SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        <SelectItem value="Brewing Tips">Brewing Tips</SelectItem>
-                                        <SelectItem value="Storytelling">Storytelling</SelectItem>
-                                        <SelectItem value="Coffee Education">Coffee Education</SelectItem>
-                                        <SelectItem value="News">News</SelectItem>
-                                    </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField
+                                control={blogContentForm.control}
+                                name="category"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Category</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger><SelectValue /></SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="Brewing Tips">Brewing Tips</SelectItem>
+                                            <SelectItem value="Storytelling">Storytelling</SelectItem>
+                                            <SelectItem value="Coffee Education">Coffee Education</SelectItem>
+                                            <SelectItem value="News">News</SelectItem>
+                                        </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={blogContentForm.control}
+                                name="author"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Author</FormLabel>
+                                        <FormControl><Input {...field} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
                         <FormField
                             control={blogContentForm.control}
                             name="content"
@@ -841,21 +856,17 @@ const BlogPostForm = ({ post, onFormSubmit, closeDialog, isCreatingNew, currentU
             content: post?.content || '', 
             image: post?.image || '',
             aiHint: post?.aiHint || '',
+            author: post?.author || currentUser?.displayName || 'Sehati Kopi Team',
         },
     });
 
     const onSubmit = async (data: BlogPostFormValues) => {
-        if (!currentUser?.displayName) {
-            toast({ variant: 'destructive', title: "Error", description: "Author name is missing."});
-            return;
-        }
-
         setIsSubmitting(true);
         try {
             if (isCreatingNew) {
-                await addBlogPost(data, currentUser.displayName);
+                await addBlogPost(data);
                 toast({ title: "Post Created!", description: `"${data.title}" has been created.` });
-                form.reset({ category: 'Coffee Education', title: '', content: '', image: '', aiHint: '' });
+                form.reset({ category: 'Coffee Education', title: '', content: '', image: '', aiHint: '', author: currentUser?.displayName || '' });
             } else if (post) {
                 await updateBlogPost(post.id, data);
                 toast({ title: "Post Updated!", description: `"${data.title}" has been updated.` });
@@ -886,25 +897,34 @@ const BlogPostForm = ({ post, onFormSubmit, closeDialog, isCreatingNew, currentU
                             <FormMessage />
                         </FormItem>
                     )} />
-                    <FormField control={form.control} name="category" render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Category</FormLabel>
-                             <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select a category" />
-                                </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                <SelectItem value="Brewing Tips">Brewing Tips</SelectItem>
-                                <SelectItem value="Storytelling">Storytelling</SelectItem>
-                                <SelectItem value="Coffee Education">Coffee Education</SelectItem>
-                                <SelectItem value="News">News</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <FormMessage />
-                        </FormItem>
-                    )} />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField control={form.control} name="category" render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Category</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select a category" />
+                                    </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                    <SelectItem value="Brewing Tips">Brewing Tips</SelectItem>
+                                    <SelectItem value="Storytelling">Storytelling</SelectItem>
+                                    <SelectItem value="Coffee Education">Coffee Education</SelectItem>
+                                    <SelectItem value="News">News</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                        )} />
+                         <FormField control={form.control} name="author" render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Author</FormLabel>
+                                <FormControl><Input {...field} /></FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )} />
+                    </div>
                     <FormField control={form.control} name="image" render={({ field }) => (
                         <FormItem>
                             <FormLabel>Image URL</FormLabel>
@@ -965,6 +985,7 @@ const ManageBlogPostsView = ({ onPostsChanged, initialPostToEdit }: { onPostsCha
     const [isLoading, setIsLoading] = useState(true);
     const { toast } = useToast();
     const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
+    const { user } = useAuth();
 
     const fetchPosts = useCallback(async () => {
         setIsLoading(true);
@@ -1027,7 +1048,7 @@ const ManageBlogPostsView = ({ onPostsChanged, initialPostToEdit }: { onPostsCha
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Title</TableHead>
-                                <TableHead>Category</TableHead>
+                                <TableHead>Author</TableHead>
                                 <TableHead>Date</TableHead>
                                 <TableHead className="text-center">Actions</TableHead>
                             </TableRow>
@@ -1036,7 +1057,7 @@ const ManageBlogPostsView = ({ onPostsChanged, initialPostToEdit }: { onPostsCha
                             {posts.map((post) => (
                                 <TableRow key={post.id}>
                                     <TableCell className="font-medium max-w-xs truncate">{post.title}</TableCell>
-                                    <TableCell><Badge variant="secondary">{post.category}</Badge></TableCell>
+                                    <TableCell className="text-muted-foreground">{post.author}</TableCell>
                                     <TableCell>{post.date ? format(new Date(post.date), "MMM d, yyyy") : 'N/A'}</TableCell>
                                     <TableCell className="text-center space-x-2">
                                         <Dialog open={editingPost?.id === post.id} onOpenChange={(isOpen) => !isOpen && setEditingPost(null)}>
@@ -1049,7 +1070,7 @@ const ManageBlogPostsView = ({ onPostsChanged, initialPostToEdit }: { onPostsCha
                                                 <DialogHeader>
                                                     <DialogTitle className="font-headline text-2xl text-primary">Edit Blog Post</DialogTitle>
                                                 </DialogHeader>
-                                                 {editingPost && <BlogPostForm post={editingPost} onFormSubmit={handleFormSubmit} closeDialog={() => setEditingPost(null)} />}
+                                                 {editingPost && <BlogPostForm post={editingPost} currentUser={user} onFormSubmit={handleFormSubmit} closeDialog={() => setEditingPost(null)} />}
                                             </DialogContent>
                                         </Dialog>
 

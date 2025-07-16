@@ -24,6 +24,7 @@ export type NewBlogPostData = {
     content: string;
     image: string;
     aiHint: string;
+    author: string;
 }
 
 const blogCollection = dbAdmin?.collection('blog');
@@ -69,7 +70,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
     return post || null;
 }
 
-export async function addBlogPost(post: NewBlogPostData, authorName: string): Promise<BlogPost> {
+export async function addBlogPost(post: NewBlogPostData): Promise<BlogPost> {
     if (!dbAdmin || !blogCollection) throw new Error("Firestore Admin not initialized.");
 
     const slug = post.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
@@ -78,7 +79,6 @@ export async function addBlogPost(post: NewBlogPostData, authorName: string): Pr
         ...post,
         excerpt: createExcerpt(post.content),
         slug: slug,
-        author: authorName,
         date: new Date().toISOString(),
     };
 
@@ -90,7 +90,7 @@ export async function addBlogPost(post: NewBlogPostData, authorName: string): Pr
     } as BlogPost;
 }
 
-export type BlogPostUpdateData = Partial<Pick<BlogPost, 'title' | 'category' | 'content' | 'image' | 'aiHint'>>;
+export type BlogPostUpdateData = Partial<Pick<BlogPost, 'title' | 'category' | 'content' | 'image' | 'aiHint' | 'author'>>;
 
 export async function updateBlogPost(id: string, data: BlogPostUpdateData): Promise<void> {
     if (!dbAdmin || !blogCollection) throw new Error("Firestore Admin not initialized.");
