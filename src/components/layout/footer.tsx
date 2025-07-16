@@ -2,14 +2,28 @@
 "use client";
 
 import Link from 'next/link';
-import { Coffee, Instagram, Facebook, Twitter } from 'lucide-react';
+import { Coffee, Instagram, Facebook, Twitter, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { FormEvent } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
+import { getSettings, WebsiteSettings } from '@/lib/settings-data';
 
 export function Footer() {
   const { toast } = useToast();
+  const [settings, setSettings] = useState<WebsiteSettings | null>(null);
+
+  useEffect(() => {
+    async function fetchSettings() {
+      try {
+        const settingsData = await getSettings();
+        setSettings(settingsData);
+      } catch (error) {
+        console.error("Failed to load footer settings:", error);
+      }
+    }
+    fetchSettings();
+  }, []);
 
   const handleNewsletterSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -38,15 +52,23 @@ export function Footer() {
               Roasting the finest Indonesian coffee with heart and passion.
             </p>
             <div className="flex space-x-4">
-              <a href="#" aria-label="Instagram" className="text-[#E4405F] transition-opacity hover:opacity-80">
-                <Instagram className="h-6 w-6" />
-              </a>
-              <a href="#" aria-label="Facebook" className="text-[#1877F2] transition-opacity hover:opacity-80">
-                <Facebook className="h-6 w-6" />
-              </a>
-              <a href="#" aria-label="Twitter" className="text-[#1DA1F2] transition-opacity hover:opacity-80">
-                <Twitter className="h-6 w-6" />
-              </a>
+              {settings ? (
+                <>
+                  <a href={settings.socialInstagram} aria-label="Instagram" className="text-[#E4405F] transition-opacity hover:opacity-80">
+                    <Instagram className="h-6 w-6" />
+                  </a>
+                  <a href={settings.socialFacebook} aria-label="Facebook" className="text-[#1877F2] transition-opacity hover:opacity-80">
+                    <Facebook className="h-6 w-6" />
+                  </a>
+                  <a href={settings.socialTwitter} aria-label="Twitter" className="text-[#1DA1F2] transition-opacity hover:opacity-80">
+                    <Twitter className="h-6 w-6" />
+                  </a>
+                </>
+              ) : (
+                <div className="h-6 w-24 flex items-center">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                </div>
+              )}
             </div>
           </div>
           <div>
@@ -62,11 +84,19 @@ export function Footer() {
           </div>
           <div>
             <h4 className="font-semibold mb-4">Contact Us</h4>
-            <ul className="space-y-2 text-sm text-foreground/80">
-              <li>Jl. Kopi Nikmat No. 1, Jakarta, Indonesia</li>
-              <li>info@sehatikopi.id</li>
-              <li>+62 123 4567 890</li>
-            </ul>
+             {settings ? (
+              <ul className="space-y-2 text-sm text-foreground/80">
+                <li>{settings.contactAddress}</li>
+                <li>{settings.contactEmail}</li>
+                <li>{settings.contactPhone}</li>
+              </ul>
+            ) : (
+              <div className="space-y-2">
+                <div className="h-4 w-3/4 rounded bg-muted animate-pulse"></div>
+                <div className="h-4 w-1/2 rounded bg-muted animate-pulse"></div>
+                <div className="h-4 w-1/2 rounded bg-muted animate-pulse"></div>
+              </div>
+            )}
           </div>
           <div>
             <h4 className="font-semibold mb-4">Newsletter</h4>

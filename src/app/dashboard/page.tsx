@@ -1,4 +1,5 @@
 
+
 // src/app/dashboard/page.tsx
 'use client';
 
@@ -7,7 +8,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth, type User, type AppUser, SUPER_ADMIN_UID, ADMIN_EMAILS } from '@/context/auth-context';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ProductPopularityChart } from './product-popularity-chart';
-import { Coffee, Star, Calendar, Newspaper, Loader2, PlusCircle, Wand2, Edit, BarChart3, Bot, LayoutGrid, Send, Clipboard, Check, Save, ListOrdered, Trash2, BookText, Image as ImageIcon, FileText, CalendarCheck, Clock, MapPin, CalendarPlus, FilePlus2, Users } from 'lucide-react';
+import { Coffee, Star, Calendar, Newspaper, Loader2, PlusCircle, Wand2, Edit, BarChart3, Bot, LayoutGrid, Send, Clipboard, Check, Save, ListOrdered, Trash2, BookText, Image as ImageIcon, FileText, CalendarCheck, Clock, MapPin, CalendarPlus, FilePlus2, Users, Settings } from 'lucide-react';
 import { addProduct, getProducts, updateProduct, deleteProduct, type Product } from '@/lib/products-data';
 import { RoastDistributionChart } from './roast-distribution-chart';
 import { OriginDistributionChart } from './origin-distribution-chart';
@@ -34,11 +35,12 @@ import { BlogEditor } from './blog-editor';
 import { addEvent, getEvents, updateEvent, deleteEvent, type Event, type EventFormData } from '@/lib/events-data';
 import { format } from 'date-fns';
 import { listAllUsers, updateUserDisabledStatus, deleteUserAccount } from '@/lib/users-data';
+import { getSettings, updateSettings, type WebsiteSettings, type SettingsFormData } from '@/lib/settings-data';
 
 
 const formatCurrency = (amount: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
 
-type DashboardView = 'overview' | 'addProduct' | 'addBlog' | 'blogGenerator' | 'manageProducts' | 'manageBlog' | 'manageEvents' | 'manageUsers';
+type DashboardView = 'overview' | 'addProduct' | 'addBlog' | 'blogGenerator' | 'manageProducts' | 'manageBlog' | 'manageEvents' | 'manageUsers' | 'settings';
 export type GeneratedPost = GenerateBlogPostOutput;
 
 
@@ -82,6 +84,16 @@ const eventFormSchema = z.object({
 });
 
 type EventFormValues = z.infer<typeof eventFormSchema>;
+
+const settingsFormSchema = z.object({
+  contactPhone: z.string().min(10, "Phone number is required."),
+  contactEmail: z.string().email("A valid email is required."),
+  contactAddress: z.string().min(10, "Address is required."),
+  socialInstagram: z.string().url("A valid Instagram URL is required."),
+  socialFacebook: z.string().url("A valid Facebook URL is required."),
+  socialTwitter: z.string().url("A valid Twitter/X URL is required."),
+});
+
 
 const MetricCard = ({ title, value, icon: Icon, isLoading }: { title: string, value: string | number, icon: React.ElementType, isLoading?: boolean }) => {
     return (
@@ -1401,6 +1413,109 @@ const ManageUsersView = ({ currentUser }: { currentUser: User }) => {
     );
 };
 
+const SettingsView = () => {
+    const { toast } = useToast();
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const form = useForm<SettingsFormData>({
+        resolver: zodResolver(settingsFormSchema),
+    });
+
+    useEffect(() => {
+        const fetchSettings = async () => {
+            setIsLoading(true);
+            try {
+                const settingsData = await getSettings();
+                form.reset(settingsData);
+            } catch (error) {
+                console.error("Failed to load settings:", error);
+                toast({ variant: 'destructive', title: 'Error', description: 'Could not load website settings.' });
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchSettings();
+    }, [form, toast]);
+
+    const onSubmit = async (data: SettingsFormData) => {
+        setIsSubmitting(true);
+        try {
+            await updateSettings(data);
+            toast({ title: "Settings Saved!", description: "Your website settings have been updated." });
+        } catch (error) {
+            console.error("Failed to save settings:", error);
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not save settings.' });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+    
+    if (isLoading) {
+        return (
+            <Card className="shadow-lg bg-background p-6">
+                <Skeleton className="h-8 w-1/3 mb-6" />
+                <div className="space-y-4">
+                    {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
+                </div>
+            </Card>
+        )
+    }
+
+    return (
+        <Card className="shadow-lg bg-background">
+            <CardHeader>
+                <CardTitle className="font-headline text-2xl text-primary flex items-center gap-2">
+                    <Settings /> Website Settings
+                </CardTitle>
+                <CardDescription>
+                    Manage your site's contact information and social media links here.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                        <Card className="p-6 bg-secondary/50">
+                            <h3 className="text-lg font-semibold text-primary mb-4">Contact Information</h3>
+                             <div className="space-y-4">
+                                <FormField control={form.control} name="contactPhone" render={({ field }) => (
+                                    <FormItem><FormLabel>Phone Number</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                )}/>
+                                 <FormField control={form.control} name="contactEmail" render={({ field }) => (
+                                    <FormItem><FormLabel>Email Address</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>
+                                )}/>
+                                 <FormField control={form.control} name="contactAddress" render={({ field }) => (
+                                    <FormItem><FormLabel>Physical Address</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
+                                )}/>
+                             </div>
+                        </Card>
+                        
+                        <Card className="p-6 bg-secondary/50">
+                             <h3 className="text-lg font-semibold text-primary mb-4">Social Media Links</h3>
+                             <div className="space-y-4">
+                                <FormField control={form.control} name="socialInstagram" render={({ field }) => (
+                                    <FormItem><FormLabel>Instagram URL</FormLabel><FormControl><Input type="url" {...field} /></FormControl><FormMessage /></FormItem>
+                                )}/>
+                                 <FormField control={form.control} name="socialFacebook" render={({ field }) => (
+                                    <FormItem><FormLabel>Facebook URL</FormLabel><FormControl><Input type="url" {...field} /></FormControl><FormMessage /></FormItem>
+                                )}/>
+                                 <FormField control={form.control} name="socialTwitter" render={({ field }) => (
+                                    <FormItem><FormLabel>Twitter (X) URL</FormLabel><FormControl><Input type="url" {...field} /></FormControl><FormMessage /></FormItem>
+                                )}/>
+                             </div>
+                        </Card>
+
+                        <Button type="submit" size="lg" disabled={isSubmitting}>
+                            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2"/>}
+                            Save Settings
+                        </Button>
+                    </form>
+                </Form>
+            </CardContent>
+        </Card>
+    );
+};
+
 
 const DashboardPage = () => {
   const { user, loading } = useAuth();
@@ -1510,6 +1625,8 @@ const DashboardPage = () => {
             return <ManageEventsView onEventsChanged={handleDataChange} />;
         case 'manageUsers':
             return <ManageUsersView currentUser={user} />;
+        case 'settings':
+            return <SettingsView />;
         default:
             return <AnalyticsOverview stats={stats} products={products} isLoading={isDataLoading} />;
     }
@@ -1523,6 +1640,7 @@ const DashboardPage = () => {
       { id: 'addBlog', label: 'Create Post', icon: FilePlus2 },
       { id: 'manageEvents', label: 'Manage Events', icon: CalendarCheck },
       { id: 'manageUsers', label: 'Manage Users', icon: Users },
+      { id: 'settings', label: 'Website Settings', icon: Settings },
       { id: 'blogGenerator', label: 'AI Blog Generator', icon: Bot },
   ];
 

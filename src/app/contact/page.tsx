@@ -1,15 +1,60 @@
+// src/app/contact/page.tsx
+'use client';
+
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Phone, Mail, MapPin, Share2 } from 'lucide-react';
+import { Phone, Mail, MapPin, Share2, Loader2 } from 'lucide-react';
 import { ContactForm } from './contact-form';
 import type { Metadata } from 'next';
+import { useEffect, useState } from 'react';
+import { getSettings, WebsiteSettings } from '@/lib/settings-data';
+import { Skeleton } from '@/components/ui/skeleton';
 
-export const metadata: Metadata = {
-  title: 'Contact Us',
-  description: 'Have a question or want to visit us? Find our contact details, location map, and a quick form to get in touch with the Sehati Kopi team.',
-};
+
+// We can't export Metadata from a client component directly
+// export const metadata: Metadata = { ... };
+
+const ContactInfoSkeleton = () => (
+    <div className="space-y-4">
+        <div className="flex items-center gap-4">
+            <Skeleton className="h-6 w-6 rounded-full" />
+            <Skeleton className="h-6 w-3/4" />
+        </div>
+        <div className="flex items-center gap-4">
+            <Skeleton className="h-6 w-6 rounded-full" />
+            <Skeleton className="h-6 w-1/2" />
+        </div>
+        <div className="flex items-center gap-4">
+            <Skeleton className="h-6 w-6 rounded-full" />
+            <Skeleton className="h-6 w-1/2" />
+        </div>
+        <div className="flex items-center gap-4">
+            <Skeleton className="h-6 w-6 rounded-full" />
+            <Skeleton className="h-6 w-1/2" />
+        </div>
+    </div>
+);
+
 
 const ContactPage = () => {
+    const [settings, setSettings] = useState<WebsiteSettings | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const settingsData = await getSettings();
+                setSettings(settingsData);
+            } catch (error) {
+                console.error("Failed to load settings:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchSettings();
+    }, []);
+
+
   return (
     <div className="bg-background">
       <div className="container mx-auto px-4 py-16">
@@ -35,22 +80,28 @@ const ContactPage = () => {
                 <CardTitle className="font-headline text-2xl text-primary">Contact Information</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 text-lg">
-                <div className="flex items-center gap-4">
-                  <MapPin className="h-6 w-6 text-primary" />
-                  <span>Jl. Kopi Nikmat No. 1, Jakarta, Indonesia</span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <Mail className="h-6 w-6 text-primary" />
-                  <a href="mailto:info@sehatikopi.id" className="hover:underline">info@sehatikopi.id</a>
-                </div>
-                <div className="flex items-center gap-4">
-                  <Phone className="h-6 w-6 text-primary" />
-                  <a href="tel:+621234567890" className="hover:underline">+62 123 4567 890</a>
-                </div>
-                <div className="flex items-center gap-4">
-                    <Share2 className="h-6 w-6 text-primary" />
-                    <a href="https://wa.me/621234567890" target="_blank" rel="noopener noreferrer" className="hover:underline">Chat on WhatsApp</a>
-                </div>
+                {isLoading ? <ContactInfoSkeleton /> : settings ? (
+                  <>
+                    <div className="flex items-center gap-4">
+                      <MapPin className="h-6 w-6 text-primary flex-shrink-0" />
+                      <span>{settings.contactAddress}</span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <Mail className="h-6 w-6 text-primary flex-shrink-0" />
+                      <a href={`mailto:${settings.contactEmail}`} className="hover:underline break-all">{settings.contactEmail}</a>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <Phone className="h-6 w-6 text-primary flex-shrink-0" />
+                      <a href={`tel:${settings.contactPhone.replace(/\s/g, '')}`} className="hover:underline">{settings.contactPhone}</a>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <Share2 className="h-6 w-6 text-primary flex-shrink-0" />
+                        <a href={`https://wa.me/${settings.contactPhone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="hover:underline">Chat on WhatsApp</a>
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-destructive">Could not load contact information.</p>
+                )}
               </CardContent>
             </Card>
             
