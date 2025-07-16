@@ -176,19 +176,6 @@ export const BlogPostClientWrapper = ({ post, children }: { post: BlogPost; chil
 
     return (
         <div>
-            {/* Share buttons and Edit button are client-side interactive */}
-            <div className="max-w-4xl mx-auto mb-4 flex justify-between items-center">
-                <ShareButtons title={post.title} slug={post.slug} />
-                {user && (
-                    <Button asChild variant="outline">
-                        <Link href={`/dashboard?view=manageBlog&edit=${post.id}`}>
-                        <Edit />
-                        Edit Post
-                        </Link>
-                    </Button>
-                )}
-            </div>
-
             {/* The main post content, rendered on the server */}
             {children}
 
@@ -233,3 +220,22 @@ export const BlogPostClientWrapper = ({ post, children }: { post: BlogPost; chil
         </div>
     );
 };
+
+export const PostFooter = ({ post }: { post: BlogPost }) => {
+    const { user } = useAuth();
+    return (
+        <div className="mt-8 pt-8 border-t">
+            <div className="flex justify-between items-center">
+                <ShareButtons title={post.title} slug={post.slug} />
+                {user && (
+                    <Button asChild variant="outline" size="sm">
+                        <Link href={`/dashboard?view=manageBlog&edit=${post.id}`}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        Edit Post
+                        </Link>
+                    </Button>
+                )}
+            </div>
+        </div>
+    )
+}

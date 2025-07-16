@@ -11,7 +11,7 @@ import { Card, CardContent, CardTitle, CardDescription, CardFooter, CardHeader }
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { marked } from 'marked';
-import { BlogPostClientWrapper } from './client-page';
+import { BlogPostClientWrapper, PostFooter } from './client-page';
 import { Metadata, ResolvingMetadata } from 'next';
 import { auth } from 'firebase-admin';
 import { getAuth } from 'firebase/auth';
@@ -182,6 +182,8 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                 dangerouslySetInnerHTML={{ __html: renderedContent as string }}
             />
             
+            <PostFooter post={post} />
+
             <RecommendedBlogs currentSlug={post.slug} />
             <RecommendedProducts />
             </article>
