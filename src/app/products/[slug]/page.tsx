@@ -1,7 +1,7 @@
 
 'use client';
 
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import { getProductBySlug } from '@/lib/products-data';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -19,7 +19,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 // For simplicity, we'll remove it, but in a real app, you might fetch metadata
 // in a layout or use a library to manage it.
 
-export default function ProductDetailPage({ params }: { params: { slug: string } }) {
+export default function ProductDetailPage() {
+  const params = useParams();
+  const slug = params.slug as string;
+
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
@@ -29,10 +32,10 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
 
   useEffect(() => {
     async function fetchProduct() {
-      if (!params.slug) return;
+      if (!slug) return;
 
       setIsLoading(true);
-      const fetchedProduct = await getProductBySlug(params.slug);
+      const fetchedProduct = await getProductBySlug(slug);
       if (fetchedProduct) {
         setProduct(fetchedProduct);
       } else {
@@ -42,7 +45,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
       setIsLoading(false);
     }
     fetchProduct();
-  }, [params]);
+  }, [slug]);
 
 
   const handleAddToCart = () => {
