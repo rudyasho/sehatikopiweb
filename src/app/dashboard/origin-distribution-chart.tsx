@@ -3,35 +3,23 @@
 
 import * as React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
-import { getProducts, Product } from '@/lib/products-data';
-import { useMemo, useState, useEffect } from 'react';
+import { Product } from '@/lib/products-data';
+import { useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
-export function OriginDistributionChart() {
-    const [chartData, setChartData] = useState<any[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+export function OriginDistributionChart({ products, isLoading }: { products: Product[], isLoading: boolean }) {
+    const chartData = useMemo(() => {
+        if (!products) return [];
+        const originCounts = products.reduce((acc, product) => {
+            const originName = product.origin.split(',')[0];
+            acc[originName] = (acc[originName] || 0) + 1;
+            return acc;
+        }, {} as Record<string, number>);
 
-    useEffect(() => {
-        async function fetchData() {
-            try {
-                const products = await getProducts();
-                const originCounts = products.reduce((acc, product) => {
-                    const originName = product.origin.split(',')[0];
-                    acc[originName] = (acc[originName] || 0) + 1;
-                    return acc;
-                }, {} as Record<string, number>);
-
-                setChartData(Object.entries(originCounts).map(([name, value]) => ({ name, value })));
-            } catch (error) {
-                console.error("Failed to fetch product data for chart:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        }
-        fetchData();
-    }, []);
+        return Object.entries(originCounts).map(([name, value]) => ({ name, value }));
+    }, [products]);
 
   if (isLoading) {
     return <Skeleton className="h-[400px] w-full" />;

@@ -87,20 +87,6 @@ const ADMIN_EMAILS = ['dev@sidepe.com', 'rd.lapawawoi@gmail.com'];
 
 
 const MetricCard = ({ title, value, icon: Icon, isLoading }: { title: string, value: string | number, icon: React.ElementType, isLoading?: boolean }) => {
-    const [counts, setCounts] = useState({ blogPosts: 0, events: 0});
-
-    useEffect(() => {
-        async function fetchCounts() {
-            if (title === "Blog Posts" || title === "Upcoming Events") {
-                const [posts, events] = await Promise.all([getBlogPosts(), getEvents()]);
-                setCounts({ blogPosts: posts.length, events: events.length });
-            }
-        }
-        fetchCounts();
-    }, [title]);
-
-    const displayValue = title === "Blog Posts" ? counts.blogPosts : title === "Upcoming Events" ? counts.events : value;
-
     return (
         <Card className="shadow-lg bg-background">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -108,7 +94,7 @@ const MetricCard = ({ title, value, icon: Icon, isLoading }: { title: string, va
                 <Icon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-                {isLoading ? <Skeleton className="h-8 w-1/2" /> : <div className="text-2xl font-bold">{displayValue}</div>}
+                {isLoading ? <Skeleton className="h-8 w-1/2" /> : <div className="text-2xl font-bold">{value}</div>}
             </CardContent>
         </Card>
     )
@@ -1225,35 +1211,15 @@ const ManageEventsView = ({ onEventsChanged }: { onEventsChanged: () => void }) 
 };
 
 
-const AnalyticsOverview = () => {
-    const [stats, setStats] = useState({ totalProducts: 0, totalReviews: 0 });
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        async function fetchStats() {
-            setIsLoading(true);
-            try {
-                const products = await getProducts();
-                const totalProducts = products.length;
-                const totalReviews = products.reduce((acc, product) => acc + product.reviews, 0);
-                setStats({ totalProducts, totalReviews });
-            } catch (error) {
-                console.error("Failed to fetch product stats:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        }
-        fetchStats();
-    }, []);
-
+const AnalyticsOverview = ({ stats, products, isLoading }: { stats: any, products: Product[], isLoading: boolean }) => {
     return (
     <div className="space-y-8">
         <section>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <MetricCard title="Total Products" value={stats.totalProducts} icon={Coffee} isLoading={isLoading} />
                 <MetricCard title="Customer Reviews" value={stats.totalReviews} icon={Star} isLoading={isLoading} />
-                <MetricCard title="Upcoming Events" value={0} icon={Calendar} isLoading={isLoading} />
-                <MetricCard title="Blog Posts" value={0} icon={Newspaper} isLoading={isLoading} />
+                <MetricCard title="Upcoming Events" value={stats.events} icon={Calendar} isLoading={isLoading} />
+                <MetricCard title="Blog Posts" value={stats.blogPosts} icon={Newspaper} isLoading={isLoading} />
             </div>
         </section>
 
@@ -1269,22 +1235,22 @@ const AnalyticsOverview = () => {
                      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
                         <div>
                             <h3 className="font-headline text-lg text-primary mb-2">Top 5 Products</h3>
-                            <TopProductsTable />
+                            <TopProductsTable products={products} isLoading={isLoading} />
                         </div>
                         <div className="h-[300px] md:h-[400px]">
                              <h3 className="font-headline text-lg text-primary mb-2">Roast Distribution</h3>
-                            <RoastDistributionChart />
+                            <RoastDistributionChart products={products} isLoading={isLoading} />
                         </div>
                      </div>
                      <div className="grid grid-cols-1 xl:grid-cols-5 gap-8 pt-4">
                         <div className="xl:col-span-3 h-[400px]">
                             <h3 className="font-headline text-lg text-primary mb-2">Product Popularity (by Reviews)</h3>
-                            <ProductPopularityChart />
+                            <ProductPopularityChart products={products} isLoading={isLoading} />
                         </div>
                         <div className="xl:col-span-2 h-[400px] flex justify-center items-center">
                             <div>
                                 <h3 className="font-headline text-lg text-primary mb-2 text-center">Origin Distribution</h3>
-                                <OriginDistributionChart />
+                                <OriginDistributionChart products={products} isLoading={isLoading} />
                             </div>
                         </div>
                      </div>
@@ -1447,6 +1413,40 @@ const DashboardPage = () => {
   const [refreshKey, setRefreshKey] = useState(0);
   const [initialPostToEdit, setInitialPostToEdit] = useState<string | null>(null);
 
+  const [stats, setStats] = useState({ totalProducts: 0, totalReviews: 0, blogPosts: 0, events: 0 });
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isDataLoading, setIsDataLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchDashboardData() {
+        setIsDataLoading(true);
+        try {
+            const [productsData, blogPostsData, eventsData] = await Promise.all([
+                getProducts(),
+                getBlogPosts(),
+                getEvents()
+            ]);
+            
+            const totalProducts = productsData.length;
+            const totalReviews = productsData.reduce((acc, product) => acc + product.reviews, 0);
+
+            setProducts(productsData);
+            setStats({
+                totalProducts,
+                totalReviews,
+                blogPosts: blogPostsData.length,
+                events: eventsData.length
+            });
+        } catch (error) {
+            console.error("Failed to fetch dashboard data:", error);
+        } finally {
+            setIsDataLoading(false);
+        }
+    }
+    fetchDashboardData();
+  }, [refreshKey]);
+
+
   useEffect(() => {
     if (!loading && (!user || !ADMIN_EMAILS.includes(user.email || ''))) {
       router.push('/');
@@ -1497,7 +1497,7 @@ const DashboardPage = () => {
   const renderContent = () => {
     switch (activeView) {
         case 'overview':
-            return <AnalyticsOverview key={refreshKey} />;
+            return <AnalyticsOverview stats={stats} products={products} isLoading={isDataLoading} />;
         case 'addProduct':
             return <AddProductView onProductAdded={handleDataChange} />;
         case 'addBlog':
@@ -1513,7 +1513,7 @@ const DashboardPage = () => {
         case 'manageUsers':
             return <ManageUsersView currentUser={user} />;
         default:
-            return <AnalyticsOverview key={refreshKey} />;
+            return <AnalyticsOverview stats={stats} products={products} isLoading={isDataLoading} />;
     }
   }
   

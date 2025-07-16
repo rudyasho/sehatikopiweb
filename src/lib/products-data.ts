@@ -145,7 +145,7 @@ async function seedDatabaseIfNeeded() {
 // Server-side cache
 let productsCache: Product[] | null = null;
 let lastFetchTime: number | null = null;
-const CACHE_DURATION = 1 * 1000; // 1 second in dev for easier testing. Change to 5 * 60 * 1000 (5 mins) for prod.
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 const invalidateCache = () => {
   productsCache = null;

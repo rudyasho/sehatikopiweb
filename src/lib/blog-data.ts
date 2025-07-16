@@ -29,7 +29,7 @@ const blogCollection = dbAdmin?.collection('blog');
 // Server-side cache
 let blogCache: BlogPost[] | null = null;
 let lastFetchTime: number | null = null;
-const CACHE_DURATION = 1 * 1000;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 const invalidateCache = () => {
   blogCache = null;

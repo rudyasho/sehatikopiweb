@@ -2,30 +2,18 @@
 'use client';
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { getProducts, Product } from '@/lib/products-data';
-import { useState, useEffect } from 'react';
+import { Product } from '@/lib/products-data';
+import { useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export function ProductPopularityChart() {
-  const [chartData, setChartData] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchData() {
-        try {
-            const products = await getProducts();
-            setChartData(products.map(product => ({
-                name: product.name,
-                reviews: product.reviews,
-            })));
-        } catch (error) {
-            console.error("Failed to fetch product data for chart:", error);
-        } finally {
-            setIsLoading(false);
-        }
-    }
-    fetchData();
-  }, []);
+export function ProductPopularityChart({ products, isLoading }: { products: Product[], isLoading: boolean }) {
+  const chartData = useMemo(() => {
+    if (!products) return [];
+    return products.map(product => ({
+        name: product.name,
+        reviews: product.reviews,
+    }));
+  }, [products]);
 
   if (isLoading) {
     return <Skeleton className="h-[400px] w-full" />;

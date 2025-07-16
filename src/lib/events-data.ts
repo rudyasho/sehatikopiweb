@@ -82,7 +82,7 @@ async function seedDatabaseIfNeeded() {
 // Server-side cache
 let eventsCache: Event[] | null = null;
 let lastFetchTime: number | null = null;
-const CACHE_DURATION = 1 * 1000;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 const invalidateCache = () => {
   eventsCache = null;

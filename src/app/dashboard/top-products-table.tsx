@@ -9,8 +9,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { getProducts, Product } from '@/lib/products-data';
-import { useMemo, useState, useEffect } from 'react';
+import { Product } from '@/lib/products-data';
+import { useMemo } from 'react';
 import { Star } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -19,26 +19,13 @@ const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
 }
 
-export function TopProductsTable() {
-    const [topProducts, setTopProducts] = useState<Product[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        async function fetchTopProducts() {
-            try {
-                const products = await getProducts();
-                const sortedProducts = [...products]
-                    .sort((a, b) => b.reviews - a.reviews)
-                    .slice(0, 5);
-                setTopProducts(sortedProducts);
-            } catch (error) {
-                console.error("Failed to fetch top products:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        }
-        fetchTopProducts();
-    }, []);
+export function TopProductsTable({ products, isLoading }: { products: Product[], isLoading: boolean }) {
+    const topProducts = useMemo(() => {
+        if (!products) return [];
+        return [...products]
+            .sort((a, b) => b.reviews - a.reviews)
+            .slice(0, 5);
+    }, [products]);
 
   if (isLoading) {
     return (
