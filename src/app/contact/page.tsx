@@ -5,14 +5,9 @@ import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Phone, Mail, MapPin, Share2, Loader2 } from 'lucide-react';
 import { ContactForm } from './contact-form';
-import type { Metadata } from 'next';
 import { useEffect, useState } from 'react';
 import { getSettings, WebsiteSettings } from '@/lib/settings-data';
 import { Skeleton } from '@/components/ui/skeleton';
-
-
-// We can't export Metadata from a client component directly
-// export const metadata: Metadata = { ... };
 
 const ContactInfoSkeleton = () => (
     <div className="space-y-4">
@@ -42,6 +37,7 @@ const ContactPage = () => {
 
     useEffect(() => {
         const fetchSettings = async () => {
+            setIsLoading(true);
             try {
                 const settingsData = await getSettings();
                 setSettings(settingsData);
@@ -63,7 +59,6 @@ const ContactPage = () => {
           <p className="mt-2 text-lg text-foreground/80">We'd love to hear from you. Visit us or drop us a line.</p>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Contact Form */}
           <Card className="shadow-xl bg-secondary/50">
             <CardHeader>
               <CardTitle className="font-headline text-2xl text-primary">Send a Message</CardTitle>
@@ -73,7 +68,6 @@ const ContactPage = () => {
             </CardContent>
           </Card>
 
-          {/* Contact Info & Map */}
           <div className="space-y-8">
             <Card className="shadow-xl bg-secondary/50">
               <CardHeader>

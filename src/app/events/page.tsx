@@ -1,4 +1,3 @@
-
 // src/app/events/page.tsx
 'use client';
 
@@ -76,7 +75,7 @@ const EventsPage = () => {
               return (
                 <Card key={event.id} className="grid md:grid-cols-5 gap-0 md:gap-6 overflow-hidden shadow-xl items-center bg-background">
                   <div className="md:col-span-2 relative h-60 md:h-full w-full">
-                    <Image src={event.image} alt={event.title} layout="fill" objectFit="cover" data-ai-hint={event.aiHint} />
+                    <Image src={event.image} alt={event.title} fill className="object-cover" data-ai-hint={event.aiHint} />
                   </div>
                   <div className="md:col-span-3 p-6">
                     <CardHeader className="p-0">

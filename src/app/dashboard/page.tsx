@@ -1,5 +1,3 @@
-
-
 // src/app/dashboard/page.tsx
 'use client';
 
@@ -285,7 +283,7 @@ function BlogGenerator({ currentUser, onPostPublished }: { currentUser: User, on
                             {imageState.isLoading ? (
                                  <Loader2 className="h-8 w-8 mx-auto animate-spin text-primary" />
                             ) : (
-                                <Image src={imageState.url} alt="Blog post featured image" layout="fill" objectFit="cover" />
+                                <Image src={imageState.url} alt="Blog post featured image" fill className="object-cover" />
                             )}
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
@@ -460,13 +458,13 @@ const ProductForm = ({ product, onFormSubmit, closeDialog }: { product?: Product
     const onSubmit = async (data: ProductFormValues) => {
         setIsSubmitting(true);
         try {
-            if (product) { // Update existing product
+            if (product) {
                 await updateProduct(product.id, data);
                  toast({
                     title: "Product Updated!",
                     description: `${data.name} has been updated.`,
                 });
-            } else { // Add new product
+            } else {
                 const newProduct = await addProduct(data);
                 toast({
                     title: "Product Added!",
@@ -480,7 +478,7 @@ const ProductForm = ({ product, onFormSubmit, closeDialog }: { product?: Product
                 form.reset();
                 setImageState({ url: '', isLoading: false });
             }
-            onFormSubmit(); // Callback to refresh product list
+            onFormSubmit();
             if (closeDialog) closeDialog();
         } catch (error) {
             console.error("Failed to submit product:", error);
@@ -498,7 +496,6 @@ const ProductForm = ({ product, onFormSubmit, closeDialog }: { product?: Product
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-h-[70vh] overflow-y-auto p-1">
-                    {/* Form Fields */}
                     <div className="md:col-span-2 space-y-4">
                         <FormField control={form.control} name="name" render={({ field }) => (
                             <FormItem>
@@ -547,14 +544,13 @@ const ProductForm = ({ product, onFormSubmit, closeDialog }: { product?: Product
                         )} />
                     </div>
                     
-                    {/* Photo Upload */}
                     <div className="md:col-span-1 space-y-4">
                         <FormLabel>Product Photo</FormLabel>
                         <Card className="p-4 bg-secondary/30">
                             <div className="w-full aspect-square relative bg-muted rounded-md flex items-center justify-center overflow-hidden">
                             {imageState.isLoading ? <Loader2 className="h-8 w-8 animate-spin text-primary" /> :
                              imageState.url ? (
-                                <Image src={imageState.url} alt="Product Preview" layout="fill" objectFit="cover" />
+                                <Image src={imageState.url} alt="Product Preview" fill className="object-cover" />
                             ) : (
                                 <span className="text-sm text-muted-foreground">Image Preview</span>
                             )}
@@ -741,7 +737,6 @@ const ManageProductsView = ({ onProductsChanged }: { onProductsChanged: () => vo
         try {
             await deleteProduct(productId);
             toast({ title: "Product Deleted", description: `"${productName}" has been removed.` });
-            fetchProducts();
             onProductsChanged();
         } catch (error) {
             console.error(`Failed to delete product ${productId}:`, error);
@@ -750,7 +745,6 @@ const ManageProductsView = ({ onProductsChanged }: { onProductsChanged: () => vo
     };
 
     const handleFormSubmit = () => {
-        fetchProducts();
         onProductsChanged();
     }
     
@@ -999,7 +993,6 @@ const ManageBlogPostsView = ({ onPostsChanged, initialPostToEdit }: { onPostsCha
         try {
             await deleteBlogPost(postId);
             toast({ title: "Post Deleted", description: `"${postTitle}" has been removed.` });
-            fetchPosts(); 
             onPostsChanged();
         } catch (error) {
             console.error(`Failed to delete post ${postId}:`, error);
@@ -1008,7 +1001,6 @@ const ManageBlogPostsView = ({ onPostsChanged, initialPostToEdit }: { onPostsCha
     };
 
     const handleFormSubmit = () => {
-        fetchPosts();
         onPostsChanged();
     }
     
@@ -1122,7 +1114,6 @@ const ManageEventsView = ({ onEventsChanged }: { onEventsChanged: () => void }) 
             await deleteEvent(eventId);
             toast({ title: "Event Deleted", description: `"${eventTitle}" has been removed.` });
             onEventsChanged();
-            fetchEvents();
         } catch (error) {
             console.error(`Failed to delete event ${eventId}:`, error);
             toast({ variant: 'destructive', title: 'Error', description: 'Could not delete event.' });
@@ -1131,7 +1122,6 @@ const ManageEventsView = ({ onEventsChanged }: { onEventsChanged: () => void }) 
 
     const handleFormSubmit = () => {
         onEventsChanged();
-        fetchEvents();
         setIsFormOpen(false);
         setEditingEvent(null);
     };
@@ -1287,7 +1277,6 @@ const ManageUsersView = ({ currentUser }: { currentUser: User }) => {
         setIsLoading(true);
         try {
             const usersData = await listAllUsers();
-            // Filter out the current admin and the super admin from the list
             setUsers(usersData.filter(user => user.uid !== currentUser.uid && user.uid !== SUPER_ADMIN_UID));
         } catch (error) {
             console.error("Failed to fetch users:", error);
@@ -1431,7 +1420,7 @@ const SettingsView = () => {
     });
 
     useEffect(() => {
-        const fetchSettings = async () => {
+        const fetchSettingsData = async () => {
             setIsLoading(true);
             try {
                 const settingsData = await getSettings();
@@ -1443,7 +1432,7 @@ const SettingsView = () => {
                 setIsLoading(false);
             }
         };
-        fetchSettings();
+        fetchSettingsData();
     }, [form, toast]);
 
     const onSubmit = async (data: SettingsFormData) => {
@@ -1595,7 +1584,7 @@ const HeroSettingsView = () => {
                              <Label>Image Preview</Label>
                             <div className="mt-2 w-full aspect-video relative bg-muted rounded-md flex items-center justify-center overflow-hidden">
                                 {imageUrl ? (
-                                    <Image src={imageUrl} alt="Hero image preview" layout="fill" objectFit="cover" />
+                                    <Image src={imageUrl} alt="Hero image preview" fill className="object-cover" />
                                 ) : (
                                     <span className="text-sm text-muted-foreground">No Image URL</span>
                                 )}
@@ -1720,7 +1709,6 @@ const DashboardPage = () => {
       }
       if (editPostId) {
           setInitialPostToEdit(editPostId);
-          // Ensure the view is set to manageBlog when an edit is requested
           if (view !== 'manageBlog') {
               setActiveView('manageBlog');
           }
@@ -1789,7 +1777,6 @@ const DashboardPage = () => {
             </header>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8 items-start">
-                {/* Desktop Sidebar */}
                 <aside className="hidden md:block md:col-span-1 sticky top-24">
                     <Card className="shadow-lg bg-background">
                         <CardContent className="p-4">
@@ -1800,7 +1787,6 @@ const DashboardPage = () => {
                                         variant={activeView === item.id ? 'secondary' : 'ghost'}
                                         onClick={() => {
                                             setActiveView(item.id as DashboardView);
-                                            // Reset edit state when changing views
                                             setInitialPostToEdit(null);
                                             router.push('/dashboard?view=' + item.id, { scroll: false });
                                         }}
@@ -1815,7 +1801,6 @@ const DashboardPage = () => {
                     </Card>
                 </aside>
 
-                {/* Mobile Dropdown */}
                  <div className="md:hidden">
                     <Select value={activeView} onValueChange={(value) => {
                         setActiveView(value as DashboardView)
@@ -1838,7 +1823,6 @@ const DashboardPage = () => {
                     </Select>
                 </div>
 
-                {/* Main Content */}
                 <main className="md:col-span-3 space-y-8">
                     {renderContent()}
                 </main>

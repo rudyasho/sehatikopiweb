@@ -1,70 +1,56 @@
-
 // src/lib/blog-data.ts
 'use server';
 
 import { dbAdmin } from './firebase-admin';
+import { unstable_noStore as noStore } from 'next/cache';
+
 
 export type BlogPost = {
     id: string;
     title: string;
     category: "Brewing Tips" | "Storytelling" | "Coffee Education" | "News";
     excerpt: string;
-    image: string; // Can be a URL or a data URI
+    image: string;
     aiHint?: string;
     slug: string;
-    content: string; // Stored as Markdown
+    content: string;
     author: string;
-    date: string; // ISO 8601 date string
+    date: string;
 };
 
 export type NewBlogPostData = {
     title: string;
     category: "Brewing Tips" | "Storytelling" | "Coffee Education" | "News";
-    content: string; // Markdown content
+    content: string;
     image: string;
     aiHint: string;
 }
 
 const blogCollection = dbAdmin?.collection('blog');
 
-// Server-side cache
-let blogCache: BlogPost[] | null = null;
-let lastFetchTime: number | null = null;
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-const invalidateCache = () => {
-  blogCache = null;
-  lastFetchTime = null;
-};
-
-// Helper function to safely create an excerpt
 const createExcerpt = (content: string, length = 150): string => {
     if (!content) return '';
-    // Strip markdown and HTML, then trim and slice.
     const cleanContent = content
-        .replace(/!\[.*?\]\(.*?\)/g, '') // Remove markdown images
-        .replace(/<[^>]+>/g, '') // Remove HTML tags
-        .replace(/#+\s/g, '') // Remove markdown headings
-        .replace(/[*_>]/g, ''); // Remove other markdown characters
+        .replace(/!\[.*?\]\(.*?\)/g, '') 
+        .replace(/<[^>]+>/g, '') 
+        .replace(/#+\s/g, '') 
+        .replace(/[*_>]/g, ''); 
     
     if (cleanContent.length <= length) return cleanContent;
-    // ensure we don't cut words in half
     const trimmed = cleanContent.substring(0, length);
     return `${trimmed.substring(0, Math.min(trimmed.length, trimmed.lastIndexOf(" ")))}...`;
 };
 
 export async function getBlogPosts(): Promise<BlogPost[]> {
-    const now = Date.now();
-    if (blogCache && lastFetchTime && (now - lastFetchTime < CACHE_DURATION)) {
-      return blogCache;
-    }
+    noStore();
 
     if (!dbAdmin || !blogCollection) {
       console.error("Firestore Admin is not initialized. Cannot get blog posts.");
       return [];
     }
 
-    const blogSnapshot = await blogCollection.get();
+    const blogSnapshot = await blogCollection.orderBy('date', 'desc').get();
     const blogList = blogSnapshot.docs.map(doc => {
       const data = doc.data();
       return {
@@ -73,19 +59,11 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
       } as BlogPost;
     });
 
-    // Sort by date descending
-    blogList.sort((a, b) => {
-        if (!a.date || !b.date) return 0;
-        return new Date(b.date).getTime() - new Date(a.date).getTime()
-    });
-    
-    blogCache = blogList;
-    lastFetchTime = now;
-
     return blogList;
 }
 
 export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
+    noStore();
     const posts = await getBlogPosts();
     const post = posts.find(p => p.slug === slug);
     return post || null;
@@ -106,8 +84,6 @@ export async function addBlogPost(post: NewBlogPostData, authorName: string): Pr
 
     const docRef = await blogCollection.add(newPostData);
     
-    invalidateCache();
-
     return {
         id: docRef.id,
         ...newPostData
@@ -126,14 +102,12 @@ export async function updateBlogPost(id: string, data: BlogPostUpdateData): Prom
         updateData.slug = data.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
     }
     if (data.content) {
-        // Ensure we don't try to create an excerpt from a giant base64 string
         if (!data.content.startsWith('data:image')) {
             updateData.excerpt = createExcerpt(data.content);
         }
     }
 
     await postRef.update(updateData);
-    invalidateCache();
 }
 
 export async function deleteBlogPost(id: string): Promise<void> {
@@ -141,5 +115,4 @@ export async function deleteBlogPost(id: string): Promise<void> {
 
     const postRef = blogCollection.doc(id);
     await postRef.delete();
-    invalidateCache();
 }

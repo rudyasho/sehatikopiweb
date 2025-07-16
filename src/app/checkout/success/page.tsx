@@ -1,4 +1,3 @@
-
 // src/app/checkout/success/page.tsx
 'use client';
 
@@ -42,18 +41,15 @@ const CheckoutSuccessPage = () => {
     const savedOrder = sessionStorage.getItem('sehati-last-order');
     if (savedOrder) {
       setLastOrder(JSON.parse(savedOrder));
-      // Clean up the order from sessionStorage after displaying it
       return () => {
           sessionStorage.removeItem('sehati-last-order');
       }
     } else {
-        // If there's no order data, redirect to home.
         router.replace('/');
     }
   }, [router]);
 
   if (!lastOrder) {
-    // Show a loading or empty state while client-side checks are running
     return null;
   }
 
@@ -80,7 +76,7 @@ const CheckoutSuccessPage = () => {
                         {lastOrder.items.map(item => (
                             <div key={item.slug} className="flex items-center gap-4">
                                 <div className="relative h-16 w-16 rounded-md overflow-hidden flex-shrink-0">
-                                    <Image src={item.image} alt={item.name} layout="fill" objectFit="cover" data-ai-hint={item.aiHint}/>
+                                    <Image src={item.image} alt={item.name} fill className="object-cover" data-ai-hint={item.aiHint}/>
                                 </div>
                                 <div className="flex-grow">
                                     <p className="font-semibold">{item.name}</p>

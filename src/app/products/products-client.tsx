@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -64,17 +63,14 @@ export function ProductsClientPage() {
   const filteredAndSortedProducts = useMemo(() => {
     let filtered = [...products];
 
-    // Filter by roast
     if (filters.roasts.length > 0) {
       filtered = filtered.filter(p => filters.roasts.includes(p.roast));
     }
 
-    // Filter by origin
     if (filters.origins.length > 0) {
       filtered = filtered.filter(p => filters.origins.includes(p.origin));
     }
 
-    // Sort
     switch (filters.sort) {
       case 'price-asc':
         filtered.sort((a, b) => a.price - b.price);
@@ -142,8 +138,8 @@ export function ProductsClientPage() {
                       <Image
                         src={product.image}
                         alt={product.name}
-                        layout="fill"
-                        objectFit="cover"
+                        fill
+                        className="object-cover"
                         data-ai-hint={product.aiHint}
                       />
                     </div>

@@ -23,9 +23,8 @@ const AboutPage = () => {
         <Image
           src="https://images.unsplash.com/photo-1541167760496-1628856ab772?q=80&w=1337&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
           alt="Coffee shop interior"
-          layout="fill"
-          objectFit="cover"
-          className="absolute z-0"
+          fill
+          className="absolute z-0 object-cover"
           data-ai-hint="coffee beans hand"
         />
         <div className="absolute inset-0 bg-black/60 z-10" />
@@ -44,8 +43,8 @@ const AboutPage = () => {
              <Image
               src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?q=80&w=987&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
               alt="Old photo of coffee farmers"
-              layout="fill"
-              objectFit="cover"
+              fill
+              className="object-cover"
               data-ai-hint="vintage coffee farmer"
             />
           </div>

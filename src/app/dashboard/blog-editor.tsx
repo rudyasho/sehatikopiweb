@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
@@ -15,7 +14,6 @@ import { generateImage } from '@/ai/flows/image-generator';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
 
-// Configure marked to use highlight.js
 marked.setOptions({
   highlight: function (code, lang) {
     const language = hljs.getLanguage(lang) ? lang : 'plaintext';
@@ -118,7 +116,7 @@ const ImageInsertionDialog = ({ onInsertImage }: { onInsertImage: (url: string, 
                         {isGenerating ? (
                                 <Loader2 className="h-8 w-8 mx-auto animate-spin text-primary" />
                         ) : (
-                            <Image src={generatedImageUrl} alt="Generated image preview" layout="fill" objectFit="cover" />
+                            <Image src={generatedImageUrl} alt="Generated image preview" fill className="object-cover" />
                         )}
                     </div>
                 )}
@@ -242,7 +240,6 @@ export const BlogEditor: React.FC<BlogEditorProps> = ({ value, onChange }) => {
 
   return (
     <Card className="grid grid-cols-1 md:grid-cols-2 w-full border-0 shadow-none">
-      {/* Editor Pane */}
       <div className="flex flex-col">
         <MarkdownToolbar textareaRef={textareaRef} onContentChange={handleToolbarChange} />
         <textarea
@@ -254,7 +251,6 @@ export const BlogEditor: React.FC<BlogEditorProps> = ({ value, onChange }) => {
         />
       </div>
 
-      {/* Preview Pane */}
       <div className="hidden md:block border-t border-r border-b rounded-r-md bg-secondary/30">
         <div className="p-4 border-b bg-background rounded-tr-md">
             <h3 className="font-semibold text-sm text-muted-foreground">Live Preview</h3>

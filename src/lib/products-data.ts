@@ -1,9 +1,9 @@
-
 // src/lib/products-data.ts
 'use server';
 
 import { dbAdmin } from './firebase-admin';
 import type { DocumentData, QueryDocumentSnapshot } from 'firebase-admin/firestore';
+import { unstable_noStore as noStore } from 'next/cache';
 
 export interface Product {
   id: string;
@@ -112,8 +112,8 @@ const initialProducts: Omit<Product, 'id' | 'slug'>[] = [
 
 
 const productsCollection = dbAdmin?.collection('products');
-let isSeeding = false; // Flag to prevent concurrent seeding
-let seedingCompleted = false; // Flag to ensure seeding runs only once
+let isSeeding = false; 
+let seedingCompleted = false; 
 
 async function seedDatabaseIfNeeded() {
   if (!dbAdmin || !productsCollection || seedingCompleted || isSeeding) {
@@ -128,7 +128,7 @@ async function seedDatabaseIfNeeded() {
       console.log('Products collection is empty. Seeding database...');
       const batch = dbAdmin.batch();
       initialProducts.forEach(productData => {
-          const docRef = productsCollection.doc(); // Create a new doc with a random ID
+          const docRef = productsCollection.doc();
           const slug = productData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
           batch.set(docRef, {...productData, slug });
       });
@@ -143,21 +143,8 @@ async function seedDatabaseIfNeeded() {
   }
 }
 
-// Server-side cache
-let productsCache: Product[] | null = null;
-let lastFetchTime: number | null = null;
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-
-const invalidateCache = () => {
-  productsCache = null;
-  lastFetchTime = null;
-};
-
 export async function getProducts(): Promise<Product[]> {
-  const now = Date.now();
-  if (productsCache && lastFetchTime && (now - lastFetchTime < CACHE_DURATION)) {
-    return productsCache;
-  }
+  noStore();
   
   if (!dbAdmin || !productsCollection) {
     console.error("Firestore Admin is not initialized. Cannot get products.");
@@ -174,13 +161,11 @@ export async function getProducts(): Promise<Product[]> {
     } as Product;
   });
   
-  productsCache = productsList;
-  lastFetchTime = now;
-
   return productsList;
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
+    noStore();
     const products = await getProducts();
     const product = products.find(p => p.slug === slug);
     return product || null;
@@ -194,14 +179,12 @@ export async function addProduct(productData: Omit<ProductFormData, 'tags'> & { 
   const newProductData = {
     ...productData,
     slug,
-    rating: Math.round((Math.random() * (5 - 4) + 4) * 10) / 10, // Random rating between 4.0 and 5.0
-    reviews: Math.floor(Math.random() * (100 - 10 + 1) + 10), // Random reviews between 10 and 100
+    rating: Math.round((Math.random() * (5 - 4) + 4) * 10) / 10,
+    reviews: Math.floor(Math.random() * (100 - 10 + 1) + 10),
     tags: productData.tags.split(',').map(tag => tag.trim()),
   };
 
   const docRef = await productsCollection.add(newProductData);
-  
-  invalidateCache();
   
   const createdProduct: Product = {
     id: docRef.id,
@@ -221,7 +204,6 @@ export async function updateProduct(id: string, productData: Omit<ProductFormDat
         slug: productData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, ''),
     };
     await productRef.update(updatedData);
-    invalidateCache();
 }
 
 export async function deleteProduct(id: string): Promise<void> {
@@ -229,5 +211,4 @@ export async function deleteProduct(id: string): Promise<void> {
     
     const productRef = productsCollection.doc(id);
     await productRef.delete();
-    invalidateCache();
 }

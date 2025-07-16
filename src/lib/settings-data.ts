@@ -2,6 +2,7 @@
 'use server';
 
 import { dbAdmin } from './firebase-admin';
+import { unstable_noStore as noStore } from 'next/cache';
 
 export type WebsiteSettings = {
     id: string;
@@ -25,12 +26,8 @@ const defaultSettings: SettingsFormData = {
 };
 
 const settingsCollection = dbAdmin?.collection('settings');
-const SETTINGS_DOC_ID = 'main-settings'; // Use a single document for all settings
+const SETTINGS_DOC_ID = 'main-settings'; 
 
-// Server-side cache
-let settingsCache: WebsiteSettings | null = null;
-let lastFetchTime: number | null = null;
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 async function initializeSettingsIfNeeded() {
   if (!dbAdmin || !settingsCollection) return;
@@ -48,16 +45,8 @@ async function initializeSettingsIfNeeded() {
   }
 }
 
-const invalidateCache = () => {
-  settingsCache = null;
-  lastFetchTime = null;
-};
-
 export async function getSettings(): Promise<WebsiteSettings> {
-    const now = Date.now();
-    if (settingsCache && lastFetchTime && (now - lastFetchTime < CACHE_DURATION)) {
-      return settingsCache;
-    }
+    noStore();
     
     if (!dbAdmin || !settingsCollection) {
       console.error("Firestore Admin is not initialized. Returning default settings.");
@@ -70,15 +59,11 @@ export async function getSettings(): Promise<WebsiteSettings> {
     const doc = await docRef.get();
 
     if (!doc.exists) {
-        // This should not happen after initialization, but as a fallback
         return { id: SETTINGS_DOC_ID, ...defaultSettings };
     }
     
     const data = doc.data() as SettingsFormData;
-    settingsCache = { id: doc.id, ...data };
-    lastFetchTime = now;
-    
-    return settingsCache;
+    return { id: doc.id, ...data };
 }
 
 export async function updateSettings(data: SettingsFormData): Promise<void> {
@@ -86,5 +71,4 @@ export async function updateSettings(data: SettingsFormData): Promise<void> {
 
     const docRef = settingsCollection.doc(SETTINGS_DOC_ID);
     await docRef.update(data);
-    invalidateCache(); // Invalidate cache after update
 }

@@ -1,4 +1,3 @@
-
 'use client';
 
 import Image from 'next/image';
@@ -61,7 +60,6 @@ export function CartClientPage() {
       status: 'Pending',
     };
 
-    // Save order to Firestore if user is logged in
     if (user) {
         try {
             await addOrder({ ...orderDetails, userId: user.uid });
@@ -72,32 +70,26 @@ export function CartClientPage() {
                 title: 'Order Error',
                 description: 'Could not save your order history. Please try again.',
             });
-            // Don't block the checkout process if this fails, but notify the user.
         }
     }
 
-    // Prepare WhatsApp message
-    const phoneNumber = "6281234567890"; // Ganti dengan nomor WhatsApp Anda
+    const phoneNumber = "6281234567890"; // Replace with your WhatsApp number
     const message = `Halo Sehati Kopi, saya ingin memesan (Order ID: ${orderId}):\n\n${cart
       .map(item => `${item.quantity}x ${item.name} (${formatCurrency(item.price * item.quantity)})`)
       .join('\n')}\n\nSubtotal: ${formatCurrency(subtotal)}\nShipping: ${formatCurrency(shipping)}\n*Total: ${formatCurrency(total)}*\n\nTerima kasih!`;
 
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     
-    // Save order details for the confirmation page (for guests or immediate display)
     try {
         sessionStorage.setItem('sehati-last-order', JSON.stringify(orderDetails));
     } catch (e) {
         console.error("Could not save order to sessionStorage", e);
     }
 
-    // Open WhatsApp link
     window.open(whatsappUrl, '_blank');
     
-    // Clear the cart
     clearCart();
 
-    // Redirect to success page
     router.push('/checkout/success');
   };
 
@@ -143,7 +135,7 @@ export function CartClientPage() {
                     {cart.map((item) => (
                         <div key={item.slug} className="flex flex-col sm:flex-row gap-4 items-center">
                             <div className="relative h-24 w-24 rounded-md overflow-hidden flex-shrink-0">
-                                <Image src={item.image} alt={item.name} layout="fill" objectFit="cover" data-ai-hint={item.aiHint} />
+                                <Image src={item.image} alt={item.name} fill className="object-cover" data-ai-hint={item.aiHint} />
                             </div>
                             <div className="flex-grow">
                                 <Link href={`/products/${item.slug}`} className="font-semibold text-lg hover:underline text-primary">{item.name}</Link>

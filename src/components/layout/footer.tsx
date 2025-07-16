@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from 'next/link';
@@ -15,17 +14,18 @@ export function Footer() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchSettings() {
-      try {
-        const settingsData = await getSettings();
-        setSettings(settingsData);
-      } catch (error) {
-        console.error("Failed to load footer settings:", error);
-      } finally {
-        setIsLoading(false);
-      }
+    async function fetchSettingsData() {
+        setIsLoading(true);
+        try {
+            const settingsData = await getSettings();
+            setSettings(settingsData);
+        } catch (error) {
+            console.error("Failed to load footer settings:", error);
+        } finally {
+            setIsLoading(false);
+        }
     }
-    fetchSettings();
+    fetchSettingsData();
   }, []);
 
   const handleNewsletterSubmit = (event: FormEvent<HTMLFormElement>) => {

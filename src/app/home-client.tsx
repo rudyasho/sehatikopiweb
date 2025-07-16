@@ -1,4 +1,3 @@
-
 'use client';
 
 import Image from 'next/image';
@@ -47,14 +46,15 @@ function FeaturedProducts() {
 
   useEffect(() => {
     async function fetchProducts() {
-      try {
-        const fetchedProducts = await getProducts();
-        setProducts(fetchedProducts.slice(0, 3));
-      } catch (error) {
-        console.error("Failed to fetch products:", error);
-      } finally {
-        setIsLoading(false);
-      }
+        setIsLoading(true);
+        try {
+            const fetchedProducts = await getProducts();
+            setProducts(fetchedProducts.slice(0, 3));
+        } catch (error) {
+            console.error("Failed to fetch products:", error);
+        } finally {
+            setIsLoading(false);
+        }
     }
     fetchProducts();
   }, []);
@@ -98,7 +98,7 @@ function FeaturedProducts() {
           <CardHeader className="p-0">
             <Link href={`/products/${product.slug}`}>
               <div className="relative h-60 w-full">
-                <Image src={product.image} alt={product.name} layout="fill" objectFit="cover" data-ai-hint={product.aiHint}/>
+                <Image src={product.image} alt={product.name} fill className="object-cover" data-ai-hint={product.aiHint}/>
               </div>
             </Link>
           </CardHeader>
@@ -131,14 +131,15 @@ const HeroSection = () => {
 
   useEffect(() => {
     const fetchHeroData = async () => {
-      try {
-        const data = await getHeroData();
-        setHeroData(data);
-      } catch (error) {
-        console.error("Failed to load hero data:", error);
-      } finally {
-        setIsLoading(false);
-      }
+        setIsLoading(true);
+        try {
+            const data = await getHeroData();
+            setHeroData(data);
+        } catch (error) {
+            console.error("Failed to load hero data:", error);
+        } finally {
+            setIsLoading(false);
+        }
     };
     fetchHeroData();
   }, []);
@@ -164,9 +165,8 @@ const HeroSection = () => {
       <Image
         src={heroData.imageUrl}
         alt={heroData.title}
-        layout="fill"
-        objectFit="cover"
-        className="absolute z-0"
+        fill
+        className="absolute z-0 object-cover"
         data-ai-hint="coffee beans cup"
         priority
       />
@@ -194,7 +194,6 @@ export function HomeClient() {
     <div className="flex flex-col">
       <HeroSection />
 
-      {/* About Us Snippet */}
       <section className="py-16 md:py-24 bg-background">
         <div className="container mx-auto px-4 grid md:grid-cols-2 gap-12 items-center">
           <div>
@@ -222,15 +221,14 @@ export function HomeClient() {
              <Image
               src="https://images.unsplash.com/photo-1630411870702-8f6f8fd80ce2?q=80&w=1332&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
               alt="Roasting coffee beans"
-              layout="fill"
-              objectFit="cover"
+              fill
+              className="object-cover"
               data-ai-hint="coffee roasting machine"
             />
           </div>
         </div>
       </section>
       
-      {/* Featured Products */}
       <section className="py-16 md:py-24 bg-secondary/50">
         <div className="container mx-auto px-4 text-center">
           <h2 className="font-headline text-3xl md:text-4xl font-semibold text-primary">Featured Coffee</h2>
@@ -246,7 +244,6 @@ export function HomeClient() {
         </div>
       </section>
 
-      {/* Testimonials */}
       <section className="py-16 md:py-24 bg-background">
         <div className="container mx-auto px-4 text-center">
           <h2 className="font-headline text-3xl md:text-4xl font-semibold text-primary">What Our Customers Say</h2>
@@ -274,7 +271,6 @@ export function HomeClient() {
         </div>
       </section>
 
-      {/* Blog & AI Tool CTA */}
       <section className="py-16 md:py-24 bg-secondary/50">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-8">

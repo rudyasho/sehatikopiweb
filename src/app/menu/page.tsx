@@ -1,4 +1,3 @@
-
 'use client';
 
 import Image from 'next/image';
@@ -63,7 +62,7 @@ const Page = () => {
                   <Card key={item.name} className="flex flex-col overflow-hidden shadow-lg transform hover:-translate-y-1 transition-transform duration-300 bg-background">
                     <CardHeader className="p-0">
                       <div className="relative h-52 w-full">
-                        <Image src={item.image} alt={item.name} layout="fill" objectFit="cover" data-ai-hint={item.aiHint} />
+                        <Image src={item.image} alt={item.name} fill className="object-cover" data-ai-hint={item.aiHint} />
                       </div>
                     </CardHeader>
                     <CardContent className="p-4 flex-grow">

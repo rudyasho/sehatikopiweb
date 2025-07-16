@@ -1,4 +1,3 @@
-
 'use client';
 
 import { notFound, useParams } from 'next/navigation';
@@ -13,11 +12,6 @@ import { useCart } from '@/context/cart-context';
 import type { Product } from '@/lib/products-data';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
-
-// This is now a client component, so we cannot export generateMetadata directly.
-// We handle metadata in a different way for client components or fetch it if needed.
-// For simplicity, we'll remove it, but in a real app, you might fetch metadata
-// in a layout or use a library to manage it.
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -35,14 +29,19 @@ export default function ProductDetailPage() {
       if (!slug) return;
 
       setIsLoading(true);
-      const fetchedProduct = await getProductBySlug(slug);
-      if (fetchedProduct) {
-        setProduct(fetchedProduct);
-      } else {
-        // Since this is a client component, calling notFound() directly works.
+      try {
+        const fetchedProduct = await getProductBySlug(slug);
+        if (fetchedProduct) {
+          setProduct(fetchedProduct);
+        } else {
+          notFound();
+        }
+      } catch (error) {
+        console.error("Failed to fetch product:", error);
         notFound();
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     }
     fetchProduct();
   }, [slug]);
@@ -88,8 +87,6 @@ export default function ProductDetailPage() {
   }
 
   if (!product) {
-    // This case will be hit if the product is null after loading,
-    // though notFound() in useEffect should handle it first.
     return notFound();
   }
   
@@ -103,12 +100,10 @@ export default function ProductDetailPage() {
             </Link>
         </div>
         <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-start">
-          {/* Product Image */}
           <div className="relative aspect-square rounded-lg overflow-hidden shadow-xl">
-            <Image src={product.image} alt={product.name} layout="fill" objectFit="cover" data-ai-hint={product.aiHint} />
+            <Image src={product.image} alt={product.name} fill className="object-cover" data-ai-hint={product.aiHint} />
           </div>
 
-          {/* Product Details */}
           <div className="space-y-6">
             <div>
               <Badge variant="outline">{product.origin}</Badge>

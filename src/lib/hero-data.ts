@@ -2,6 +2,7 @@
 'use server';
 
 import { dbAdmin } from './firebase-admin';
+import { unstable_noStore as noStore } from 'next/cache';
 
 export type HeroData = {
     id: string;
@@ -21,10 +22,6 @@ const defaultHeroData: HeroFormData = {
 const contentCollection = dbAdmin?.collection('siteContent');
 const HERO_DOC_ID = 'homepage-hero';
 
-// Server-side cache
-let heroCache: HeroData | null = null;
-let lastFetchTime: number | null = null;
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 async function initializeHeroDataIfNeeded() {
   if (!dbAdmin || !contentCollection) return;
@@ -42,16 +39,8 @@ async function initializeHeroDataIfNeeded() {
   }
 }
 
-const invalidateCache = () => {
-  heroCache = null;
-  lastFetchTime = null;
-};
-
 export async function getHeroData(): Promise<HeroData> {
-    const now = Date.now();
-    if (heroCache && lastFetchTime && (now - lastFetchTime < CACHE_DURATION)) {
-      return heroCache;
-    }
+    noStore();
     
     if (!dbAdmin || !contentCollection) {
       console.error("Firestore Admin is not initialized. Returning default hero data.");
@@ -68,10 +57,7 @@ export async function getHeroData(): Promise<HeroData> {
     }
     
     const data = doc.data() as HeroFormData;
-    heroCache = { id: doc.id, ...data };
-    lastFetchTime = now;
-    
-    return heroCache;
+    return { id: doc.id, ...data };
 }
 
 export async function updateHeroData(data: HeroFormData): Promise<void> {
@@ -79,5 +65,4 @@ export async function updateHeroData(data: HeroFormData): Promise<void> {
 
     const docRef = contentCollection.doc(HERO_DOC_ID);
     await docRef.update(data);
-    invalidateCache();
 }
