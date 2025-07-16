@@ -3,7 +3,6 @@
 
 import { notFound, useRouter } from 'next/navigation';
 import { getProductBySlug } from '@/lib/products-data';
-import type { Metadata, ResolvingMetadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';

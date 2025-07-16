@@ -36,6 +36,7 @@ export function ProductsClientPage() {
 
   useEffect(() => {
     async function fetchProducts() {
+        setIsLoading(true);
         try {
             const fetchedProducts = await getProducts();
             setProducts(fetchedProducts);

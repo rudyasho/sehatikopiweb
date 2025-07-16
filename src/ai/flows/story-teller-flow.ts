@@ -1,3 +1,4 @@
+
 // src/ai/flows/story-teller-flow.ts
 'use server';
 /**
@@ -17,13 +18,13 @@ import wav from 'wav';
 
 const CoffeeStoryInputSchema = z.object({
   name: z.string().describe('The name of the coffee bean.'),
-  origin: z.string().describe('The origin of the coffee bean.'),
-  description: z.string().describe('A short description of the coffee.'),
+  origin: z.string().describe('The origin of the coffee bean (e.g., "Gayo Highlands, Aceh").'),
+  description: z.string().describe('A short description of the coffee\'s flavor profile and characteristics.'),
 });
 export type CoffeeStoryInput = z.infer<typeof CoffeeStoryInputSchema>;
 
 const CoffeeStoryTextOutputSchema = z.object({
-  storyText: z.string().describe('The generated story in text format.'),
+  storyText: z.string().describe('The generated story in text format, about 2-3 paragraphs long.'),
 });
 export type CoffeeStoryTextOutput = z.infer<typeof CoffeeStoryTextOutputSchema>;
 

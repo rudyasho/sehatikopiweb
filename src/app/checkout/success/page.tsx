@@ -6,11 +6,21 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { CheckCircle, Package } from 'lucide-react';
+import type { CartItem } from '@/context/cart-context';
+
+interface OrderSummary {
+    orderId: string;
+    orderDate: string;
+    items: CartItem[];
+    subtotal: number;
+    shipping: number;
+    total: number;
+}
+
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
@@ -24,34 +34,25 @@ const formatDate = (dateString: string) => {
   });
 };
 
-// This is a client-side only page, so we can't export metadata directly.
-// In a real-world scenario with server-side rendering, you would export this.
-// export const metadata: Metadata = {
-//   title: 'Order Confirmed',
-//   description: 'Thank you for your order from Sehati Kopi!',
-// };
-
-
 const CheckoutSuccessPage = () => {
-  const { lastOrder, setLastOrder } = useCart();
   const router = useRouter();
-  const [isClient, setIsClient] = useState(false);
+  const [lastOrder, setLastOrder] = useState<OrderSummary | null>(null);
 
   useEffect(() => {
-    setIsClient(true);
-    if (!lastOrder) {
-      // If there's no order data in context, redirect to home.
-      // This prevents accessing the page directly.
-      router.replace('/');
+    const savedOrder = sessionStorage.getItem('sehati-last-order');
+    if (savedOrder) {
+      setLastOrder(JSON.parse(savedOrder));
+      // Clean up the order from sessionStorage after displaying it
+      return () => {
+          sessionStorage.removeItem('sehati-last-order');
+      }
+    } else {
+        // If there's no order data, redirect to home.
+        router.replace('/');
     }
-    
-    // Clean up the order from sessionStorage when the user navigates away
-    return () => {
-        setLastOrder(null);
-    }
-  }, [lastOrder, router, setLastOrder]);
+  }, [router]);
 
-  if (!isClient || !lastOrder) {
+  if (!lastOrder) {
     // Show a loading or empty state while client-side checks are running
     return null;
   }

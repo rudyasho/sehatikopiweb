@@ -1,3 +1,4 @@
+
 // src/app/events/page.tsx
 'use client';
 
@@ -34,6 +35,7 @@ const EventsPage = () => {
 
   useEffect(() => {
     async function fetchEvents() {
+        setIsLoading(true);
         try {
             const eventsData = await getEvents();
             setEvents(eventsData);

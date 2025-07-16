@@ -17,19 +17,19 @@ const RecommendCoffeeInputSchema = z.object({
   flavorPreferences: z
     .string()
     .describe(
-      'A description of the customers flavour preferences, including sweet, bitter, acidic, etc.'
+      'A description of the customer\'s flavour preferences, such as "sweet and fruity", "bold and earthy", "not too acidic", etc.'
     ),
-  brewingMethod: z.string().describe('The customers preferred brewing method.'),
-  caffeineLevel: z.enum(['Low', 'Medium', 'High']).describe('The preferred caffeine level.'),
-  timeOfDay: z.enum(['Morning', 'Afternoon', 'Evening']).describe('The typical time of day for drinking coffee.'),
+  brewingMethod: z.string().describe('The customer\'s preferred brewing method, e.g., "Espresso", "Pour Over", "French Press".'),
+  caffeineLevel: z.enum(['Low', 'Medium', 'High']).describe('The preferred caffeine level: Low, Medium, or High.'),
+  timeOfDay: z.enum(['Morning', 'Afternoon', 'Evening']).describe('The typical time of day for drinking coffee, which can influence caffeine preference.'),
 });
 export type RecommendCoffeeInput = z.infer<typeof RecommendCoffeeInputSchema>;
 
 const RecommendCoffeeOutputSchema = z.object({
-  beanRecommendation: z.string().describe('The recommended coffee bean name.'),
-  roastLevel: z.string().describe('The recommended roast level.'),
-  notes: z.string().describe('Additional notes and considerations, explaining why this coffee is a good match.'),
-  productSlug: z.string().describe('The slug of the recommended product from the provided list.'),
+  beanRecommendation: z.string().describe('The recommended coffee bean name from the provided list.'),
+  roastLevel: z.string().describe('The recommended roast level for the chosen bean.'),
+  notes: z.string().describe('A compelling explanation of why this coffee is a good match for the user, referencing their specific preferences.'),
+  productSlug: z.string().describe('The slug of the recommended product from the provided list. This must exactly match one of the slugs in the list.'),
 });
 export type RecommendCoffeeOutput = z.infer<typeof RecommendCoffeeOutputSchema>;
 

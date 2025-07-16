@@ -1,9 +1,10 @@
+
 // src/app/dashboard/page.tsx
 'use client';
 
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useAuth, type User, type AppUser, SUPER_ADMIN_UID } from '@/context/auth-context';
+import { useAuth, type User, type AppUser, SUPER_ADMIN_UID, ADMIN_EMAILS } from '@/context/auth-context';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ProductPopularityChart } from './product-popularity-chart';
 import { Coffee, Star, Calendar, Newspaper, Loader2, PlusCircle, Wand2, Edit, BarChart3, Bot, LayoutGrid, Send, Clipboard, Check, Save, ListOrdered, Trash2, BookText, Image as ImageIcon, FileText, CalendarCheck, Clock, MapPin, CalendarPlus, FilePlus2, Users } from 'lucide-react';
@@ -35,7 +36,6 @@ import { format } from 'date-fns';
 import { listAllUsers, updateUserDisabledStatus, deleteUserAccount } from '@/lib/users-data';
 
 
-const totalEvents = 3; 
 const formatCurrency = (amount: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
 
 type DashboardView = 'overview' | 'addProduct' | 'addBlog' | 'blogGenerator' | 'manageProducts' | 'manageBlog' | 'manageEvents' | 'manageUsers';
@@ -82,9 +82,6 @@ const eventFormSchema = z.object({
 });
 
 type EventFormValues = z.infer<typeof eventFormSchema>;
-
-const ADMIN_EMAILS = ['dev@sidepe.com', 'rd.lapawawoi@gmail.com'];
-
 
 const MetricCard = ({ title, value, icon: Icon, isLoading }: { title: string, value: string | number, icon: React.ElementType, isLoading?: boolean }) => {
     return (
@@ -1417,34 +1414,35 @@ const DashboardPage = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [isDataLoading, setIsDataLoading] = useState(true);
 
-  useEffect(() => {
-    async function fetchDashboardData() {
-        setIsDataLoading(true);
-        try {
-            const [productsData, blogPostsData, eventsData] = await Promise.all([
-                getProducts(),
-                getBlogPosts(),
-                getEvents()
-            ]);
-            
-            const totalProducts = productsData.length;
-            const totalReviews = productsData.reduce((acc, product) => acc + product.reviews, 0);
+  const fetchDashboardData = useCallback(async () => {
+    setIsDataLoading(true);
+    try {
+        const [productsData, blogPostsData, eventsData] = await Promise.all([
+            getProducts(),
+            getBlogPosts(),
+            getEvents()
+        ]);
+        
+        const totalProducts = productsData.length;
+        const totalReviews = productsData.reduce((acc, product) => acc + product.reviews, 0);
 
-            setProducts(productsData);
-            setStats({
-                totalProducts,
-                totalReviews,
-                blogPosts: blogPostsData.length,
-                events: eventsData.length
-            });
-        } catch (error) {
-            console.error("Failed to fetch dashboard data:", error);
-        } finally {
-            setIsDataLoading(false);
-        }
+        setProducts(productsData);
+        setStats({
+            totalProducts,
+            totalReviews,
+            blogPosts: blogPostsData.length,
+            events: eventsData.length
+        });
+    } catch (error) {
+        console.error("Failed to fetch dashboard data:", error);
+    } finally {
+        setIsDataLoading(false);
     }
+  }, []);
+
+  useEffect(() => {
     fetchDashboardData();
-  }, [refreshKey]);
+  }, [refreshKey, fetchDashboardData]);
 
 
   useEffect(() => {

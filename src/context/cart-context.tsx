@@ -8,15 +8,6 @@ export interface CartItem extends Product {
   quantity: number;
 }
 
-interface OrderSummary {
-    orderId: string;
-    orderDate: string;
-    items: CartItem[];
-    subtotal: number;
-    shipping: number;
-    total: number;
-}
-
 interface CartContextType {
   cart: CartItem[];
   addToCart: (product: Product, quantity: number) => void;
@@ -27,8 +18,6 @@ interface CartContextType {
   subtotal: number;
   shipping: number;
   total: number;
-  lastOrder: OrderSummary | null;
-  setLastOrder: (order: OrderSummary | null) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -45,18 +34,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
     return [];
   });
-  
-  const [lastOrder, setLastOrder] = useState<OrderSummary | null>(() => {
-    if (typeof window !== 'undefined') {
-        try {
-            const savedOrder = sessionStorage.getItem('sehati-last-order');
-            return savedOrder ? JSON.parse(savedOrder) : null;
-        } catch (e) {
-            return null;
-        }
-    }
-    return null;
-  });
 
   useEffect(() => {
     try {
@@ -65,18 +42,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         console.error("Failed to save cart to localStorage", e);
     }
   }, [cart]);
-
-  useEffect(() => {
-    try {
-        if (lastOrder) {
-            sessionStorage.setItem('sehati-last-order', JSON.stringify(lastOrder));
-        } else {
-            sessionStorage.removeItem('sehati-last-order');
-        }
-    } catch (e) {
-        console.error("Failed to save last order to sessionStorage", e);
-    }
-  }, [lastOrder]);
 
   const addToCart = (product: Product, quantity: number) => {
     setCart(prevCart => {
@@ -130,8 +95,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         subtotal,
         shipping,
         total,
-        lastOrder,
-        setLastOrder
       }}
     >
       {children}

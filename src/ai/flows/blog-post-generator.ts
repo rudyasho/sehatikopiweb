@@ -12,9 +12,9 @@ import {z} from 'genkit';
 
 const GenerateBlogPostOutputSchema = z.object({
   title: z.string().describe('A catchy and SEO-friendly title for the blog post.'),
-  category: z.enum(['Brewing Tips', 'Storytelling', 'Coffee Education', 'News']).describe('The most appropriate category for the blog post.'),
-  content: z.string().describe('The full content of the blog post, formatted as a single string of Markdown. Use Markdown syntax like ## for headings, * for list items, etc. Do not include a main # title, as that is handled by the `title` field.'),
-  imagePrompt: z.string().describe("A creative, descriptive prompt for an AI image generator to create a feature image for this blog post. The prompt should be detailed and evocative, suitable for generating a high-quality photograph."),
+  category: z.enum(['Brewing Tips', 'Storytelling', 'Coffee Education', 'News']).describe('The most appropriate category for the blog post based on the topic.'),
+  content: z.string().describe('The full content of the blog post, formatted as a single string of Markdown. Use Markdown syntax like ## for headings, * for list items, etc. The content should be at least 3-4 paragraphs long. Do not include a main # title, as that is handled by the `title` field.'),
+  imagePrompt: z.string().describe("A creative, descriptive prompt for an AI image generator to create a feature image for this blog post. The prompt should be detailed, artistic, and evocative, suitable for generating a high-quality, professional photograph related to the blog's content."),
 });
 export type GenerateBlogPostOutput = z.infer<typeof GenerateBlogPostOutputSchema>;
 

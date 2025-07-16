@@ -36,7 +36,7 @@ const LoadingSpinner = () => (
 
 
 export function CartClientPage() {
-  const { cart, updateQuantity, removeFromCart, subtotal, shipping, total, clearCart, setLastOrder } = useCart();
+  const { cart, updateQuantity, removeFromCart, subtotal, shipping, total, clearCart } = useCart();
   const [isClient, setIsClient] = useState(false);
   const router = useRouter();
   
@@ -53,14 +53,21 @@ export function CartClientPage() {
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     
     // Set the order details for the confirmation page
-    setLastOrder({
+    const lastOrder = {
       items: cart,
       subtotal,
       shipping,
       total,
       orderDate: new Date().toISOString(),
       orderId: `SK-${Date.now()}`
-    });
+    };
+    
+    try {
+        sessionStorage.setItem('sehati-last-order', JSON.stringify(lastOrder));
+    } catch (e) {
+        console.error("Could not save order to sessionStorage", e);
+    }
+
 
     // Open WhatsApp link
     window.open(whatsappUrl, '_blank');
