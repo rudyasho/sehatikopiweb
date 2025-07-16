@@ -1,17 +1,18 @@
 'use client';
 
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, Coffee, Leaf, Star, ShoppingCart, Check, Loader2 } from 'lucide-react';
+
+import { useCart } from '@/context/cart-context';
+import { useToast } from '@/hooks/use-toast';
+import { getProducts, type Product } from '@/lib/products-data';
+import { getHeroData, type HeroData } from '@/lib/hero-data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { getProducts, Product } from '@/lib/products-data';
-import { useCart } from '@/context/cart-context';
-import { useToast } from '@/hooks/use-toast';
-import { useState, useMemo, useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { getHeroData, type HeroData } from '@/lib/hero-data';
 
 const testimonials = [
   {
@@ -94,7 +95,7 @@ function FeaturedProducts() {
   return (
     <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       {products.map((product) => (
-        <Card key={product.slug} className="text-left overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 shadow-lg bg-background flex flex-col">
+        <Card key={product.id} className="text-left overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 shadow-lg bg-background flex flex-col">
           <CardHeader className="p-0">
             <Link href={`/products/${product.slug}`}>
               <div className="relative h-60 w-full">
@@ -114,7 +115,7 @@ function FeaturedProducts() {
               <Button asChild variant="outline" className="flex-1">
                 <Link href={`/products/${product.slug}`}>View</Link>
               </Button>
-              <Button onClick={() => handleAddToCart(product)} disabled={addedProducts[product.slug]} className="flex-1">
+              <Button onClick={() => handleAddToCart(product)} disabled={addedProducts[product.slug]} className="flex-1" aria-label={`Add ${product.name} to cart`}>
                 {addedProducts[product.slug] ? <Check /> : <ShoppingCart />}
               </Button>
             </div>

@@ -2,17 +2,19 @@
 // src/app/blog/[slug]/client-page.tsx
 'use client';
 
-import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/context/auth-context';
-import { Button } from '@/components/ui/button';
-import { Twitter, Facebook, MessageCircle, Link2, BookAudio, Loader2, Pause, Play, Edit } from 'lucide-react';
-import { useEffect, useState, useTransition, useRef } from 'react';
+import React, { useEffect, useState, useTransition, useRef } from 'react';
 import Link from 'next/link';
-import { type BlogPost } from '@/lib/blog-data';
-import { generateCoffeeStoryText, generateCoffeeStoryAudio } from '@/ai/flows/story-teller-flow';
+import { Twitter, Facebook, MessageCircle, Link2, BookAudio, Loader2, Pause, Play, Edit } from 'lucide-react';
+
+import { useAuth } from '@/context/auth-context';
+import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { type BlogPost } from '@/lib/blog-data';
+import { generateCoffeeStoryText, generateCoffeeStoryAudio } from '@/ai/flows/story-teller-flow';
+
 
 const ShareButtons = ({ title, slug }: { title: string, slug: string }) => {
   const { toast } = useToast();
@@ -98,7 +100,7 @@ const AudioPlayer = ({ audioDataUri, isAudioLoading }: { audioDataUri: string | 
   return (
     <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50 border">
       <audio ref={audioRef} preload="auto" />
-      <Button onClick={togglePlayPause} size="icon" variant="outline" className="flex-shrink-0 rounded-full h-12 w-12" disabled={isAudioLoading || !audioDataUri}>
+      <Button onClick={togglePlayPause} size="icon" variant="outline" className="flex-shrink-0 rounded-full h-12 w-12" disabled={isAudioLoading || !audioDataUri} aria-label={isPlaying ? "Pause audio" : "Play audio"}>
         {isAudioLoading ? (
             <Loader2 className="h-6 w-6 animate-spin" />
         ) : isPlaying ? (

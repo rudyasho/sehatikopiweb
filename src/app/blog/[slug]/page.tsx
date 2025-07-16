@@ -1,21 +1,19 @@
 // src/app/blog/[slug]/page.tsx
 import Image from 'next/image';
-import { notFound } from 'next/navigation';
-import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit } from 'lucide-react';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import { Metadata, ResolvingMetadata } from 'next';
+import { marked } from 'marked';
+import { format } from 'date-fns';
+import { ArrowLeft } from 'lucide-react';
+
 import { getBlogPosts, getPostBySlug, type BlogPost } from '@/lib/blog-data';
 import { getProducts } from '@/lib/products-data';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardTitle, CardDescription, CardFooter, CardHeader } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Button } from '@/components/ui/button';
-import { marked } from 'marked';
 import { BlogPostClientWrapper, PostFooter } from './client-page';
-import { Metadata, ResolvingMetadata } from 'next';
-import { auth } from 'firebase-admin';
-import { getAuth } from 'firebase/auth';
-import { app } from '@/lib/firebase';
-import { format } from 'date-fns';
 
 
 type Props = {
@@ -74,7 +72,7 @@ const RecommendedBlogs = async ({ currentSlug }: { currentSlug: string }) => {
         <h2 className="font-headline text-3xl text-primary text-center mb-8">Continue Reading</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {recommendedPosts.map(post => (
-              <Card key={post.slug} className="flex flex-col overflow-hidden shadow-lg transform hover:-translate-y-1 transition-transform duration-300 bg-secondary/50">
+              <Card key={post.id} className="flex flex-col overflow-hidden shadow-lg transform hover:-translate-y-1 transition-transform duration-300 bg-secondary/50">
                 <CardHeader className="p-0">
                   <Link href={`/blog/${post.slug}`}>
                     <div className="relative h-52 w-full">
@@ -117,7 +115,7 @@ const RecommendedProducts = async () => {
         <h2 className="font-headline text-3xl text-primary text-center mb-8">You Might Also Like</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {topProducts.map(product => (
-            <Card key={product.slug} className="overflow-hidden shadow-lg transform hover:-translate-y-1 transition-transform duration-300 bg-secondary/50">
+            <Card key={product.id} className="overflow-hidden shadow-lg transform hover:-translate-y-1 transition-transform duration-300 bg-secondary/50">
               <Link href={`/products/${product.slug}`} className="block">
                 <div className="relative h-52 w-full">
                   <Image src={product.image} alt={product.name} fill className="object-cover" data-ai-hint={product.aiHint}/>

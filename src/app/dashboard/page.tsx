@@ -3,38 +3,43 @@
 
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useAuth, type User, type AppUser, SUPER_ADMIN_UID } from '@/context/auth-context';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ProductPopularityChart } from './product-popularity-chart';
-import { Coffee, Star, Calendar, Newspaper, Loader2, PlusCircle, Wand2, Edit, BarChart3, Bot, LayoutGrid, Send, Clipboard, Check, Save, ListOrdered, Trash2, BookText, Image as ImageIcon, FileText, CalendarCheck, Clock, MapPin, CalendarPlus, FilePlus2, Users, Settings, ImageUp } from 'lucide-react';
-import { addProduct, getProducts, updateProduct, deleteProduct, type Product } from '@/lib/products-data';
-import { RoastDistributionChart } from './roast-distribution-chart';
-import { OriginDistributionChart } from './origin-distribution-chart';
-import { TopProductsTable } from './top-products-table';
-import { useToast } from '@/hooks/use-toast';
+import Image from 'next/image';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { format } from 'date-fns';
+import { 
+    Coffee, Star, Calendar, Newspaper, Loader2, PlusCircle, Wand2, Edit, BarChart3, Bot, LayoutGrid, 
+    Send, Save, ListOrdered, Trash2, BookText, Image as ImageIcon, FileText, CalendarCheck, MapPin, 
+    CalendarPlus, FilePlus2, Users, Settings, ImageUp
+} from 'lucide-react';
+
+import { useAuth, type User, type AppUser, SUPER_ADMIN_UID } from '@/context/auth-context';
+import { useToast } from '@/hooks/use-toast';
+import { getProducts, updateProduct, deleteProduct, addProduct, type Product } from '@/lib/products-data';
+import { getBlogPosts, updateBlogPost, deleteBlogPost, addBlogPost, type BlogPost } from '@/lib/blog-data';
+import { getEvents, updateEvent, deleteEvent, addEvent, type Event, type EventFormData } from '@/lib/events-data';
+import { listAllUsers, updateUserDisabledStatus, deleteUserAccount } from '@/lib/users-data';
+import { getSettings, updateSettings, type SettingsFormData } from '@/lib/settings-data';
+import { getHeroData, updateHeroData, type HeroFormData } from '@/lib/hero-data';
+import { generateBlogPost, type GenerateBlogPostOutput } from '@/ai/flows/blog-post-generator';
+import { generateImage } from '@/ai/flows/image-generator';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { ProductPopularityChart } from './product-popularity-chart';
+import { RoastDistributionChart } from './roast-distribution-chart';
+import { OriginDistributionChart } from './origin-distribution-chart';
+import { TopProductsTable } from './top-products-table';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import Image from 'next/image';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { addBlogPost, getBlogPosts, updateBlogPost, deleteBlogPost, type BlogPost } from '@/lib/blog-data';
-import { generateBlogPost, type GenerateBlogPostOutput } from '@/ai/flows/blog-post-generator';
-import { generateImage } from '@/ai/flows/image-generator';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { BlogEditor } from './blog-editor';
-import { addEvent, getEvents, updateEvent, deleteEvent, type Event, type EventFormData } from '@/lib/events-data';
-import { format } from 'date-fns';
-import { listAllUsers, updateUserDisabledStatus, deleteUserAccount } from '@/lib/users-data';
-import { getSettings, updateSettings, type WebsiteSettings, type SettingsFormData } from '@/lib/settings-data';
-import { getHeroData, updateHeroData, HeroData, HeroFormData } from '@/lib/hero-data';
 import { Label } from '@/components/ui/label';
 
 
@@ -325,7 +330,7 @@ function BlogGenerator({ currentUser, onPostPublished }: { currentUser: User, on
                                             }}
                                             placeholder="AI prompt for generating an image"
                                         />
-                                        <Button type="button" variant="outline" onClick={handleGenerateImage} disabled={imageState.isLoading}>
+                                        <Button type="button" variant="outline" onClick={handleGenerateImage} disabled={imageState.isLoading} aria-label="Generate Image with AI">
                                             <Wand2 className="h-4 w-4"/>
                                         </Button>
                                     </div>
@@ -577,7 +582,7 @@ const ProductForm = ({ product, onFormSubmit, closeDialog }: { product?: Product
                                 <FormControl>
                                   <div className="flex gap-2">
                                     <Input placeholder="e.g., coffee cup" {...field} />
-                                    <Button type="button" variant="outline" size="icon" onClick={handleGenerateImage} disabled={imageState.isLoading}>
+                                    <Button type="button" variant="outline" size="icon" onClick={handleGenerateImage} disabled={imageState.isLoading} aria-label="Generate Image with AI">
                                       <Wand2 className="h-4 w-4" />
                                     </Button>
                                   </div>
@@ -800,7 +805,7 @@ const ManageProductsView = ({ onProductsChanged }: { onProductsChanged: () => vo
                                     <TableCell className="text-center space-x-2">
                                         <Dialog>
                                             <DialogTrigger asChild>
-                                                <Button variant="outline" size="icon">
+                                                <Button variant="outline" size="icon" aria-label={`Edit ${product.name}`}>
                                                     <Edit />
                                                 </Button>
                                             </DialogTrigger>
@@ -814,7 +819,7 @@ const ManageProductsView = ({ onProductsChanged }: { onProductsChanged: () => vo
 
                                         <AlertDialog>
                                             <AlertDialogTrigger asChild>
-                                                <Button variant="destructive" size="icon">
+                                                <Button variant="destructive" size="icon" aria-label={`Delete ${product.name}`}>
                                                     <Trash2 />
                                                 </Button>
                                             </AlertDialogTrigger>
@@ -1062,7 +1067,7 @@ const ManageBlogPostsView = ({ onPostsChanged, initialPostToEdit }: { onPostsCha
                                     <TableCell className="text-center space-x-2">
                                         <Dialog open={editingPost?.id === post.id} onOpenChange={(isOpen) => !isOpen && setEditingPost(null)}>
                                             <DialogTrigger asChild>
-                                                <Button variant="outline" size="icon" onClick={() => setEditingPost(post)}>
+                                                <Button variant="outline" size="icon" onClick={() => setEditingPost(post)} aria-label={`Edit ${post.title}`}>
                                                     <Edit />
                                                 </Button>
                                             </DialogTrigger>
@@ -1076,7 +1081,7 @@ const ManageBlogPostsView = ({ onPostsChanged, initialPostToEdit }: { onPostsCha
 
                                         <AlertDialog>
                                             <AlertDialogTrigger asChild>
-                                                <Button variant="destructive" size="icon">
+                                                <Button variant="destructive" size="icon" aria-label={`Delete ${post.title}`}>
                                                     <Trash2 />
                                                 </Button>
                                             </AlertDialogTrigger>
@@ -1203,12 +1208,12 @@ const ManageEventsView = ({ onEventsChanged }: { onEventsChanged: () => void }) 
                                     <TableCell className="font-medium">{event.title}</TableCell>
                                     <TableCell>{event.date}</TableCell>
                                     <TableCell className="text-center space-x-2">
-                                        <Button variant="outline" size="icon" onClick={() => { setEditingEvent(event); setIsFormOpen(true); }}>
+                                        <Button variant="outline" size="icon" onClick={() => { setEditingEvent(event); setIsFormOpen(true); }} aria-label={`Edit ${event.title}`}>
                                             <Edit />
                                         </Button>
                                         <AlertDialog>
                                             <AlertDialogTrigger asChild>
-                                                <Button variant="destructive" size="icon">
+                                                <Button variant="destructive" size="icon" aria-label={`Delete ${event.title}`}>
                                                     <Trash2 />
                                                 </Button>
                                             </AlertDialogTrigger>

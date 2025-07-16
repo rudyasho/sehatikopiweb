@@ -1,37 +1,35 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { Metadata } from 'next';
+import { format } from 'date-fns';
+import { Twitter, Facebook, MessageCircle } from 'lucide-react';
+
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { getBlogPosts, type BlogPost } from '@/lib/blog-data';
-import type { Metadata } from 'next';
-import { format } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
-import { Twitter, Facebook, MessageCircle, Link2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { useEffect, useState } from 'react';
+import { getBlogPosts } from '@/lib/blog-data';
 
 const StaticShare = ({ slug, title }: { slug: string, title: string }) => (
     <div className="flex items-center gap-2">
       <span className="text-sm font-semibold text-foreground/80">Share:</span>
-      <Button asChild variant="outline" size="icon" className="h-8 w-8">
+      <Button asChild variant="outline" size="icon" className="h-8 w-8" aria-label="Share on Twitter">
         <a href={`https://twitter.com/intent/tweet?url=${`https://sehatikopi.id/blog/${slug}`}&text=${encodeURIComponent(title)}`} target="_blank" rel="noopener noreferrer">
           <Twitter className="h-4 w-4" />
         </a>
       </Button>
-      <Button asChild variant="outline" size="icon" className="h-8 w-8">
+      <Button asChild variant="outline" size="icon" className="h-8 w-8" aria-label="Share on Facebook">
          <a href={`https://www.facebook.com/sharer/sharer.php?u=${`https://sehatikopi.id/blog/${slug}`}`} target="_blank" rel="noopener noreferrer">
           <Facebook className="h-4 w-4" />
         </a>
       </Button>
-      <Button asChild variant="outline" size="icon" className="h-8 w-8">
+      <Button asChild variant="outline" size="icon" className="h-8 w-8" aria-label="Share on WhatsApp">
          <a href={`https://api.whatsapp.com/send?text=${encodeURIComponent(title + " " + `https://sehatikopi.id/blog/${slug}`)}`} target="_blank" rel="noopener noreferrer">
           <MessageCircle className="h-4 w-4" />
         </a>
       </Button>
     </div>
 )
-
 
 export const metadata: Metadata = {
   title: 'Blog',
@@ -99,7 +97,7 @@ export default async function BlogPage() {
                 <h2 className="font-headline text-3xl font-bold text-primary text-center my-12">More Articles</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {otherPosts.map((post) => (
-                    <Card key={`${post.id}-${post.slug}`} className="flex flex-col overflow-hidden shadow-lg transform hover:-translate-y-1 transition-transform duration-300 bg-background">
+                    <Card key={post.id} className="flex flex-col overflow-hidden shadow-lg transform hover:-translate-y-1 transition-transform duration-300 bg-background">
                     <CardHeader className="p-0">
                         <Link href={`/blog/${post.slug}`}>
                         <div className="relative h-60 w-full">

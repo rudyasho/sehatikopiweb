@@ -1,16 +1,16 @@
 
 'use client';
 
+import React from 'react';
+
 import './globals.css';
 import { cn } from '@/lib/utils';
+import { AuthProvider } from '@/context/auth-context';
+import { CartProvider } from '@/context/cart-context';
+import { ThemeProvider } from '@/components/layout/theme-provider';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { Toaster } from "@/components/ui/toaster"
-import { CartProvider } from '@/context/cart-context';
-import { AuthProvider } from '@/context/auth-context';
-import { ThemeProvider } from '@/components/layout/theme-provider';
-import React from 'react';
-
 
 export default function RootLayout({
   children,

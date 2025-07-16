@@ -1,18 +1,20 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import Image from 'next/image';
 import { marked } from 'marked';
 import hljs from 'highlight.js';
 import 'highlight.js/styles/atom-one-dark.css';
+import { Bold, Italic, Link, List, Quote, Code, Image as ImageIcon, Wand2, Loader2 } from 'lucide-react';
+
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Bold, Italic, Link, List, Quote, Code, Image as ImageIcon, Wand2, Loader2 } from 'lucide-react';
 import { generateImage } from '@/ai/flows/image-generator';
 import { useToast } from '@/hooks/use-toast';
-import Image from 'next/image';
+
 
 marked.setOptions({
   highlight: function (code, lang) {
@@ -104,7 +106,7 @@ const ImageInsertionDialog = ({ onInsertImage }: { onInsertImage: (url: string, 
                             value={aiPrompt}
                             onChange={(e) => setAiPrompt(e.target.value)}
                         />
-                        <Button variant="outline" size="icon" onClick={handleGenerateImage} disabled={isGenerating}>
+                        <Button variant="outline" size="icon" onClick={handleGenerateImage} disabled={isGenerating} aria-label="Generate Image with AI">
                             {isGenerating ? <Loader2 className="animate-spin" /> : <Wand2 />}
                         </Button>
                     </div>
@@ -179,7 +181,7 @@ const MarkdownToolbar = ({ textareaRef, onContentChange }: { textareaRef: React.
         {toolbarItems.map((item, index) => (
             <Tooltip key={index}>
                 <TooltipTrigger asChild>
-                    <Button type="button" variant="ghost" size="icon" onClick={item.action} className="h-8 w-8">
+                    <Button type="button" variant="ghost" size="icon" onClick={item.action} className="h-8 w-8" aria-label={item.tooltip}>
                         <item.icon className="h-4 w-4" />
                     </Button>
                 </TooltipTrigger>
@@ -192,7 +194,7 @@ const MarkdownToolbar = ({ textareaRef, onContentChange }: { textareaRef: React.
             <Tooltip>
                 <TooltipTrigger asChild>
                     <DialogTrigger asChild>
-                        <Button type="button" variant="ghost" size="icon" className="h-8 w-8">
+                        <Button type="button" variant="ghost" size="icon" className="h-8 w-8" aria-label="Insert Image">
                             <ImageIcon className="h-4 w-4" />
                         </Button>
                     </DialogTrigger>

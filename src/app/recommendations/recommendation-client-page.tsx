@@ -1,23 +1,24 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { Loader2, Wand2, Coffee, ArrowRight } from 'lucide-react';
+
 import { recommendCoffee, type RecommendCoffeeOutput } from '@/ai/flows/coffee-recommendation';
+import { getProductBySlug, type Product } from '@/lib/products-data';
+import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/use-toast';
-import { Loader2, Wand2, Coffee, ArrowRight } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { getProductBySlug, type Product } from '@/lib/products-data';
-import Image from 'next/image';
-import Link from 'next/link';
 
 const recommendationSchema = z.object({
   flavorPreferences: z.string().min(10, 'Please describe your flavor preferences in more detail (e.g., "I like sweet, fruity, and not too bitter coffee").'),
@@ -58,7 +59,7 @@ function RecommendedProductCard({ slug }: { slug: string }) {
         <CardContent className="p-4">
             <div className="flex flex-col sm:flex-row gap-4">
                 <div className="relative h-28 w-28 rounded-md overflow-hidden flex-shrink-0 mx-auto sm:mx-0">
-                    <Image src={product.image} alt={product.name} layout="fill" objectFit="cover" data-ai-hint={product.aiHint} />
+                    <Image src={product.image} alt={product.name} fill className="object-cover" data-ai-hint={product.aiHint} />
                 </div>
                 <div className="flex-grow">
                     <h5 className="font-headline text-lg font-semibold text-primary">{product.name}</h5>
