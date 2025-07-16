@@ -24,7 +24,7 @@ This is a Next.js application for "Sehati Kopi Digital", a fictional Indonesian 
     - **Hero Settings**: A panel to dynamically update the main title, subtitle, and image on the homepage.
     - **Website Settings**: A dynamic settings panel to manage sitewide contact information and social media links without code changes.
 - **Centralized Search**: A dedicated search page to find products and blog articles efficiently.
-- **User Authentication**: A complete authentication system using Firebase (Email/Password & Google) allowing users to sign up, log in, and view a profile page with mock order history. Admin roles grant access to protected features.
+- **User Authentication**: A complete authentication system using Firebase (Email/Password & Google) allowing users to sign up, log in, and view a profile page with their real order history saved in Firestore. Admin roles grant access to protected features.
 - **SEO Optimized**: Includes dynamic metadata, a `sitemap.xml`, and `robots.txt` for optimal search engine ranking.
 - **Dark Mode**: A fully implemented dark mode for user preference.
 
