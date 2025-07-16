@@ -1,3 +1,4 @@
+
 // src/app/profile/page.tsx
 'use client';
 
@@ -9,21 +10,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, Mail, LogOut, LayoutDashboard } from 'lucide-react';
+import { Loader2, Mail, LogOut, LayoutDashboard, ShoppingBag } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-
-// This is a client-side only page, so we can't export metadata directly.
-// In a real-world scenario with server-side rendering, you would export this.
-// export const metadata: Metadata = {
-//   title: 'My Profile',
-//   description: 'View your profile information and order history.',
-// };
-
-const mockOrderHistory = [
-  { id: 'ORD-2024-001', date: '2024-08-10', total: 255000, status: 'Shipped' },
-  { id: 'ORD-2024-002', date: '2024-07-25', total: 135000, status: 'Delivered' },
-  { id: 'ORD-2024-003', date: '2024-07-12', total: 140000, status: 'Delivered' },
-];
+import { getOrdersByUserId, type Order } from '@/lib/orders-data';
+import { useToast } from '@/hooks/use-toast';
+import { format } from 'date-fns';
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
@@ -37,6 +28,81 @@ const getStatusVariant = (status: string) => {
         default: return 'secondary';
     }
 }
+
+const OrderHistory = ({ userId }: { userId: string }) => {
+    const [orders, setOrders] = useState<Order[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const { toast } = useToast();
+
+    useEffect(() => {
+        const fetchOrders = async () => {
+            setIsLoading(true);
+            try {
+                const userOrders = await getOrdersByUserId(userId);
+                setOrders(userOrders);
+            } catch (error) {
+                console.error("Failed to fetch order history:", error);
+                toast({
+                    variant: 'destructive',
+                    title: 'Error',
+                    description: 'Could not load your order history.',
+                });
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchOrders();
+    }, [userId, toast]);
+    
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center p-8">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        )
+    }
+    
+    if (orders.length === 0) {
+        return (
+             <div className="text-center py-12">
+                <ShoppingBag className="mx-auto h-16 w-16 text-foreground/30" />
+                <h3 className="mt-4 text-xl font-semibold">No Orders Yet</h3>
+                <p className="mt-1 text-foreground/60">Your past orders will appear here.</p>
+                <Button asChild size="sm" className="mt-4">
+                    <a href="/products">Start Shopping</a>
+                </Button>
+            </div>
+        )
+    }
+
+    return (
+        <div className="border rounded-lg">
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>Order ID</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead className="text-center">Status</TableHead>
+                        <TableHead className="text-right">Total</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {orders.map((order) => (
+                        <TableRow key={order.orderId}>
+                            <TableCell className="font-medium font-mono text-xs">{order.orderId}</TableCell>
+                            <TableCell>{format(new Date(order.orderDate), 'MMM d, yyyy')}</TableCell>
+                            <TableCell className="text-center">
+                                <Badge variant={getStatusVariant(order.status) as any}>{order.status}</Badge>
+                            </TableCell>
+                            <TableCell className="text-right">{formatCurrency(order.total)}</TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </div>
+    )
+}
+
 
 const ProfilePage = () => {
   const { user, loading, logout } = useAuth();
@@ -98,30 +164,7 @@ const ProfilePage = () => {
             <Separator/>
             <CardContent className="p-6">
                 <h3 className="font-headline text-2xl text-primary mb-4">Order History</h3>
-                <div className="border rounded-lg">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Order ID</TableHead>
-                                <TableHead>Date</TableHead>
-                                <TableHead className="text-center">Status</TableHead>
-                                <TableHead className="text-right">Total</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {mockOrderHistory.map((order) => (
-                                <TableRow key={order.id}>
-                                    <TableCell className="font-medium">{order.id}</TableCell>
-                                    <TableCell>{order.date}</TableCell>
-                                    <TableCell className="text-center">
-                                        <Badge variant={getStatusVariant(order.status) as any}>{order.status}</Badge>
-                                    </TableCell>
-                                    <TableCell className="text-right">{formatCurrency(order.total)}</TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </div>
+                <OrderHistory userId={user.uid} />
             </CardContent>
           </Card>
         </div>

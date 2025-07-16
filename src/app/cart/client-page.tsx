@@ -11,6 +11,9 @@ import { Separator } from '@/components/ui/separator';
 import { Minus, Plus, Trash2, ArrowLeft, ShoppingCart, Loader2 } from 'lucide-react';
 import { useCart } from '@/context/cart-context';
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/context/auth-context';
+import { addOrder } from '@/lib/orders-data';
+import { useToast } from '@/hooks/use-toast';
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
@@ -37,6 +40,8 @@ const LoadingSpinner = () => (
 
 export function CartClientPage() {
   const { cart, updateQuantity, removeFromCart, subtotal, shipping, total, clearCart } = useCart();
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [isClient, setIsClient] = useState(false);
   const router = useRouter();
   
@@ -44,30 +49,47 @@ export function CartClientPage() {
     setIsClient(true);
   }, []);
 
-  const handleCheckout = () => {
-    const phoneNumber = "6281234567890"; // Ganti dengan nomor WhatsApp Anda
-    const message = `Halo Sehati Kopi, saya ingin memesan:\n\n${cart
-      .map(item => `${item.quantity}x ${item.name} (${formatCurrency(item.price * item.quantity)})`)
-      .join('\n')}\n\nSubtotal: ${formatCurrency(subtotal)}\nShipping: ${formatCurrency(shipping)}\n*Total: ${formatCurrency(total)}*\n\nTerima kasih!`;
-
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-    
-    // Set the order details for the confirmation page
-    const lastOrder = {
+  const handleCheckout = async () => {
+    const orderId = `SK-${Date.now()}`;
+    const orderDetails = {
+      orderId: orderId,
       items: cart,
       subtotal,
       shipping,
       total,
       orderDate: new Date().toISOString(),
-      orderId: `SK-${Date.now()}`
+      status: 'Pending',
     };
+
+    // Save order to Firestore if user is logged in
+    if (user) {
+        try {
+            await addOrder({ ...orderDetails, userId: user.uid });
+        } catch (error) {
+            console.error("Failed to save order to Firestore:", error);
+            toast({
+                variant: 'destructive',
+                title: 'Order Error',
+                description: 'Could not save your order history. Please try again.',
+            });
+            // Don't block the checkout process if this fails, but notify the user.
+        }
+    }
+
+    // Prepare WhatsApp message
+    const phoneNumber = "6281234567890"; // Ganti dengan nomor WhatsApp Anda
+    const message = `Halo Sehati Kopi, saya ingin memesan (Order ID: ${orderId}):\n\n${cart
+      .map(item => `${item.quantity}x ${item.name} (${formatCurrency(item.price * item.quantity)})`)
+      .join('\n')}\n\nSubtotal: ${formatCurrency(subtotal)}\nShipping: ${formatCurrency(shipping)}\n*Total: ${formatCurrency(total)}*\n\nTerima kasih!`;
+
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     
+    // Save order details for the confirmation page (for guests or immediate display)
     try {
-        sessionStorage.setItem('sehati-last-order', JSON.stringify(lastOrder));
+        sessionStorage.setItem('sehati-last-order', JSON.stringify(orderDetails));
     } catch (e) {
         console.error("Could not save order to sessionStorage", e);
     }
-
 
     // Open WhatsApp link
     window.open(whatsappUrl, '_blank');
