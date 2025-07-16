@@ -4,7 +4,7 @@ This is a Next.js application for "Sehati Kopi Digital", a fictional Indonesian 
 
 ## Core Features
 
-- **Engaging Homepage**: A welcoming landing page showcasing the brand and key offerings.
+- **Engaging Homepage**: A welcoming landing page showcasing the brand and key offerings, with its title, subtitle, and image fully manageable from the admin dashboard.
 - **Dynamic Product Catalog**: A complete list of all coffee products available for purchase, with sortable and filterable views, and dedicated detail pages.
 - **In-Store Digital Menu**: An elegant, categorized menu for in-store customers.
 - **Dynamic Shopping Cart & Checkout**: A full-featured cart to add, update, and remove products. Checkout is handled via WhatsApp integration, followed by a dedicated order confirmation page.
@@ -21,6 +21,7 @@ This is a Next.js application for "Sehati Kopi Digital", a fictional Indonesian 
     - **Blog Management**: A full CRUD interface for blog posts, featuring a rich Markdown editor.
     - **Event Management**: A full CRUD interface for creating and managing public events.
     - **User Management**: A view for admins to see all registered users, disable/enable their accounts, or delete them.
+    - **Hero Settings**: A panel to dynamically update the main title, subtitle, and image on the homepage.
     - **Website Settings**: A dynamic settings panel to manage sitewide contact information and social media links without code changes.
 - **Centralized Search**: A dedicated search page to find products and blog articles efficiently.
 - **User Authentication**: A complete authentication system using Firebase (Email/Password & Google) allowing users to sign up, log in, and view a profile page with mock order history. Admin roles grant access to protected features.
