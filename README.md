@@ -65,5 +65,5 @@ The application will be available at `http://localhost:9002`.
 ### Admin Access
 
 To access the dashboard and other admin features, use the following credentials in the login dialog:
-- **Email**: `dev@sidepe.com`
+- **Email**: `dev@sidepe.com` or `rd.lapawawoi@gmail.com`
 - **Password**: `admin123`
