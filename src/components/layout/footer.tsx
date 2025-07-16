@@ -12,6 +12,7 @@ import { getSettings, WebsiteSettings } from '@/lib/settings-data';
 export function Footer() {
   const { toast } = useToast();
   const [settings, setSettings] = useState<WebsiteSettings | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function fetchSettings() {
@@ -20,6 +21,8 @@ export function Footer() {
         setSettings(settingsData);
       } catch (error) {
         console.error("Failed to load footer settings:", error);
+      } finally {
+        setIsLoading(false);
       }
     }
     fetchSettings();
@@ -52,23 +55,23 @@ export function Footer() {
               Roasting the finest Indonesian coffee with heart and passion.
             </p>
             <div className="flex space-x-4">
-              {settings ? (
-                <>
-                  <a href={settings.socialInstagram} aria-label="Instagram" className="text-[#E4405F] transition-opacity hover:opacity-80">
-                    <Instagram className="h-6 w-6" />
-                  </a>
-                  <a href={settings.socialFacebook} aria-label="Facebook" className="text-[#1877F2] transition-opacity hover:opacity-80">
-                    <Facebook className="h-6 w-6" />
-                  </a>
-                  <a href={settings.socialTwitter} aria-label="Twitter" className="text-[#1DA1F2] transition-opacity hover:opacity-80">
-                    <Twitter className="h-6 w-6" />
-                  </a>
-                </>
-              ) : (
+              {isLoading ? (
                 <div className="h-6 w-24 flex items-center">
                   <Loader2 className="h-4 w-4 animate-spin" />
                 </div>
-              )}
+              ) : settings ? (
+                <>
+                  <a href={settings.socialInstagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="text-foreground/70 transition-colors hover:text-primary">
+                    <Instagram className="h-6 w-6" />
+                  </a>
+                  <a href={settings.socialFacebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="text-foreground/70 transition-colors hover:text-primary">
+                    <Facebook className="h-6 w-6" />
+                  </a>
+                  <a href={settings.socialTwitter} target="_blank" rel="noopener noreferrer" aria-label="Twitter" className="text-foreground/70 transition-colors hover:text-primary">
+                    <Twitter className="h-6 w-6" />
+                  </a>
+                </>
+              ) : null}
             </div>
           </div>
           <div>
@@ -84,19 +87,23 @@ export function Footer() {
           </div>
           <div>
             <h4 className="font-semibold mb-4">Contact Us</h4>
-             {settings ? (
-              <ul className="space-y-2 text-sm text-foreground/80">
-                <li>{settings.contactAddress}</li>
-                <li>{settings.contactEmail}</li>
-                <li>{settings.contactPhone}</li>
-              </ul>
-            ) : (
+             {isLoading ? (
               <div className="space-y-2">
                 <div className="h-4 w-3/4 rounded bg-muted animate-pulse"></div>
                 <div className="h-4 w-1/2 rounded bg-muted animate-pulse"></div>
                 <div className="h-4 w-1/2 rounded bg-muted animate-pulse"></div>
               </div>
-            )}
+            ) : settings ? (
+              <ul className="space-y-2 text-sm text-foreground/80">
+                <li>{settings.contactAddress}</li>
+                <li>
+                  <a href={`mailto:${settings.contactEmail}`} className="hover:text-primary">{settings.contactEmail}</a>
+                </li>
+                <li>
+                  <a href={`tel:${settings.contactPhone.replace(/\s/g, '')}`} className="hover:text-primary">{settings.contactPhone}</a>
+                </li>
+              </ul>
+            ) : <p className="text-sm text-destructive">Info not available.</p>}
           </div>
           <div>
             <h4 className="font-semibold mb-4">Newsletter</h4>
