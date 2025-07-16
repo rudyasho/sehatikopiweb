@@ -1,7 +1,7 @@
 
 'use client';
 
-import { notFound, useRouter } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import { getProductBySlug } from '@/lib/products-data';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -20,7 +20,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 // in a layout or use a library to manage it.
 
 export default function ProductDetailPage({ params }: { params: { slug: string } }) {
-  const [slug, setSlug] = useState<string | null>(null);
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
@@ -29,25 +28,21 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
   const { toast } = useToast();
 
   useEffect(() => {
-    // Safely set the slug from params once the component has mounted on the client.
-    setSlug(params.slug);
-  }, [params.slug]);
-
-  useEffect(() => {
-    if (!slug) return;
-
     async function fetchProduct() {
+      if (!params.slug) return;
+
       setIsLoading(true);
-      const fetchedProduct = await getProductBySlug(slug);
+      const fetchedProduct = await getProductBySlug(params.slug);
       if (fetchedProduct) {
         setProduct(fetchedProduct);
       } else {
+        // Since this is a client component, calling notFound() directly works.
         notFound();
       }
       setIsLoading(false);
     }
     fetchProduct();
-  }, [slug]);
+  }, [params]);
 
 
   const handleAddToCart = () => {
@@ -90,6 +85,8 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
   }
 
   if (!product) {
+    // This case will be hit if the product is null after loading,
+    // though notFound() in useEffect should handle it first.
     return notFound();
   }
   
