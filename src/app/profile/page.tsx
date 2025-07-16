@@ -68,26 +68,31 @@ const ProfilePage = () => {
       <div className="container mx-auto px-4 py-12 md:py-16">
         <div className="max-w-4xl mx-auto">
           <Card className="shadow-xl bg-background">
-            <CardHeader className="flex flex-col md:flex-row items-start md:items-center gap-6 p-6">
-               <Avatar className="h-24 w-24 border-4 border-primary">
-                  <AvatarImage src={user.photoURL || undefined} alt={user.displayName || 'User'} data-ai-hint="person smiling"/>
-                  <AvatarFallback>{user.displayName?.charAt(0) || 'U'}</AvatarFallback>
-                </Avatar>
-                <div className="flex-grow">
-                  <CardTitle className="font-headline text-4xl text-primary">{user.displayName}</CardTitle>
-                  <CardDescription className="text-lg flex items-center gap-2 mt-1 text-muted-foreground">
-                    <Mail className="h-4 w-4"/> {user.email}
-                  </CardDescription>
-                </div>
-                <div className="flex flex-col sm:flex-row gap-2">
-                  {isUserAdmin && (
-                    <Button variant="outline" onClick={() => router.push('/dashboard')}>
-                      <LayoutDashboard /> Dashboard
-                    </Button>
-                  )}
-                  <Button variant="outline" onClick={logout}>
-                    <LogOut/> Logout
-                  </Button>
+            <CardHeader className="p-6">
+                <div className="flex flex-col sm:flex-row items-center gap-6">
+                     <Avatar className="h-24 w-24 border-4 border-primary">
+                        <AvatarImage src={user.photoURL || undefined} alt={user.displayName || 'User'} data-ai-hint="person smiling"/>
+                        <AvatarFallback>{user.displayName?.charAt(0) || 'U'}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-grow text-center sm:text-left">
+                        <div className="flex items-center justify-center sm:justify-start gap-3">
+                            <CardTitle className="font-headline text-4xl text-primary">{user.displayName}</CardTitle>
+                            {isUserAdmin && <Badge>Admin</Badge>}
+                        </div>
+                        <CardDescription className="text-lg flex items-center justify-center sm:justify-start gap-2 mt-1 text-muted-foreground">
+                            <Mail className="h-4 w-4"/> {user.email}
+                        </CardDescription>
+                    </div>
+                     <div className="flex flex-col sm:flex-row gap-2 self-center sm:self-start">
+                        {isUserAdmin && (
+                            <Button variant="outline" onClick={() => router.push('/dashboard')}>
+                            <LayoutDashboard /> Dashboard
+                            </Button>
+                        )}
+                        <Button variant="outline" onClick={logout}>
+                            <LogOut/> Logout
+                        </Button>
+                    </div>
                 </div>
             </CardHeader>
             <Separator/>
