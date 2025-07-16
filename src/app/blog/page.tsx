@@ -8,6 +8,7 @@ import { getBlogPosts, type BlogPost } from '@/lib/blog-data';
 import type { Metadata } from 'next';
 import { format } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
+import { BlogPostShare } from './blog-post-share';
 
 export const metadata: Metadata = {
   title: 'Blog',
@@ -56,9 +57,14 @@ export default async function BlogPage() {
                         <CardDescription className="text-base">{featuredPost.excerpt}</CardDescription>
                     </CardContent>
                     <CardFooter className="p-0 mt-6 flex-col items-start gap-4">
-                         <Button asChild variant="default" size="lg">
-                            <Link href={`/blog/${featuredPost.slug}`}>Read More &rarr;</Link>
-                        </Button>
+                         <div className="flex flex-col sm:flex-row gap-4 w-full">
+                            <Button asChild variant="default" size="lg" className="flex-grow">
+                                <Link href={`/blog/${featuredPost.slug}`}>Read More &rarr;</Link>
+                            </Button>
+                            <div className="self-center">
+                                <BlogPostShare slug={featuredPost.slug} title={featuredPost.title} />
+                            </div>
+                         </div>
                         {featuredPost.date && <span className="text-sm text-muted-foreground">{format(new Date(featuredPost.date), "MMMM d, yyyy")}</span>}
                     </CardFooter>
                 </div>
@@ -89,10 +95,12 @@ export default async function BlogPage() {
                         </Link>
                         <CardDescription className="mt-2 text-base">{post.excerpt}</CardDescription>
                     </CardContent>
-                    <CardFooter className="p-6 bg-secondary/50">
+                    <CardFooter className="p-6 bg-secondary/50 flex flex-col items-start gap-4">
                         <Button asChild variant="link" className="p-0 h-auto text-primary">
                             <Link href={`/blog/${post.slug}`}>Read More &rarr;</Link>
                         </Button>
+                        <Separator className="my-2" />
+                        <BlogPostShare slug={post.slug} title={post.title} />
                     </CardFooter>
                     </Card>
                 ))}
