@@ -12,6 +12,7 @@ import { useCart } from '@/context/cart-context';
 import { useToast } from '@/hooks/use-toast';
 import { useState, useMemo, useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { getHeroData, type HeroData } from '@/lib/hero-data';
 
 const testimonials = [
   {
@@ -124,35 +125,74 @@ function FeaturedProducts() {
   );
 }
 
+const HeroSection = () => {
+  const [heroData, setHeroData] = useState<HeroData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchHeroData = async () => {
+      try {
+        const data = await getHeroData();
+        setHeroData(data);
+      } catch (error) {
+        console.error("Failed to load hero data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchHeroData();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <section className="relative h-[60vh] md:h-[80vh] w-full flex items-center justify-center text-center text-white bg-secondary/50">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      </section>
+    );
+  }
+
+  if (!heroData) {
+    return (
+        <section className="relative h-[60vh] md:h-[80vh] w-full flex items-center justify-center text-center text-white bg-destructive">
+            <p>Could not load hero content.</p>
+        </section>
+    );
+  }
+
+  return (
+    <section className="relative h-[60vh] md:h-[80vh] w-full flex items-center justify-center text-center text-white">
+      <Image
+        src={heroData.imageUrl}
+        alt={heroData.title}
+        layout="fill"
+        objectFit="cover"
+        className="absolute z-0"
+        data-ai-hint="coffee beans cup"
+        priority
+      />
+      <div className="absolute inset-0 bg-black/60 z-10" />
+      <div className="relative z-20 container mx-auto px-4">
+        <h1 className="font-headline text-4xl md:text-6xl lg:text-7xl font-bold">
+          {heroData.title}
+        </h1>
+        <p className="mt-4 text-lg md:text-xl max-w-2xl mx-auto">
+          {heroData.subtitle}
+        </p>
+        <Button asChild size="lg" className="mt-8 font-bold">
+          <Link href="/products">
+            Explore Our Coffee <ArrowRight className="ml-2 h-4 w-4" />
+          </Link>
+        </Button>
+      </div>
+    </section>
+  );
+};
+
+
 export function HomeClient() {
   return (
     <div className="flex flex-col">
-      {/* Hero Section */}
-      <section className="relative h-[60vh] md:h-[80vh] w-full flex items-center justify-center text-center text-white">
-        <Image
-          src="https://images.unsplash.com/photo-1511537190424-bbbab87ac5eb?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-          alt="Sehati Kopi Roastery"
-          layout="fill"
-          objectFit="cover"
-          className="absolute z-0"
-          data-ai-hint="coffee beans cup"
-          priority
-        />
-        <div className="absolute inset-0 bg-black/60 z-10" />
-        <div className="relative z-20 container mx-auto px-4">
-          <h1 className="font-headline text-4xl md:text-6xl lg:text-7xl font-bold">
-            A Journey of Indonesian Flavor
-          </h1>
-          <p className="mt-4 text-lg md:text-xl max-w-2xl mx-auto">
-            Discover the rich heritage and exquisite taste of single-origin Indonesian coffee, roasted with passion and precision.
-          </p>
-          <Button asChild size="lg" className="mt-8 font-bold">
-            <Link href="/products">
-              Explore Our Coffee <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
-        </div>
-      </section>
+      <HeroSection />
 
       {/* About Us Snippet */}
       <section className="py-16 md:py-24 bg-background">
