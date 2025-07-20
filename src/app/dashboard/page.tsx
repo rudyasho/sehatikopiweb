@@ -1,3 +1,4 @@
+
 // src/app/dashboard/page.tsx
 'use client';
 
@@ -56,7 +57,7 @@ const productFormSchema = z.object({
   price: z.coerce.number().min(1, "Price must be greater than 0."),
   roast: z.string().min(3, "Roast level is required."),
   tags: z.string().min(3, "Please add at least one tag, comma separated."),
-  image: z.string().min(1, "Image URL is required. You can generate one with AI."),
+  image: z.string().url("Image URL is required. You can generate one with AI."),
   aiHint: z.string().min(2, "AI hint is required for image search.")
 });
 
@@ -455,6 +456,7 @@ const ProductForm = ({ product, onFormSubmit, closeDialog }: { product?: Product
     const handleUrlChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const url = event.target.value;
         setImageState(prev => ({...prev, url }));
+        form.setValue('image', url);
     }
 
     const handleGenerateImage = async () => {
@@ -467,6 +469,7 @@ const ProductForm = ({ product, onFormSubmit, closeDialog }: { product?: Product
         try {
             const { imageDataUri } = await generateImage(aiHint);
             setImageState(prev => ({...prev, url: imageDataUri}));
+            form.setValue('image', imageDataUri);
         } catch (error) {
             console.error('Error generating product image:', error);
             toast({ variant: 'destructive', title: 'Image Generation Failed', description: 'Could not create image. Please try again.' });
@@ -594,7 +597,7 @@ const ProductForm = ({ product, onFormSubmit, closeDialog }: { product?: Product
                             <FormItem>
                                 <FormLabel>Image URL</FormLabel>
                                 <FormControl>
-                                    <Input type="url" placeholder="https://example.com/image.png" {...field} onChange={(e) => {field.onChange(e); handleUrlChange(e);}} />
+                                    <Input type="url" placeholder="https://example.com/image.png" {...field} onChange={handleUrlChange} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>

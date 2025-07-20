@@ -1,3 +1,4 @@
+
 'use client';
 
 import Image from 'next/image';
@@ -142,24 +143,25 @@ export function CartClientPage() {
                                 <p className="text-foreground/70">{formatCurrency(item.price)}</p>
                             </div>
                             <div className="flex items-center gap-2">
-                                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => updateQuantity(item.slug, item.quantity - 1)} disabled={item.quantity <= 1}><Minus className="h-4 w-4" /></Button>
-                                <Input type="number" value={item.quantity} readOnly className="h-8 w-12 text-center" />
-                                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => updateQuantity(item.slug, item.quantity + 1)}><Plus className="h-4 w-4" /></Button>
+                                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => updateQuantity(item.slug, item.quantity - 1)} disabled={item.quantity <= 1} aria-label="Decrease quantity"><Minus className="h-4 w-4" /></Button>
+                                <Input type="number" value={item.quantity} readOnly className="h-8 w-12 text-center" aria-label="Current quantity" />
+                                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => updateQuantity(item.slug, item.quantity + 1)} aria-label="Increase quantity"><Plus className="h-4 w-4" /></Button>
                             </div>
                             <p className="font-semibold text-lg w-28 text-right hidden sm:block">{formatCurrency(item.price * item.quantity)}</p>
-                            <Button variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10" onClick={() => removeFromCart(item.slug)}>
+                            <Button variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10" onClick={() => removeFromCart(item.slug)} aria-label={`Remove ${item.name} from cart`}>
                                 <Trash2 className="h-5 w-5" />
-                                <span className="sr-only">Remove item</span>
                             </Button>
                         </div>
                     ))}
                     </div>
                 </CardContent>
                  <CardFooter className="p-6 border-t bg-secondary/50">
-                    <Link href="/products" className="inline-flex items-center text-primary hover:underline">
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Continue Shopping
-                    </Link>
+                    <Button asChild variant="link" className="p-0">
+                        <Link href="/products" className="inline-flex items-center text-primary hover:underline">
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Continue Shopping
+                        </Link>
+                    </Button>
                 </CardFooter>
             </Card>
           </div>

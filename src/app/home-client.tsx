@@ -1,9 +1,10 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, Coffee, Leaf, Star, ShoppingCart, Check, Loader2 } from 'lucide-react';
+import { ArrowRight, Coffee, Leaf, Star, ShoppingCart, Check, Loader2, BookOpen, Wand2 } from 'lucide-react';
 
 import { useCart } from '@/context/cart-context';
 import { useToast } from '@/hooks/use-toast';
@@ -276,6 +277,7 @@ export function HomeClient() {
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-8">
             <div className="bg-background p-8 rounded-lg shadow-xl text-center flex flex-col items-center justify-center">
+              <BookOpen className="h-12 w-12 text-primary mb-4" />
               <h3 className="font-headline text-2xl md:text-3xl font-semibold text-primary">Explore the World of Coffee</h3>
               <p className="mt-2 text-foreground/80 max-w-md mx-auto">
                 Dive into our stories, brewing guides, and the latest news from the coffee world.
@@ -287,6 +289,7 @@ export function HomeClient() {
               </Button>
             </div>
             <div className="bg-primary text-primary-foreground p-8 rounded-lg shadow-xl text-center flex flex-col items-center justify-center">
+               <Wand2 className="h-12 w-12 text-primary-foreground mb-4" />
               <h3 className="font-headline text-2xl md:text-3xl font-semibold">Find Your Perfect Coffee</h3>
               <p className="mt-2 text-primary-foreground/80 max-w-md mx-auto">
                 Use our AI tool to get a personalized coffee recommendation based on your taste.

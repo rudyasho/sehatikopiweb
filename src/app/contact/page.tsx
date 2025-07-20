@@ -1,7 +1,7 @@
+
 // src/app/contact/page.tsx
 'use client';
 
-import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Phone, Mail, MapPin, Share2, Loader2 } from 'lucide-react';
 import { ContactForm } from './contact-form';
