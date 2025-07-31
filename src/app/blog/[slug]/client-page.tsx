@@ -1,4 +1,3 @@
-
 // src/app/blog/[slug]/client-page.tsx
 'use client';
 

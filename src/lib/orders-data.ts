@@ -1,7 +1,7 @@
-
 // src/lib/orders-data.ts
 'use server';
 
+import { unstable_noStore as noStore } from 'next/cache';
 import { dbAdmin } from './firebase-admin';
 import type { CartItem } from '@/context/cart-context';
 
@@ -27,6 +27,7 @@ export async function addOrder(orderData: Omit<Order, 'id'>) {
 }
 
 export async function getOrdersByUserId(userId: string): Promise<Order[]> {
+    noStore();
     if (!dbAdmin || !ordersCollection) {
         console.error("Firestore Admin is not initialized. Cannot get orders.");
         return [];
