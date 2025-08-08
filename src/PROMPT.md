@@ -1,3 +1,4 @@
+
 # Prompt Rekayasa Aplikasi: Sehati Kopi Digital
 
 Berikut adalah serangkaian prompt terperinci yang dirancang untuk memandu AI coding partner dalam membangun aplikasi web e-commerce dan portal konten "Sehati Kopi Digital" dari awal.
@@ -6,7 +7,7 @@ Berikut adalah serangkaian prompt terperinci yang dirancang untuk memandu AI cod
 
 - **Nama Aplikasi**: Sehati Kopi Digital
 - **Konsep**: Sebuah platform digital untuk sebuah kedai kopi dan roastery fiksi dari Indonesia. Aplikasi ini berfungsi sebagai etalase produk, portal konten (blog), dan dasbor manajemen bisnis.
-- **Tumpukan Teknologi**: Next.js (App Router), React, TypeScript, Tailwind CSS, ShadCN/UI, Firebase (Auth, Firestore), Genkit (untuk fitur AI).
+- **Tumpukan Teknologi**: Next.js (App Router), React, TypeScript, Tailwind CSS, ShadCN/UI, Firebase (Auth, Firestore).
 - **Persona AI**: App Prototyper di Firebase Studio.
 
 ---
@@ -14,7 +15,7 @@ Berikut adalah serangkaian prompt terperinci yang dirancang untuk memandu AI cod
 ### **Fase 1: Penyiapan Proyek & Struktur Inti**
 
 **Prompt 1: Inisialisasi Proyek**
-"Halo! Mari kita mulai proyek baru. Siapkan aplikasi Next.js dengan App Router, TypeScript, Tailwind CSS, dan ShadCN/UI. Pastikan untuk mengonfigurasi direktori `src` dan alias path (`@/*`). Inisialisasi juga Firebase SDK (klien dan admin) serta Genkit dengan plugin Google AI. Buat struktur folder dasar untuk `components`, `lib`, `context`, dan `ai`."
+"Halo! Mari kita mulai proyek baru. Siapkan aplikasi Next.js dengan App Router, TypeScript, Tailwind CSS, dan ShadCN/UI. Pastikan untuk mengonfigurasi direktori `src` dan alias path (`@/*`). Inisialisasi juga Firebase SDK (klien dan admin). Buat struktur folder dasar untuk `components`, `lib`, dan `context`."
 
 **Prompt 2: Tata Letak Utama (Layout)**
 "Buat komponen tata letak utama (`Header`, `Footer`, dan `RootLayout`). Header harus responsif, berisi logo, tautan navigasi utama, tombol mode terang/gelap, ikon keranjang belanja, dan menu profil pengguna/tombol login. Footer harus berisi tautan cepat, informasi kontak, dan formulir langganan newsletter. Terapkan ini dalam `src/app/layout.tsx` menggunakan ThemeProvider, AuthProvider, dan CartProvider."
@@ -25,7 +26,7 @@ Berikut adalah serangkaian prompt terperinci yang dirancang untuk memandu AI cod
 2.  **About Us Snippet**: Sedikit teks pengantar tentang perusahaan dengan gambar pendukung.
 3.  **Featured Products**: Placeholder untuk menampilkan 3 produk unggulan.
 4.  **Testimonials**: Tiga kartu testimoni dari pelanggan.
-5.  **CTA Section**: Dua kartu ajakan bertindak: satu untuk blog, satu untuk rekomendasi AI."
+5.  **CTA Section**: Ajakan bertindak untuk menelusuri blog."
 
 ---
 
@@ -87,26 +88,10 @@ Berikut adalah serangkaian prompt terperinci yang dirancang untuk memandu AI cod
 
 ---
 
-### **Fase 5: Integrasi Fitur AI dengan Genkit**
+### **Fase 5: Finalisasi & Optimasi**
 
-**Prompt 16: AI Coffee Recommender**
-"Buat halaman `/recommendations` dengan formulir di mana pengguna dapat memasukkan preferensi rasa, metode penyeduhan, dan tingkat kafein. Buat *flow* Genkit di `src/ai/flows/coffee-recommendation.ts` yang mengambil preferensi ini dan daftar produk yang tersedia sebagai konteks, lalu merekomendasikan satu produk terbaik beserta penjelasan mengapa produk itu cocok. Tampilkan hasilnya secara menarik di halaman."
-
-**Prompt 17: AI Story Teller untuk Blog**
-"Di halaman detail blog, tambahkan fitur 'AI Story Teller' yang hanya tersedia untuk pengguna yang login. Saat tombol ditekan, panggil *flow* Genkit (`story-teller-flow.ts`) yang:
-1.  Mengambil judul dan cuplikan konten blog untuk menghasilkan cerita pendek yang mempesona tentang kopi tersebut.
-2.  Menggunakan model Text-to-Speech untuk mengubah cerita teks menjadi audio.
-3.  Tampilkan pemutar audio di halaman agar pengguna dapat mendengarkan cerita tersebut."
-
-**Prompt 18: Generator Konten AI di Dasbor**
-"Di dasbor admin, buat tampilan 'AI Blog Generator'. Admin dapat memasukkan sebuah topik, dan *flow* Genkit (`blog-post-generator.ts`) akan menghasilkan draf postingan blog lengkap, termasuk judul, kategori, konten Markdown, dan *prompt* gambar yang deskriptif. Hasilnya kemudian akan mengisi formulir di mana admin dapat mengedit, menghasilkan gambar fitur menggunakan *flow* Genkit lain (`image-generator.ts`), dan akhirnya mempublikasikan postingan tersebut."
-
----
-
-### **Fase 6: Finalisasi & Optimasi**
-
-**Prompt 19: SEO & Metadata**
+**Prompt 16: SEO & Metadata**
 "Lakukan optimasi SEO. Hasilkan metadata dinamis untuk halaman produk dan blog. Buat `sitemap.ts` untuk menghasilkan sitemap.xml secara dinamis dan `robots.txt` untuk mengontrol perayapan mesin pencari."
 
-**Prompt 20: Pembersihan & Dokumentasi**
+**Prompt 17: Pembersihan & Dokumentasi**
 "Terakhir, tinjau seluruh basis kode. Rapikan kode, hapus impor yang tidak digunakan, pastikan konsistensi gaya, dan tambahkan komentar jika diperlukan. Perbarui file `README.md` untuk mencerminkan semua fitur yang telah diimplementasikan dan berikan instruksi yang jelas tentang cara menjalankan proyek secara lokal."

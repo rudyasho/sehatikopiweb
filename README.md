@@ -48,7 +48,7 @@ To get a local copy up and running, follow these simple steps.
    ```sh
    git clone <your-repo-url>
    ```
-2. Create a `.env.local` file in the root of the project and add your Firebase and Resend API keys. You can get your Firebase web app config from the Firebase console.
+2. Create a `.env` file in the root of the project and add your Firebase and Resend API keys. You can get your Firebase web app config from the Firebase console.
    ```env
    # Firebase Client SDK Keys
    NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSy...
