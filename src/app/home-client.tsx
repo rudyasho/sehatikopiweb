@@ -10,34 +10,12 @@ import { useCart } from '@/context/cart-context';
 import { useToast } from '@/hooks/use-toast';
 import { getProducts, type Product } from '@/lib/products-data';
 import { getHeroData, type HeroData } from '@/lib/hero-data';
+import { getTestimonials, type Testimonial } from '@/lib/testimonials-data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const testimonials = [
-  {
-    name: 'Andi P.',
-    avatar: 'https://placehold.co/100x100.png',
-    aiHint: 'man smiling',
-    review: 'Kopi Arabika dari Sehati Kopi adalah yang terbaik yang pernah saya coba! Aroma dan rasanya benar-benar tiada duanya. Permata sejati.',
-    rating: 5,
-  },
-  {
-    name: 'Siti K.',
-    avatar: 'https://placehold.co/100x100.png',
-    aiHint: 'woman portrait',
-    review: 'Sehati Kopi sudah menjadi ritual harian saya. Sangrai mereka konsisten dan pengirimannya selalu cepat. Sangat direkomendasikan!',
-    rating: 5,
-  },
-  {
-    name: 'Budi S.',
-    avatar: 'https://placehold.co/100x100.png',
-    aiHint: 'person drinking coffee',
-    review: 'Saya suka cerita di balik kopi dan semangat timnya. Anda bisa merasakan kualitasnya di setiap cangkir.',
-    rating: 5,
-  },
-];
 
 function FeaturedProducts() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -106,7 +84,6 @@ function FeaturedProducts() {
                     fill 
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     className="object-cover" 
-                    data-ai-hint={product.aiHint}
                 />
               </div>
             </Link>
@@ -176,7 +153,6 @@ const HeroSection = () => {
         alt="Latar belakang biji kopi arabika panggang"
         fill
         className="absolute z-0 object-cover"
-        data-ai-hint="coffee beans cup"
         priority
       />
       <div className="absolute inset-0 bg-black/60 z-10" />
@@ -197,6 +173,71 @@ const HeroSection = () => {
   );
 };
 
+
+function Testimonials() {
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchTestimonials() {
+      setIsLoading(true);
+      try {
+        const fetchedTestimonials = await getTestimonials();
+        setTestimonials(fetchedTestimonials);
+      } catch (error) {
+        console.error("Failed to fetch testimonials:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchTestimonials();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {[...Array(3)].map((_, i) => (
+          <Card key={i} className="text-left bg-secondary/50">
+            <CardHeader className="flex flex-row items-center gap-4 p-6">
+              <Skeleton className="h-16 w-16 rounded-full" />
+              <div className="space-y-2">
+                <Skeleton className="h-5 w-24" />
+                <Skeleton className="h-4 w-20" />
+              </div>
+            </CardHeader>
+            <CardContent className="p-6 pt-0">
+              <Skeleton className="h-16 w-full" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      {testimonials.map((testimonial, index) => (
+        <Card key={index} className="text-left shadow-lg bg-secondary/50">
+          <CardHeader className="flex flex-row items-center gap-4 p-6">
+            <Avatar className="h-16 w-16">
+              <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
+              <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
+            </Avatar>
+            <div>
+              <CardTitle className="text-lg">{testimonial.name}</CardTitle>
+              <div className="flex text-amber-500">
+                {[...Array(testimonial.rating)].map((_, i) => <Star key={i} className="w-4 h-4 fill-current" />)}
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="p-6 pt-0">
+            <p className="text-foreground/80 italic">"{testimonial.review}"</p>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
 
 export function HomeClient() {
   return (
@@ -233,7 +274,6 @@ export function HomeClient() {
               fill
               sizes="(max-width: 768px) 100vw, 50vw"
               className="object-cover"
-              data-ai-hint="coffee roasting machine"
             />
           </div>
         </div>
@@ -257,27 +297,7 @@ export function HomeClient() {
       <section className="py-16 md:py-24 bg-background">
         <div className="container mx-auto px-4 text-center">
           <h2 className="font-headline text-3xl md:text-4xl font-semibold text-primary">Apa Kata Pelanggan Kami</h2>
-          <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="text-left shadow-lg bg-secondary/50">
-                <CardHeader className="flex flex-row items-center gap-4 p-6">
-                  <Avatar className="h-16 w-16">
-                    <AvatarImage src={testimonial.avatar} alt={testimonial.name} data-ai-hint={testimonial.aiHint} />
-                    <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <CardTitle className="text-lg">{testimonial.name}</CardTitle>
-                    <div className="flex text-amber-500">
-                      {[...Array(testimonial.rating)].map((_, i) => <Star key={i} className="w-4 h-4 fill-current" />)}
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-6 pt-0">
-                  <p className="text-foreground/80 italic">"{testimonial.review}"</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <Testimonials />
         </div>
       </section>
 

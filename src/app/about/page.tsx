@@ -10,9 +10,9 @@ export const metadata: Metadata = {
 };
 
 const teamMembers = [
-  { name: 'Budi Santoso', role: 'Founder & Head Roaster', avatar: 'https://placehold.co/100x100.png', aiHint: 'man portrait' },
-  { name: 'Siti Aminah', role: 'Head of Farmer Relations', avatar: 'https://placehold.co/100x100.png', aiHint: 'woman smiling' },
-  { name: 'Adi Prasetyo', role: 'Lead Barista & Trainer', avatar: 'https://placehold.co/100x100.png', aiHint: 'man with glasses' },
+  { name: 'Budi Santoso', role: 'Founder & Head Roaster', avatar: 'https://placehold.co/100x100.png' },
+  { name: 'Siti Aminah', role: 'Head of Farmer Relations', avatar: 'https://placehold.co/100x100.png' },
+  { name: 'Adi Prasetyo', role: 'Lead Barista & Trainer', avatar: 'https://placehold.co/100x100.png' },
 ];
 
 const AboutPage = () => {
@@ -25,7 +25,6 @@ const AboutPage = () => {
           alt="Coffee shop interior"
           fill
           className="absolute z-0 object-cover"
-          data-ai-hint="coffee beans hand"
         />
         <div className="absolute inset-0 bg-black/60 z-10" />
         <div className="relative z-20 container mx-auto px-4">
@@ -45,7 +44,6 @@ const AboutPage = () => {
               alt="Old photo of coffee farmers"
               fill
               className="object-cover"
-              data-ai-hint="vintage coffee farmer"
             />
           </div>
           <div>
@@ -117,7 +115,7 @@ const AboutPage = () => {
               <Card key={member.name} className="pt-6 border-0 shadow-none bg-transparent">
                 <CardContent className="flex flex-col items-center p-0">
                   <Avatar className="h-32 w-32 mb-4">
-                    <AvatarImage src={member.avatar} alt={member.name} data-ai-hint={member.aiHint}/>
+                    <AvatarImage src={member.avatar} alt={member.name} />
                     <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
                   </Avatar>
                   <h3 className="text-xl font-semibold text-primary">{member.name}</h3>

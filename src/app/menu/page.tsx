@@ -1,46 +1,60 @@
 'use client';
 
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { getMenuItems, type MenuItems, type MenuCategory } from '@/lib/menu-data';
+import { Skeleton } from '@/components/ui/skeleton';
 
-
-const menuItems = {
-  hot: [
-    { name: 'Espresso', description: 'A concentrated coffee beverage brewed by forcing a small amount of nearly boiling water through finely-ground coffee beans.', price: 'Rp 20.000', image: 'https://placehold.co/600x400.png', aiHint: 'espresso shot' },
-    { name: 'Americano', description: 'A style of coffee prepared by brewing espresso with added hot water, giving it a similar strength to, but different flavor from, traditionally brewed coffee.', price: 'Rp 25.000', image: 'https://placehold.co/600x400.png', aiHint: 'americano coffee' },
-    { name: 'Latte', description: 'A coffee drink made with espresso and steamed milk.', price: 'Rp 30.000', image: 'https://placehold.co/600x400.png', aiHint: 'latte art' },
-    { name: 'Cappuccino', description: 'An espresso-based coffee drink that originated in Italy, and is traditionally prepared with steamed milk foam.', price: 'Rp 30.000', image: 'https://placehold.co/600x400.png', aiHint: 'cappuccino cup' },
-  ],
-  cold: [
-    { name: 'Iced Americano', description: 'Espresso shots topped with cold water produce a light layer of crema, then served over ice.', price: 'Rp 27.000', image: 'https://placehold.co/600x400.png', aiHint: 'iced americano' },
-    { name: 'Iced Latte', description: 'A chilled version of the classic latte, made with espresso and cold milk over ice.', price: 'Rp 32.000', image: 'https://placehold.co/600x400.png', aiHint: 'iced latte' },
-    { name: 'Cold Brew', description: 'Coffee brewed with cold water over a long period, resulting in a smooth, less acidic flavor.', price: 'Rp 35.000', image: 'https://placehold.co/600x400.png', aiHint: 'cold brew coffee' },
-  ],
-  manual: [
-    { name: 'V60', description: 'A pour-over brewing method that produces a clean, clear, and nuanced cup of coffee.', price: 'Rp 40.000', image: 'https://placehold.co/600x400.png', aiHint: 'v60 dripper' },
-    { name: 'French Press', description: 'An immersion brewing method that creates a full-bodied, rich, and aromatic cup of coffee.', price: 'Rp 38.000', image: 'https://placehold.co/600x400.png', aiHint: 'french press' },
-    { name: 'Aeropress', description: 'A versatile brewing device that can produce a range of coffee styles, from espresso-like to filter coffee.', price: 'Rp 42.000', image: 'https://placehold.co/600x400.png', aiHint: 'aeropress coffee maker' },
-  ],
-  signature: [
-    { name: 'Kopi Susu Sehati', description: 'Our signature iced coffee with creamy milk and a touch of Gula Aren.', price: 'Rp 28.000', image: 'https://placehold.co/600x400.png', aiHint: 'iced coffee milk' },
-    { name: 'Pandan Latte', description: 'A unique blend of espresso, steamed milk, and fragrant pandan syrup.', price: 'Rp 35.000', image: 'https://placehold.co/600x400.png', aiHint: 'green latte' },
-  ],
-};
-
-type MenuCategory = keyof typeof menuItems;
+const MenuSkeleton = () => (
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+    {[...Array(4)].map((_, i) => (
+      <Card key={i} className="flex flex-col overflow-hidden bg-background">
+        <Skeleton className="h-52 w-full" />
+        <CardContent className="p-4 flex-grow space-y-2">
+          <Skeleton className="h-6 w-3/4" />
+          <Skeleton className="h-10 w-full" />
+        </CardContent>
+        <CardFooter className="flex justify-between items-center p-4 bg-secondary/50">
+          <Skeleton className="h-6 w-20" />
+          <Skeleton className="h-10 w-24" />
+        </CardFooter>
+      </Card>
+    ))}
+  </div>
+);
 
 const Page = () => {
-    const { toast } = useToast();
+  const { toast } = useToast();
+  const [menuItems, setMenuItems] = useState<MenuItems | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-    const handleOrderClick = (itemName: string) => {
-        toast({
-            title: "Item Added!",
-            description: `1x ${itemName}. Please confirm your order at the counter.`,
-        });
+  useEffect(() => {
+    const fetchMenu = async () => {
+      setIsLoading(true);
+      try {
+        const items = await getMenuItems();
+        setMenuItems(items);
+      } catch (error) {
+        console.error("Failed to fetch menu items:", error);
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not load menu items.' });
+      } finally {
+        setIsLoading(false);
+      }
     };
+    fetchMenu();
+  }, [toast]);
+
+  const handleOrderClick = (itemName: string) => {
+    toast({
+      title: "Item Added!",
+      description: `1x ${itemName}. Please confirm your order at the counter.`,
+    });
+  };
+
   return (
     <div className="bg-secondary/50">
       <div className="container mx-auto px-4 py-12">
@@ -55,29 +69,35 @@ const Page = () => {
             <TabsTrigger value="manual" className="py-2">Manual Brew</TabsTrigger>
             <TabsTrigger value="signature" className="py-2">Signature</TabsTrigger>
           </TabsList>
-          {(Object.keys(menuItems) as MenuCategory[]).map((category) => (
-            <TabsContent key={category} value={category}>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                {menuItems[category].map((item) => (
-                  <Card key={item.name} className="flex flex-col overflow-hidden shadow-lg transform hover:-translate-y-1 transition-transform duration-300 bg-background">
-                    <CardHeader className="p-0">
-                      <div className="relative h-52 w-full">
-                        <Image src={item.image} alt={item.name} fill className="object-cover" data-ai-hint={item.aiHint} />
-                      </div>
-                    </CardHeader>
-                    <CardContent className="p-4 flex-grow">
-                      <CardTitle className="font-headline text-xl text-primary">{item.name}</CardTitle>
-                      <CardDescription className="mt-2 text-sm">{item.description}</CardDescription>
-                    </CardContent>
-                    <CardFooter className="flex justify-between items-center p-4 bg-secondary/50">
-                      <span className="text-lg font-bold text-primary">{item.price}</span>
-                      <Button variant="secondary" onClick={() => handleOrderClick(item.name)}>Order</Button>
-                    </CardFooter>
-                  </Card>
-                ))}
-              </div>
+          {isLoading || !menuItems ? (
+            <TabsContent value="hot">
+              <MenuSkeleton />
             </TabsContent>
-          ))}
+          ) : (
+            (Object.keys(menuItems) as MenuCategory[]).map((category) => (
+              <TabsContent key={category} value={category}>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                  {menuItems[category].map((item) => (
+                    <Card key={item.name} className="flex flex-col overflow-hidden shadow-lg transform hover:-translate-y-1 transition-transform duration-300 bg-background">
+                      <CardHeader className="p-0">
+                        <div className="relative h-52 w-full">
+                          <Image src={item.image} alt={item.name} fill className="object-cover" />
+                        </div>
+                      </CardHeader>
+                      <CardContent className="p-4 flex-grow">
+                        <CardTitle className="font-headline text-xl text-primary">{item.name}</CardTitle>
+                        <CardDescription className="mt-2 text-sm">{item.description}</CardDescription>
+                      </CardContent>
+                      <CardFooter className="flex justify-between items-center p-4 bg-secondary/50">
+                        <span className="text-lg font-bold text-primary">{item.price}</span>
+                        <Button variant="secondary" onClick={() => handleOrderClick(item.name)}>Order</Button>
+                      </CardFooter>
+                    </Card>
+                  ))}
+                </div>
+              </TabsContent>
+            ))
+          )}
         </Tabs>
       </div>
     </div>
