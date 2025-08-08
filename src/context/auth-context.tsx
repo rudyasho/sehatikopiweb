@@ -13,8 +13,8 @@ export const SUPER_ADMIN_EMAIL = 'dev@sidepe.com';
 
 export type AppUser = {
   uid: string;
-  email: string | undefined;
-  displayName: string | undefined;
+  email: string | null | undefined;
+  displayName: string | null | undefined;
   creationTime: string;
   disabled: boolean;
 };

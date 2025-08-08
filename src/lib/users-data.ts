@@ -2,13 +2,13 @@
 'use server';
 
 import { admin } from './firebase-admin';
-import { SUPER_ADMIN_EMAIL } from '@/context/auth-context';
+import { SUPER_ADMIN_EMAIL, AppUser } from '@/context/auth-context';
 
 
 /**
  * Lists all users from Firebase Authentication.
  */
-export async function listAllUsers() {
+export async function listAllUsers(): Promise<AppUser[]> {
   if (!admin) {
     throw new Error("Firebase Admin SDK is not initialized.");
   }
