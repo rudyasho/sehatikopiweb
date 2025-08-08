@@ -1,18 +1,15 @@
+
 // src/app/blog/[slug]/client-page.tsx
 'use client';
 
-import React, { useEffect, useState, useTransition, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Twitter, Facebook, MessageCircle, Link2, BookAudio, Loader2, Pause, Play, Edit } from 'lucide-react';
+import { Twitter, Facebook, MessageCircle, Link2, Edit } from 'lucide-react';
 
 import { useAuth } from '@/context/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Card, CardContent } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import { type BlogPost } from '@/lib/blog-data';
-import { generateCoffeeStoryText, generateCoffeeStoryAudio } from '@/ai/flows/story-teller-flow';
 
 
 const ShareButtons = ({ title, slug }: { title: string, slug: string }) => {
@@ -63,161 +60,12 @@ const ShareButtons = ({ title, slug }: { title: string, slug: string }) => {
   );
 };
 
-const AudioPlayer = ({ audioDataUri, isAudioLoading }: { audioDataUri: string | null; isAudioLoading: boolean; }) => {
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-
-  useEffect(() => {
-    if (audioDataUri && audioRef.current) {
-        audioRef.current.src = audioDataUri;
-    }
-  }, [audioDataUri]);
-
-  const togglePlayPause = () => {
-    const audio = audioRef.current;
-    if (audio && !isAudioLoading) {
-      if (isPlaying) {
-        audio.pause();
-      } else {
-        audio.play();
-      }
-      setIsPlaying(!isPlaying);
-    }
-  };
-
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (audio) {
-      const handleEnded = () => setIsPlaying(false);
-      audio.addEventListener('ended', handleEnded);
-      return () => {
-        audio.removeEventListener('ended', handleEnded);
-      };
-    }
-  }, []);
-
-  return (
-    <div className="flex items-center gap-4 p-4 rounded-lg bg-background/50 border">
-      <audio ref={audioRef} preload="auto" />
-      <Button onClick={togglePlayPause} size="icon" variant="outline" className="flex-shrink-0 rounded-full h-12 w-12" disabled={isAudioLoading || !audioDataUri} aria-label={isPlaying ? "Pause audio" : "Play audio"}>
-        {isAudioLoading ? (
-            <Loader2 className="h-6 w-6 animate-spin" />
-        ) : isPlaying ? (
-            <Pause className="h-6 w-6" />
-        ) : (
-            <Play className="h-6 w-6 translate-x-0.5" />
-        )}
-      </Button>
-      <div className="flex items-center gap-1 w-full h-8 overflow-hidden">
-        {Array.from({ length: 30 }).map((_, i) => (
-          <div
-            key={i}
-            className="w-1 bg-primary/30 rounded-full"
-            style={{
-              height: `${Math.sin(i * 0.4 + (isPlaying ? Date.now() / 200 : 0)) * 50 + 50}%`,
-              animation: isPlaying ? 'wave 1.5s ease-in-out infinite alternate' : 'none',
-              animationDelay: `${i * 0.05}s`,
-            }}
-          />
-        ))}
-        <style jsx>{`
-          @keyframes wave {
-            0% { transform: scaleY(0.2); }
-            50% { transform: scaleY(1); }
-            100% { transform: scaleY(0.2); }
-          }
-        `}</style>
-      </div>
-    </div>
-  );
-};
 
 export const BlogPostClientWrapper = ({ post, children }: { post: BlogPost; children: React.ReactNode }) => {
-    const { toast } = useToast();
-    const { user } = useAuth();
-    const [isTextLoading, startTextTransition] = useTransition();
-    const [isAudioLoading, setIsAudioLoading] = useState(false);
-    const [storyText, setStoryText] = useState<string | null>(null);
-    const [audioStory, setAudioStory] = useState<string | null>(null);
-    const [storyStarted, setStoryStarted] = useState(false);
-
-    const handleGenerateStory = () => {
-        if (!post) return;
-        setStoryStarted(true);
-        setStoryText(null);
-        setAudioStory(null);
-        
-        // Generate text first
-        startTextTransition(async () => {
-            try {
-                const result = await generateCoffeeStoryText({
-                    name: post.title,
-                    origin: "Indonesia",
-                    description: post.content.substring(0, 500), // Pass a snippet for better performance
-                });
-                setStoryText(result.storyText);
-                
-                // Now generate audio in the background
-                setIsAudioLoading(true);
-                const audioResult = await generateCoffeeStoryAudio(result.storyText);
-                setAudioStory(audioResult.audioDataUri);
-
-            } catch (error) {
-                console.error("Error generating story:", error);
-                toast({
-                    variant: 'destructive',
-                    title: 'Error',
-                    description: 'Could not generate the story. Please try again.',
-                });
-            } finally {
-                setIsAudioLoading(false);
-            }
-        });
-    };
-
     return (
         <div>
             {/* The main post content, rendered on the server */}
             {children}
-
-            {/* AI Story Teller section, which is interactive */}
-            {user && (
-                <div className="max-w-4xl mx-auto mt-12">
-                    <Separator />
-                    <Alert className="mt-12">
-                        <BookAudio className="h-4 w-4" />
-                        <AlertTitle className="font-headline">AI Story Teller</AlertTitle>
-                        {!storyStarted && (
-                            <>
-                            <AlertDescription>
-                                Listen to an AI-narrated version of this story.
-                            </AlertDescription>
-                            <div className="mt-4">
-                                <Button variant="outline" onClick={handleGenerateStory}>
-                                Generate the Story
-                                </Button>
-                            </div>
-                            </>
-                        )}
-
-                        {isTextLoading && !storyText &&(
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground mt-4">
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                                <span>The storyteller is gathering their thoughts...</span>
-                            </div>
-                        )}
-                            
-                        {storyText && (
-                            <Card className="mt-4 bg-secondary/30 animate-in fade-in-50 duration-500">
-                                <CardContent className="p-4 space-y-4">
-                                    <p className="text-foreground/90 italic whitespace-pre-wrap">{storyText}</p>
-                                    <AudioPlayer audioDataUri={audioStory} isAudioLoading={isAudioLoading} />
-                                </CardContent>
-                            </Card>
-                        )}
-                    </Alert>
-                </div>
-            )}
         </div>
     );
 };

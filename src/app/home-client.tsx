@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, 'useState', useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, Coffee, Leaf, Star, ShoppingCart, Check, Loader2, BookOpen, Wand2 } from 'lucide-react';
@@ -275,31 +275,17 @@ export function HomeClient() {
 
       <section className="py-16 md:py-24 bg-secondary/50">
         <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="bg-background p-8 rounded-lg shadow-xl text-center flex flex-col items-center justify-center">
-              <BookOpen className="h-12 w-12 text-primary mb-4" />
-              <h3 className="font-headline text-2xl md:text-3xl font-semibold text-primary">Explore the World of Coffee</h3>
-              <p className="mt-2 text-foreground/80 max-w-md mx-auto">
-                Dive into our stories, brewing guides, and the latest news from the coffee world.
-              </p>
-              <Button asChild variant="outline" className="mt-6">
-                <Link href="/blog">
-                  Read Our Blog <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-            </div>
-            <div className="bg-primary text-primary-foreground p-8 rounded-lg shadow-xl text-center flex flex-col items-center justify-center">
-               <Wand2 className="h-12 w-12 text-primary-foreground mb-4" />
-              <h3 className="font-headline text-2xl md:text-3xl font-semibold">Find Your Perfect Coffee</h3>
-              <p className="mt-2 text-primary-foreground/80 max-w-md mx-auto">
-                Use our AI tool to get a personalized coffee recommendation based on your taste.
-              </p>
-              <Button asChild variant="secondary" className="mt-6">
-                <Link href="/recommendations">
-                  Get Recommendation <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-            </div>
+          <div className="bg-background p-8 rounded-lg shadow-xl text-center flex flex-col items-center justify-center">
+            <BookOpen className="h-12 w-12 text-primary mb-4" />
+            <h3 className="font-headline text-2xl md:text-3xl font-semibold text-primary">Explore the World of Coffee</h3>
+            <p className="mt-2 text-foreground/80 max-w-md mx-auto">
+              Dive into our stories, brewing guides, and the latest news from the coffee world.
+            </p>
+            <Button asChild variant="outline" className="mt-6">
+              <Link href="/blog">
+                Read Our Blog <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
           </div>
         </div>
       </section>

@@ -10,8 +10,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { format } from 'date-fns';
 import { 
-    Coffee, Star, Calendar, Newspaper, Loader2, PlusCircle, Wand2, Edit, BarChart3, Bot, LayoutGrid, 
-    Send, Save, ListOrdered, Trash2, BookText, Image as ImageIcon, FileText, CalendarCheck, MapPin, 
+    Coffee, Star, Calendar, Newspaper, Loader2, PlusCircle, Edit, BarChart3, LayoutGrid, 
+    Save, ListOrdered, Trash2, BookText, Image as ImageIcon, FileText, CalendarCheck, MapPin, 
     CalendarPlus, FilePlus2, Users, Settings, ImageUp, ShoppingBag
 } from 'lucide-react';
 
@@ -24,8 +24,6 @@ import { listAllUsers, updateUserDisabledStatus, deleteUserAccount } from '@/lib
 import { getSettings, updateSettings, type SettingsFormData } from '@/lib/settings-data';
 import { getHeroData, updateHeroData, type HeroFormData } from '@/lib/hero-data';
 import { getAllOrders, updateOrderStatus, type Order, type OrderStatus } from '@/lib/orders-data';
-import { generateBlogPost, type GenerateBlogPostOutput } from '@/ai/flows/blog-post-generator';
-import { generateImage } from '@/ai/flows/image-generator';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ProductPopularityChart } from './product-popularity-chart';
 import { RoastDistributionChart } from './roast-distribution-chart';
@@ -48,8 +46,7 @@ import { Separator } from '@/components/ui/separator';
 
 const formatCurrency = (amount: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
 
-type DashboardView = 'overview' | 'addProduct' | 'addBlog' | 'blogGenerator' | 'manageProducts' | 'manageBlog' | 'manageEvents' | 'manageUsers' | 'settings' | 'heroSettings' | 'manageOrders';
-export type GeneratedPost = GenerateBlogPostOutput;
+type DashboardView = 'overview' | 'addProduct' | 'addBlog' | 'manageProducts' | 'manageBlog' | 'manageEvents' | 'manageUsers' | 'settings' | 'heroSettings' | 'manageOrders';
 
 
 const productFormSchema = z.object({
@@ -59,17 +56,11 @@ const productFormSchema = z.object({
   price: z.coerce.number().min(1, "Price must be greater than 0."),
   roast: z.string().min(3, "Roast level is required."),
   tags: z.string().min(3, "Please add at least one tag, comma separated."),
-  image: z.string().url("Image URL is required. You can generate one with AI."),
+  image: z.string().url("Image URL is required."),
   aiHint: z.string().min(2, "AI hint is required for image search.")
 });
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
-
-const blogGeneratorSchema = z.object({
-  topic: z.string().min(5, 'Please provide a more detailed topic.'),
-});
-
-type BlogGeneratorFormValues = z.infer<typeof blogGeneratorSchema>;
 
 const blogPostFormSchema = z.object({
     title: z.string().min(5, "Title is required."),
@@ -124,317 +115,10 @@ const MetricCard = ({ title, value, icon: Icon, isLoading }: { title: string, va
     )
 };
 
-function BlogGenerator({ currentUser, onPostPublished }: { currentUser: User, onPostPublished: () => void }) {
-  const [generatedPost, setGeneratedPost] = useState<GeneratedPost | null>(null);
-  const [imageState, setImageState] = useState({
-      url: 'https://placehold.co/800x450.png',
-      prompt: '',
-      isLoading: false,
-  });
-
-  const [isGeneratingText, setIsGeneratingText] = useState(false);
-  const [isPublishing, setIsPublishing] = useState(false);
-  const { toast } = useToast();
-  const router = useRouter();
-
-  const blogTopicForm = useForm<BlogGeneratorFormValues>({
-    resolver: zodResolver(blogGeneratorSchema),
-    defaultValues: { topic: '' },
-  });
-
-  const blogContentForm = useForm<BlogPostFormValues>({
-      resolver: zodResolver(blogPostFormSchema),
-      defaultValues: { title: '', category: 'News', content: '', image: '', aiHint: '', author: currentUser?.displayName || ''}
-  });
-  
-  useEffect(() => {
-    if (generatedPost) {
-        blogContentForm.reset({
-            title: generatedPost.title,
-            category: generatedPost.category,
-            content: generatedPost.content,
-            image: imageState.url,
-            aiHint: generatedPost.imagePrompt,
-            author: currentUser?.displayName || ''
-        });
-    }
-  }, [generatedPost, blogContentForm, imageState.url, currentUser]);
-
-  useEffect(() => {
-      blogContentForm.setValue('image', imageState.url);
-  }, [imageState.url, blogContentForm]);
-  
-   useEffect(() => {
-      blogContentForm.setValue('aiHint', imageState.prompt);
-  }, [imageState.prompt, blogContentForm]);
-
-
-  async function onTopicSubmit(data: BlogGeneratorFormValues) {
-    setIsGeneratingText(true);
-    setGeneratedPost(null);
-    setImageState({ url: 'https://placehold.co/800x450.png', prompt: '', isLoading: false });
-    try {
-      const result = await generateBlogPost(data.topic);
-      setGeneratedPost(result);
-      setImageState(prev => ({ ...prev, prompt: result.imagePrompt }));
-    } catch (error) {
-      console.error('Error generating blog post:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Could not generate the blog post. Please try again.',
-      });
-    } finally {
-      setIsGeneratingText(false);
-    }
-  }
-
-  const handleGenerateImage = async () => {
-    if (!imageState.prompt) return;
-    setImageState(prev => ({...prev, isLoading: true}));
-    try {
-        const { imageDataUri } = await generateImage(imageState.prompt);
-        setImageState(prev => ({...prev, url: imageDataUri}));
-    } catch (error) {
-        console.error('Error generating image:', error);
-        toast({ variant: 'destructive', title: 'Image Generation Failed', description: 'Could not create image. Please try again.' });
-    } finally {
-        setImageState(prev => ({...prev, isLoading: false}));
-    }
-  }
-
-  const handlePublish = async (data: BlogPostFormValues) => {
-    if (!generatedPost || !currentUser.displayName) return;
-    setIsPublishing(true);
-    try {
-      const newPost = await addBlogPost(data);
-      toast({
-          title: "Post Published!",
-          description: `"${newPost.title}" is now on the blog.`,
-          action: (
-              <Button variant="outline" size="sm" onClick={() => router.push(`/blog/${newPost.slug}`)}>
-                  View Post
-              </Button>
-          )
-      });
-      setGeneratedPost(null);
-      blogTopicForm.reset();
-      blogContentForm.reset();
-      setImageState({ url: 'https://placehold.co/800x450.png', prompt: '', isLoading: false });
-      onPostPublished();
-    } catch (error) {
-        console.error("Error publishing post:", error);
-        toast({
-            variant: 'destructive',
-            title: 'Publishing Error',
-            description: 'Could not publish the post to the database.'
-        });
-    } finally {
-        setIsPublishing(false);
-    }
-  };
-
-
-  return (
-    <Card className="shadow-lg bg-background">
-      <CardHeader>
-        <CardTitle className="font-headline text-2xl text-primary flex items-center gap-2">
-          <Wand2 /> AI Blog Post Generator
-        </CardTitle>
-        <CardDescription>
-          Enter a topic and let our AI create a draft for you. Then manage the content and image before publishing.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...blogTopicForm}>
-          <form onSubmit={blogTopicForm.handleSubmit(onTopicSubmit)} className="space-y-4">
-            <FormField
-              control={blogTopicForm.control}
-              name="topic"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Blog Post Topic</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., The history of coffee in West Java" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button type="submit" disabled={isGeneratingText}>
-              {isGeneratingText ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                'Generate Post Content'
-              )}
-            </Button>
-          </form>
-        </Form>
-
-        {isGeneratingText && (
-          <div className="text-center p-8">
-            <Loader2 className="h-8 w-8 mx-auto animate-spin text-primary" />
-            <p className="mt-2 text-muted-foreground">The AI is writing, please wait...</p>
-          </div>
-        )}
-
-        {generatedPost && (
-          <Form {...blogContentForm}>
-            <form onSubmit={blogContentForm.handleSubmit(handlePublish)}>
-              <div className="mt-6 animate-in fade-in-50 duration-500 space-y-6">
-                
-                <Card className="bg-secondary/50 p-6 space-y-4">
-                    <h3 className="font-headline text-xl text-primary mb-2 flex items-center gap-2"><ImageIcon /> Featured Image</h3>
-                    <Card className="p-4 bg-background/50">
-                        <div className="w-full aspect-video relative bg-muted rounded-md flex items-center justify-center overflow-hidden">
-                            {imageState.isLoading ? (
-                                 <Loader2 className="h-8 w-8 mx-auto animate-spin text-primary" />
-                            ) : (
-                                <Image src={imageState.url} alt="Blog post featured image" fill className="object-cover" />
-                            )}
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                            <FormField
-                                control={blogContentForm.control}
-                                name="image"
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Image URL</FormLabel>
-                                    <FormControl>
-                                    <Input 
-                                        {...field}
-                                        onChange={(e) => {
-                                            field.onChange(e);
-                                            setImageState(prev => ({ ...prev, url: e.target.value }))
-                                        }}
-                                        placeholder="https://example.com/image.png"
-                                    />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={blogContentForm.control}
-                                name="aiHint"
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>AI Image Prompt</FormLabel>
-                                    <FormControl>
-                                    <div className="flex gap-2">
-                                        <Input
-                                            {...field}
-                                            onChange={(e) => {
-                                                field.onChange(e);
-                                                setImageState(prev => ({...prev, prompt: e.target.value}))
-                                            }}
-                                            placeholder="AI prompt for generating an image"
-                                        />
-                                        <Button type="button" variant="outline" onClick={handleGenerateImage} disabled={imageState.isLoading} aria-label="Generate Image with AI">
-                                            <Wand2 className="h-4 w-4"/>
-                                        </Button>
-                                    </div>
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
-                        </div>
-                    </Card>
-                </Card>
-                  
-                <Card className="bg-secondary/50 p-6 space-y-4">
-                   <h3 className="font-headline text-xl text-primary mb-2 flex items-center gap-2"><FileText /> Post Content</h3>
-                    <div className="space-y-4">
-                        <FormField
-                            control={blogContentForm.control}
-                            name="title"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Title</FormLabel>
-                                    <FormControl><Input {...field} className="text-xl font-bold h-11"/></FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <FormField
-                                control={blogContentForm.control}
-                                name="category"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Category</FormLabel>
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                        <FormControl>
-                                            <SelectTrigger><SelectValue /></SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            <SelectItem value="Brewing Tips">Brewing Tips</SelectItem>
-                                            <SelectItem value="Storytelling">Storytelling</SelectItem>
-                                            <SelectItem value="Coffee Education">Coffee Education</SelectItem>
-                                            <SelectItem value="News">News</SelectItem>
-                                        </SelectContent>
-                                        </Select>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={blogContentForm.control}
-                                name="author"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Author</FormLabel>
-                                        <FormControl><Input {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-                        <FormField
-                            control={blogContentForm.control}
-                            name="content"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Content (Markdown)</FormLabel>
-                                    <FormControl>
-                                        <BlogEditor 
-                                            value={field.value} 
-                                            onChange={field.onChange} 
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    </div>
-                </Card>
-
-                <Button type="submit" disabled={isPublishing} size="lg">
-                   {isPublishing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Send className="mr-2"/>}
-                   {isPublishing ? 'Publishing...' : 'Publish to Blog'}
-                </Button>
-
-              </div>
-            </form>
-          </Form>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-
 const ProductForm = ({ product, onFormSubmit, closeDialog }: { product?: Product | null, onFormSubmit: () => void, closeDialog?: () => void }) => {
     const { toast } = useToast();
     const router = useRouter();
-    const [imageState, setImageState] = useState({
-        url: product?.image || '',
-        isLoading: false,
-    });
+    const [imageUrl, setImageUrl] = useState(product?.image || '');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const form = useForm<ProductFormValues>({
@@ -450,34 +134,11 @@ const ProductForm = ({ product, onFormSubmit, closeDialog }: { product?: Product
             aiHint: product?.aiHint || '' 
         },
     });
-
-    useEffect(() => {
-        form.setValue('image', imageState.url);
-    }, [imageState.url, form]);
     
     const handleUrlChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const url = event.target.value;
-        setImageState(prev => ({...prev, url }));
+        setImageUrl(url);
         form.setValue('image', url);
-    }
-
-    const handleGenerateImage = async () => {
-        const aiHint = form.getValues('aiHint');
-        if (!aiHint) {
-            form.setError('aiHint', { type: 'manual', message: 'Please provide a hint for the AI.' });
-            return;
-        }
-        setImageState(prev => ({...prev, isLoading: true}));
-        try {
-            const { imageDataUri } = await generateImage(aiHint);
-            setImageState(prev => ({...prev, url: imageDataUri}));
-            form.setValue('image', imageDataUri);
-        } catch (error) {
-            console.error('Error generating product image:', error);
-            toast({ variant: 'destructive', title: 'Image Generation Failed', description: 'Could not create image. Please try again.' });
-        } finally {
-            setImageState(prev => ({...prev, isLoading: false}));
-        }
     }
 
     const onSubmit = async (data: ProductFormValues) => {
@@ -501,7 +162,7 @@ const ProductForm = ({ product, onFormSubmit, closeDialog }: { product?: Product
                     )
                 });
                 form.reset();
-                setImageState({ url: '', isLoading: false });
+                setImageUrl('');
             }
             onFormSubmit();
             if (closeDialog) closeDialog();
@@ -573,9 +234,8 @@ const ProductForm = ({ product, onFormSubmit, closeDialog }: { product?: Product
                         <FormLabel>Product Photo</FormLabel>
                         <Card className="p-4 bg-secondary/30">
                             <div className="w-full aspect-square relative bg-muted rounded-md flex items-center justify-center overflow-hidden">
-                            {imageState.isLoading ? <Loader2 className="h-8 w-8 animate-spin text-primary" /> :
-                             imageState.url ? (
-                                <Image src={imageState.url} alt="Product Preview" fill className="object-cover" />
+                             {imageUrl ? (
+                                <Image src={imageUrl} alt="Product Preview" fill className="object-cover" />
                             ) : (
                                 <span className="text-sm text-muted-foreground">Image Preview</span>
                             )}
@@ -583,13 +243,10 @@ const ProductForm = ({ product, onFormSubmit, closeDialog }: { product?: Product
                         </Card>
                          <FormField control={form.control} name="aiHint" render={({ field }) => (
                             <FormItem>
-                                <FormLabel>AI Image Hint</FormLabel>
+                                <FormLabel>AI Hint</FormLabel>
                                 <FormControl>
                                   <div className="flex gap-2">
                                     <Input placeholder="e.g., coffee cup" {...field} />
-                                    <Button type="button" variant="outline" size="icon" onClick={handleGenerateImage} disabled={imageState.isLoading} aria-label="Generate Image with AI">
-                                      <Wand2 className="h-4 w-4" />
-                                    </Button>
                                   </div>
                                 </FormControl>
                                 <FormMessage />
@@ -1942,8 +1599,6 @@ const DashboardPage = () => {
             return <AddProductView onProductAdded={handleDataChange} />;
         case 'addBlog':
             return <AddBlogPostView currentUser={user} onPostAdded={handleDataChange} />;
-        case 'blogGenerator':
-            return <BlogGenerator currentUser={user} onPostPublished={handleDataChange} />;
         case 'manageProducts':
             return <ManageProductsView onProductsChanged={handleDataChange} />;
         case 'manageBlog':
@@ -1972,7 +1627,6 @@ const DashboardPage = () => {
       { id: 'addProduct', label: 'Add Product', icon: PlusCircle },
       { id: 'manageBlog', label: 'Manage Posts', icon: BookText },
       { id: 'addBlog', label: 'Create Post', icon: FilePlus2 },
-      { id: 'blogGenerator', label: 'AI Blog Generator', icon: Bot },
       { id: 'manageEvents', label: 'Manage Events', icon: CalendarCheck },
       { id: 'manageUsers', label: 'Manage Users', icon: Users },
   ];
