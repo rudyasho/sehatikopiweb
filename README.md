@@ -12,18 +12,11 @@ This is a Next.js application for "Sehati Kopi Digital", a fictional Indonesian 
 - **Event Schedule**: Listings for coffee cuppings, workshops, and other community events with interactive registration feedback.
 - **Informative Blog**: Articles on coffee culture with dedicated pages for each post, featuring recommended articles and products, and social sharing functionality.
 - **About & Contact Pages**: Static pages for company information and a functional contact form powered by Resend for email delivery.
-- **AI-Powered Features**:
-    - **Coffee Recommender**: A Genkit-powered tool to suggest coffee based on user preferences. The recommendation result is seamlessly integrated with the product catalog.
-    - **AI Story Teller**: Logged-in users can listen to an AI-generated audio story for blog posts, enhancing the reading experience.
-    - **AI Content Generation**: The admin dashboard includes a tool to generate entire blog posts (text and image) from a simple topic prompt.
 - **Business Dashboard**: A comprehensive admin panel with multiple functions:
     - **Analytics**: An overview page showing key business metrics and charts for product popularity, roast, and origin distribution.
-    - **Product Management**: A full CRUD (Create, Read, Update, Delete) interface for managing coffee products, including an AI tool for image generation.
-    - **Blog Management**: A full CRUD interface for blog posts, featuring a rich Markdown editor.
-    - **Event Management**: A full CRUD interface for creating and managing public events.
+    - **Product, Blog & Event Management**: Full CRUD (Create, Read, Update, Delete) interfaces for managing content.
     - **User Management**: A view for admins to see all registered users, disable/enable their accounts, or delete them.
-    - **Hero Settings**: A panel to dynamically update the main title, subtitle, and image on the homepage.
-    - **Website Settings**: A dynamic settings panel to manage sitewide contact information and social media links without code changes.
+    - **Website & Hero Settings**: Panels to dynamically update sitewide information without code changes.
 - **Centralized Search**: A dedicated search page to find products and blog articles efficiently.
 - **User Authentication**: A complete authentication system using Firebase (Email/Password & Google) allowing users to sign up, log in, and view a profile page with their real order history saved in Firestore. Admin roles grant access to protected features.
 - **SEO Optimized**: Includes dynamic metadata, a `sitemap.xml`, and `robots.txt` for optimal search engine ranking.
@@ -36,7 +29,6 @@ This is a Next.js application for "Sehati Kopi Digital", a fictional Indonesian 
 - **UI**: [React](https://reactjs.org/)
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/)
 - **UI Components**: [ShadCN UI](https://ui.shadcn.com/)
-- **Generative AI**: [Genkit](https://firebase.google.com/docs/genkit)
 - **Authentication & Database**: [Firebase](https://firebase.google.com/) (Auth, Firestore)
 - **State Management**: React Context
 - **Email Delivery**: [Resend](https://resend.com)
@@ -74,9 +66,6 @@ To get a local copy up and running, follow these simple steps.
 
    # Resend API Key (for contact form)
    NEXT_PUBLIC_RESEND_API_KEY=re_...
-   
-   # Genkit - Google AI API Key
-   GEMINI_API_KEY=your-google-ai-api-key
    ```
    **Note**: For `FIREBASE_PRIVATE_KEY`, ensure the value is enclosed in double quotes (`"`) and newlines are represented as `\n`.
 
@@ -91,13 +80,6 @@ To get a local copy up and running, follow these simple steps.
 
 The application will be available at `http://localhost:9002`.
 
-### Running Genkit Locally
-
-To test AI features, you need to run the Genkit server separately.
-```sh
-npm run genkit:watch
-```
-
 ## Admin Access
 
 To access the dashboard and other admin features, use one of the emails pre-configured in `src/context/auth-context.ts`:
@@ -107,15 +89,7 @@ You can sign up with one of these emails and any password to gain admin access.
 
 ## Troubleshooting
 
-### `npm install` fails with `ETARGET`
-
-If you see an error like `npm error notarget No matching version found for @genkit-ai/googleai@...`, it means a specified package version in `package.json` doesn't exist.
-
-**Solution**:
-1. Open `package.json`.
-2. Check the versions for all packages under `@genkit-ai/*` and `genkit`.
-3. Ensure the versions are correct and exist on npmjs.com. The project is stable with all `genkit` related packages at version `1.0.0`.
-4. After correcting the versions, delete `node_modules` and `package-lock.json`, then run `npm install` again.
+If you encounter persistent issues with dependencies after pulling changes, it can be helpful to clear out the old packages and reinstall from scratch.
 
 ```sh
 rm -rf node_modules package-lock.json
