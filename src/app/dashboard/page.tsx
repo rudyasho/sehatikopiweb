@@ -12,7 +12,7 @@ import { format } from 'date-fns';
 import { 
     Coffee, Star, Calendar, Newspaper, Loader2, PlusCircle, Wand2, Edit, BarChart3, Bot, LayoutGrid, 
     Send, Save, ListOrdered, Trash2, BookText, Image as ImageIcon, FileText, CalendarCheck, MapPin, 
-    CalendarPlus, FilePlus2, Users, Settings, ImageUp
+    CalendarPlus, FilePlus2, Users, Settings, ImageUp, ShoppingBag
 } from 'lucide-react';
 
 import { useAuth, type User, type AppUser, SUPER_ADMIN_UID } from '@/context/auth-context';
@@ -23,6 +23,7 @@ import { getEvents, updateEvent, deleteEvent, addEvent, type Event, type EventFo
 import { listAllUsers, updateUserDisabledStatus, deleteUserAccount } from '@/lib/users-data';
 import { getSettings, updateSettings, type SettingsFormData } from '@/lib/settings-data';
 import { getHeroData, updateHeroData, type HeroFormData } from '@/lib/hero-data';
+import { getAllOrders, updateOrderStatus, type Order, type OrderStatus } from '@/lib/orders-data';
 import { generateBlogPost, type GenerateBlogPostOutput } from '@/ai/flows/blog-post-generator';
 import { generateImage } from '@/ai/flows/image-generator';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -38,15 +39,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { BlogEditor } from './blog-editor';
 import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 
 
 const formatCurrency = (amount: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
 
-type DashboardView = 'overview' | 'addProduct' | 'addBlog' | 'blogGenerator' | 'manageProducts' | 'manageBlog' | 'manageEvents' | 'manageUsers' | 'settings' | 'heroSettings';
+type DashboardView = 'overview' | 'addProduct' | 'addBlog' | 'blogGenerator' | 'manageProducts' | 'manageBlog' | 'manageEvents' | 'manageUsers' | 'settings' | 'heroSettings' | 'manageOrders';
 export type GeneratedPost = GenerateBlogPostOutput;
 
 
@@ -1678,6 +1680,181 @@ const HeroSettingsView = () => {
     );
 };
 
+const getStatusVariant = (status: string) => {
+    switch(status.toLowerCase()) {
+        case 'shipped': return 'default';
+        case 'delivered': return 'secondary';
+        case 'pending': return 'outline';
+        case 'cancelled': return 'destructive';
+        default: return 'secondary';
+    }
+}
+
+const ManageOrdersView = ({ onOrdersChanged }: { onOrdersChanged: () => void }) => {
+    const [orders, setOrders] = useState<Order[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const { toast } = useToast();
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+
+    const fetchOrders = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            const ordersData = await getAllOrders();
+            setOrders(ordersData);
+        } catch (error) {
+            console.error("Failed to fetch orders:", error);
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch orders.' });
+        } finally {
+            setIsLoading(false);
+        }
+    }, [toast]);
+
+    useEffect(() => {
+        fetchOrders();
+    }, [fetchOrders, onOrdersChanged]);
+
+    const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {
+        setIsSubmitting(true);
+        try {
+            await updateOrderStatus(orderId, newStatus);
+            toast({ title: 'Status Updated', description: `Order ${orderId} is now "${newStatus}".` });
+            onOrdersChanged();
+            if (selectedOrder?.orderId === orderId) {
+                setSelectedOrder(prev => prev ? {...prev, status: newStatus} : null);
+            }
+        } catch (error) {
+            console.error("Failed to update order status:", error);
+            toast({ variant: 'destructive', title: 'Update Failed', description: 'Could not update order status.' });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+    
+    if (isLoading) {
+        return (
+            <Card className="shadow-lg bg-background p-6">
+                <Skeleton className="h-8 w-1/4 mb-4" />
+                <Skeleton className="h-64 w-full" />
+            </Card>
+        );
+    }
+
+    return (
+        <Card className="shadow-lg bg-background">
+            <CardHeader>
+                <CardTitle className="font-headline text-2xl text-primary flex items-center gap-2">
+                    <ShoppingBag /> Manage Orders
+                </CardTitle>
+                <CardDescription>View customer orders and update their fulfillment status.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="border rounded-lg">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Order ID</TableHead>
+                                <TableHead>Customer</TableHead>
+                                <TableHead>Date</TableHead>
+                                <TableHead className="text-center">Status</TableHead>
+                                <TableHead className="text-right">Total</TableHead>
+                                <TableHead className="text-center">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {orders.map((order) => (
+                                <TableRow key={order.orderId}>
+                                    <TableCell className="font-mono text-xs">{order.orderId}</TableCell>
+                                    <TableCell>
+                                        <div>{order.customerInfo?.displayName}</div>
+                                        <div className="text-xs text-muted-foreground">{order.customerInfo?.email}</div>
+                                    </TableCell>
+                                    <TableCell>{format(new Date(order.orderDate), 'MMM d, yyyy')}</TableCell>
+                                    <TableCell className="text-center">
+                                        <Badge variant={getStatusVariant(order.status) as any}>{order.status}</Badge>
+                                    </TableCell>
+                                    <TableCell className="text-right">{formatCurrency(order.total)}</TableCell>
+                                    <TableCell className="text-center">
+                                        <Dialog>
+                                            <DialogTrigger asChild>
+                                                <Button variant="outline" size="sm" onClick={() => setSelectedOrder(order)}>View</Button>
+                                            </DialogTrigger>
+                                            <DialogContent className="max-w-2xl">
+                                                <DialogHeader>
+                                                    <DialogTitle className="font-headline text-2xl text-primary">Order Details</DialogTitle>
+                                                    <DialogDescription>Order ID: {selectedOrder?.orderId}</DialogDescription>
+                                                </DialogHeader>
+                                                {selectedOrder && (
+                                                    <div className="space-y-4 max-h-[70vh] overflow-y-auto p-1">
+                                                        <div className="p-4 border rounded-lg bg-secondary/50">
+                                                            <h3 className="font-semibold mb-2">Customer Info</h3>
+                                                            <p><strong>Name:</strong> {selectedOrder.customerInfo?.displayName || 'N/A'}</p>
+                                                            <p><strong>Email:</strong> {selectedOrder.customerInfo?.email}</p>
+                                                            <p><strong>Order Date:</strong> {format(new Date(selectedOrder.orderDate), 'PPP p')}</p>
+                                                        </div>
+                                                        <div className="p-4 border rounded-lg bg-secondary/50">
+                                                            <h3 className="font-semibold mb-2">Items</h3>
+                                                            {selectedOrder.items.map(item => (
+                                                                <div key={item.slug} className="flex justify-between items-center py-1">
+                                                                    <span>{item.quantity}x {item.name}</span>
+                                                                    <span>{formatCurrency(item.price * item.quantity)}</span>
+                                                                </div>
+                                                            ))}
+                                                            <Separator className="my-2"/>
+                                                            <div className="flex justify-between items-center font-semibold">
+                                                                <span>Subtotal</span>
+                                                                <span>{formatCurrency(selectedOrder.subtotal)}</span>
+                                                            </div>
+                                                            <div className="flex justify-between items-center font-semibold">
+                                                                <span>Shipping</span>
+                                                                <span>{formatCurrency(selectedOrder.shipping)}</span>
+                                                            </div>
+                                                             <Separator className="my-2"/>
+                                                            <div className="flex justify-between items-center font-bold text-lg text-primary">
+                                                                <span>Total</span>
+                                                                <span>{formatCurrency(selectedOrder.total)}</span>
+                                                            </div>
+                                                        </div>
+                                                        <div className="p-4 border rounded-lg bg-secondary/50">
+                                                            <h3 className="font-semibold mb-2">Update Status</h3>
+                                                            <div className="flex items-center gap-2">
+                                                                <Select 
+                                                                    defaultValue={selectedOrder.status}
+                                                                    onValueChange={(value) => handleStatusChange(selectedOrder.orderId, value as OrderStatus)}
+                                                                >
+                                                                    <SelectTrigger>
+                                                                        <SelectValue/>
+                                                                    </SelectTrigger>
+                                                                    <SelectContent>
+                                                                        <SelectItem value="Pending">Pending</SelectItem>
+                                                                        <SelectItem value="Shipped">Shipped</SelectItem>
+                                                                        <SelectItem value="Delivered">Delivered</SelectItem>
+                                                                        <SelectItem value="Cancelled">Cancelled</SelectItem>
+                                                                    </SelectContent>
+                                                                </Select>
+                                                                <Button disabled={isSubmitting}>
+                                                                    {isSubmitting && <Loader2 className="animate-spin mr-2" />}
+                                                                    Save
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+                                                         <DialogClose asChild>
+                                                            <Button variant="outline" className="w-full">Close</Button>
+                                                         </DialogClose>
+                                                    </div>
+                                                )}
+                                            </DialogContent>
+                                        </Dialog>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
+            </CardContent>
+        </Card>
+    );
+};
 
 
 const DashboardPage = () => {
@@ -1773,6 +1950,8 @@ const DashboardPage = () => {
             return <ManageBlogPostsView onPostsChanged={handleDataChange} initialPostToEdit={initialPostToEdit} />;
         case 'manageEvents':
             return <ManageEventsView onEventsChanged={handleDataChange} />;
+        case 'manageOrders':
+            return <ManageOrdersView onOrdersChanged={handleDataChange} />;
         case 'manageUsers':
             return <ManageUsersView currentUser={user} />;
         case 'settings':
@@ -1788,6 +1967,7 @@ const DashboardPage = () => {
       { id: 'overview', label: 'Overview', icon: LayoutGrid },
       { id: 'heroSettings', label: 'Hero Settings', icon: ImageUp },
       { id: 'settings', label: 'Website Settings', icon: Settings },
+      { id: 'manageOrders', label: 'Manage Orders', icon: ShoppingBag },
       { id: 'manageProducts', label: 'Manage Products', icon: ListOrdered },
       { id: 'addProduct', label: 'Add Product', icon: PlusCircle },
       { id: 'manageBlog', label: 'Manage Posts', icon: BookText },
