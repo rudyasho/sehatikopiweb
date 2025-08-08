@@ -1,6 +1,5 @@
 // src/app/contact/actions.ts
 'use server';
-import 'dotenv/config';
 import { z } from 'zod';
 import { Resend } from 'resend';
 
