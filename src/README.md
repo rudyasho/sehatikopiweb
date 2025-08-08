@@ -1,3 +1,4 @@
+
 # Sehati Kopi Digital
 
 This is a Next.js application for "Sehati Kopi Digital", a fictional Indonesian coffee house and roastery. The project was built entirely with an AI coding partner in Firebase Studio.
@@ -11,18 +12,11 @@ This is a Next.js application for "Sehati Kopi Digital", a fictional Indonesian 
 - **Event Schedule**: Listings for coffee cuppings, workshops, and other community events with interactive registration feedback.
 - **Informative Blog**: Articles on coffee culture with dedicated pages for each post, featuring recommended articles and products, and social sharing functionality.
 - **About & Contact Pages**: Static pages for company information and a functional contact form powered by Resend for email delivery.
-- **AI-Powered Features**:
-    - **Coffee Recommender**: A Genkit-powered tool to suggest coffee based on user preferences. The recommendation result is seamlessly integrated with the product catalog.
-    - **AI Story Teller**: Logged-in users can listen to an AI-generated audio story for blog posts, enhancing the reading experience.
-    - **AI Content Generation**: The admin dashboard includes a tool to generate entire blog posts (text and image) from a simple topic prompt.
 - **Business Dashboard**: A comprehensive admin panel with multiple functions:
     - **Analytics**: An overview page showing key business metrics and charts for product popularity, roast, and origin distribution.
-    - **Product Management**: A full CRUD (Create, Read, Update, Delete) interface for managing coffee products, including an AI tool for image generation.
-    - **Blog Management**: A full CRUD interface for blog posts, featuring a rich Markdown editor.
-    - **Event Management**: A full CRUD interface for creating and managing public events.
+    - **Product, Blog & Event Management**: Full CRUD (Create, Read, Update, Delete) interfaces for managing content.
     - **User Management**: A view for admins to see all registered users, disable/enable their accounts, or delete them.
-    - **Hero Settings**: A panel to dynamically update the main title, subtitle, and image on the homepage.
-    - **Website Settings**: A dynamic settings panel to manage sitewide contact information and social media links without code changes.
+    - **Website & Hero Settings**: Panels to dynamically update sitewide information without code changes.
 - **Centralized Search**: A dedicated search page to find products and blog articles efficiently.
 - **User Authentication**: A complete authentication system using Firebase (Email/Password & Google) allowing users to sign up, log in, and view a profile page with their real order history saved in Firestore. Admin roles grant access to protected features.
 - **SEO Optimized**: Includes dynamic metadata, a `sitemap.xml`, and `robots.txt` for optimal search engine ranking.
@@ -35,7 +29,6 @@ This is a Next.js application for "Sehati Kopi Digital", a fictional Indonesian 
 - **UI**: [React](https://reactjs.org/)
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/)
 - **UI Components**: [ShadCN UI](https://ui.shadcn.com/)
-- **Generative AI**: [Genkit](https://firebase.google.com/docs/genkit)
 - **Authentication & Database**: [Firebase](https://firebase.google.com/) (Auth, Firestore)
 - **State Management**: React Context
 - **Email Delivery**: [Resend](https://resend.com)
@@ -68,6 +61,7 @@ To get a local copy up and running, follow these simple steps.
    # Firebase Admin SDK Keys (for server-side operations)
    FIREBASE_PROJECT_ID=your-project-id
    FIREBASE_CLIENT_EMAIL=firebase-adminsdk-...@your-project.iam.gserviceaccount.com
+   # Important: The private key must be a single line string. Copy the key and replace all newlines with \n
    FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMII...\n-----END PRIVATE KEY-----\n"
 
    # Resend API Key (for contact form)
