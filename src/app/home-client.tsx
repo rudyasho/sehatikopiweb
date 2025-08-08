@@ -216,7 +216,7 @@ function Testimonials() {
 
   return (
     <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-      {testimonials.map((testimonial, index) => (
+      {testimonials && testimonials.map((testimonial, index) => (
         <Card key={index} className="text-left shadow-lg bg-secondary/50">
           <CardHeader className="flex flex-row items-center gap-4 p-6">
             <Avatar className="h-16 w-16">
