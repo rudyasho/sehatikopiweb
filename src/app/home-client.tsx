@@ -20,21 +20,21 @@ const testimonials = [
     name: 'Andi P.',
     avatar: 'https://placehold.co/100x100.png',
     aiHint: 'man smiling',
-    review: 'The best Indonesian coffee I have ever tasted! The aroma and flavor are simply unmatched. A true gem.',
+    review: 'Kopi Arabika dari Sehati Kopi adalah yang terbaik yang pernah saya coba! Aroma dan rasanya benar-benar tiada duanya. Permata sejati.',
     rating: 5,
   },
   {
     name: 'Siti K.',
     avatar: 'https://placehold.co/100x100.png',
     aiHint: 'woman portrait',
-    review: 'Sehati Kopi has become my daily ritual. Their roasts are consistent and the delivery is always fast. Highly recommended!',
+    review: 'Sehati Kopi sudah menjadi ritual harian saya. Sangrai mereka konsisten dan pengirimannya selalu cepat. Sangat direkomendasikan!',
     rating: 5,
   },
   {
     name: 'Budi S.',
     avatar: 'https://placehold.co/100x100.png',
     aiHint: 'person drinking coffee',
-    review: 'I love the story behind the coffee and the passion of the team. You can taste the quality in every cup.',
+    review: 'Saya suka cerita di balik kopi dan semangat timnya. Anda bisa merasakan kualitasnya di setiap cangkir.',
     rating: 5,
   },
 ];
@@ -51,7 +51,7 @@ function FeaturedProducts() {
         setIsLoading(true);
         try {
             const fetchedProducts = await getProducts();
-            setProducts(fetchedProducts.slice(0, 3));
+            setProducts(fetchedProducts.sort((a, b) => b.reviews - a.reviews).slice(0, 3));
         } catch (error) {
             console.error("Failed to fetch products:", error);
         } finally {
@@ -65,8 +65,8 @@ function FeaturedProducts() {
     addToCart(product, 1);
     setAddedProducts(prev => ({ ...prev, [product.slug]: true }));
     toast({
-      title: 'Added to Cart',
-      description: `1 x ${product.name} has been added.`,
+      title: 'Ditambahkan ke Keranjang',
+      description: `1 x ${product.name} telah ditambahkan.`,
     });
     setTimeout(() => {
       setAddedProducts(prev => ({ ...prev, [product.slug]: false }));
@@ -100,7 +100,14 @@ function FeaturedProducts() {
           <CardHeader className="p-0">
             <Link href={`/products/${product.slug}`}>
               <div className="relative h-60 w-full">
-                <Image src={product.image} alt={product.name} fill className="object-cover" data-ai-hint={product.aiHint}/>
+                <Image 
+                    src={product.image} 
+                    alt={`Biji Kopi Arabika ${product.name}`} 
+                    fill 
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    className="object-cover" 
+                    data-ai-hint={product.aiHint}
+                />
               </div>
             </Link>
           </CardHeader>
@@ -114,9 +121,9 @@ function FeaturedProducts() {
             </span>
             <div className="flex gap-2 w-full sm:w-auto">
               <Button asChild variant="outline" className="flex-1">
-                <Link href={`/products/${product.slug}`}>View</Link>
+                <Link href={`/products/${product.slug}`}>Lihat</Link>
               </Button>
-              <Button onClick={() => handleAddToCart(product)} disabled={addedProducts[product.slug]} className="flex-1" aria-label={`Add ${product.name} to cart`}>
+              <Button onClick={() => handleAddToCart(product)} disabled={addedProducts[product.slug]} className="flex-1" aria-label={`Tambah ${product.name} ke keranjang`}>
                 {addedProducts[product.slug] ? <Check /> : <ShoppingCart />}
               </Button>
             </div>
@@ -166,7 +173,7 @@ const HeroSection = () => {
     <section className="relative h-[60vh] md:h-[80vh] w-full flex items-center justify-center text-center text-white">
       <Image
         src={heroData.imageUrl}
-        alt={heroData.title}
+        alt="Latar belakang biji kopi arabika panggang"
         fill
         className="absolute z-0 object-cover"
         data-ai-hint="coffee beans cup"
@@ -182,7 +189,7 @@ const HeroSection = () => {
         </p>
         <Button asChild size="lg" className="mt-8 font-bold">
           <Link href="/products">
-            Explore Our Coffee <ArrowRight className="ml-2 h-4 w-4" />
+            Jelajahi Kopi Kami <ArrowRight className="ml-2 h-4 w-4" />
           </Link>
         </Button>
       </div>
@@ -200,30 +207,31 @@ export function HomeClient() {
         <div className="container mx-auto px-4 grid md:grid-cols-2 gap-12 items-center">
           <div>
             <h2 className="font-headline text-3xl md:text-4xl text-primary font-semibold">
-              From Heart, For Coffee Lovers
+              Dari Hati, Untuk Pecinta Kopi
             </h2>
             <p className="mt-4 text-lg text-foreground/80">
-              Sehati Kopi Indonesia was born from a love for the rich coffee culture of our archipelago. We partner with local farmers to bring you the finest beans, roasting each batch to perfection to highlight its unique character. Our philosophy is simple: quality, sustainability, and a shared passion for great coffee.
+              Sehati Kopi Indonesia lahir dari kecintaan pada budaya kopi yang kaya di nusantara. Kami bermitra dengan petani lokal untuk memberikan Anda biji kopi terbaik, menyangrai setiap batch dengan sempurna untuk menonjolkan karakter uniknya. Filosofi kami sederhana: kualitas, keberlanjutan, dan semangat bersama untuk kopi yang nikmat.
             </p>
             <div className="mt-6 flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-8">
               <div className="flex items-center gap-2">
                 <Coffee className="text-primary h-5 w-5" />
-                <span className="font-semibold">Artisanal Roasting</span>
+                <span className="font-semibold">Sangrai Artisan</span>
               </div>
               <div className="flex items-center gap-2">
                 <Leaf className="text-primary h-5 w-5" />
-                <span className="font-semibold">Sustainably Sourced</span>
+                <span className="font-semibold">Sumber Berkelanjutan</span>
               </div>
             </div>
             <Button asChild variant="link" className="mt-4 px-0 text-primary">
-              <Link href="/about">Learn more about our story <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              <Link href="/about">Pelajari cerita kami <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
           </div>
           <div className="relative h-80 rounded-lg overflow-hidden shadow-xl">
              <Image
               src="https://images.unsplash.com/photo-1630411870702-8f6f8fd80ce2?q=80&w=1332&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-              alt="Roasting coffee beans"
+              alt="Mesin sangrai kopi artisan"
               fill
+              sizes="(max-width: 768px) 100vw, 50vw"
               className="object-cover"
               data-ai-hint="coffee roasting machine"
             />
@@ -233,14 +241,14 @@ export function HomeClient() {
       
       <section className="py-16 md:py-24 bg-secondary/50">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="font-headline text-3xl md:text-4xl font-semibold text-primary">Featured Coffee</h2>
+          <h2 className="font-headline text-3xl md:text-4xl font-semibold text-primary">Kopi Unggulan</h2>
           <p className="mt-2 text-lg max-w-2xl mx-auto text-foreground/80">
-            A selection of our finest beans, curated for an exceptional experience.
+            Pilihan biji kopi terbaik kami, dikurasi untuk pengalaman yang luar biasa.
           </p>
           <FeaturedProducts />
            <Button asChild variant="outline" size="lg" className="mt-12">
             <Link href="/products">
-              Shop All Coffee
+              Belanja Semua Kopi
             </Link>
           </Button>
         </div>
@@ -248,7 +256,7 @@ export function HomeClient() {
 
       <section className="py-16 md:py-24 bg-background">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="font-headline text-3xl md:text-4xl font-semibold text-primary">What Our Customers Say</h2>
+          <h2 className="font-headline text-3xl md:text-4xl font-semibold text-primary">Apa Kata Pelanggan Kami</h2>
           <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
               <Card key={index} className="text-left shadow-lg bg-secondary/50">
@@ -277,19 +285,18 @@ export function HomeClient() {
         <div className="container mx-auto px-4">
           <div className="bg-background p-8 rounded-lg shadow-xl text-center flex flex-col items-center justify-center">
             <BookOpen className="h-12 w-12 text-primary mb-4" />
-            <h3 className="font-headline text-2xl md:text-3xl font-semibold text-primary">Explore the World of Coffee</h3>
+            <h3 className="font-headline text-2xl md:text-3xl font-semibold text-primary">Jelajahi Dunia Kopi</h3>
             <p className="mt-2 text-foreground/80 max-w-md mx-auto">
-              Dive into our stories, brewing guides, and the latest news from the coffee world.
+              Selami cerita kami, panduan menyeduh, dan berita terbaru dari dunia kopi.
             </p>
             <Button asChild variant="outline" className="mt-6">
               <Link href="/blog">
-                Read Our Blog <ArrowRight className="ml-2 h-4 w-4" />
+                Baca Blog Kami <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
           </div>
         </div>
       </section>
-
     </div>
   );
 }

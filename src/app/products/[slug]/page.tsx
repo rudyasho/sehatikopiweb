@@ -1,3 +1,4 @@
+
 'use client';
 
 import { notFound, useParams } from 'next/navigation';
@@ -7,7 +8,7 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Star, Minus, Plus, ShoppingCart, ArrowLeft, Check, Loader2 } from 'lucide-react';
+import { Star, Minus, Plus, ShoppingCart, ArrowLeft, Check } from 'lucide-react';
 import { useCart } from '@/context/cart-context';
 import type { Product } from '@/lib/products-data';
 import { useToast } from '@/hooks/use-toast';
@@ -52,16 +53,16 @@ export default function ProductDetailPage() {
     if (quantity < 1) {
       toast({
         variant: 'destructive',
-        title: 'Invalid Quantity',
-        description: `Please enter a quantity of 1 or more.`,
+        title: 'Jumlah Tidak Valid',
+        description: `Silakan masukkan jumlah 1 atau lebih.`,
       });
       return;
     }
     addToCart(product, quantity);
     setIsAdded(true);
     toast({
-      title: 'Added to Cart',
-      description: `${quantity} x ${product.name} has been added to your cart.`,
+      title: 'Ditambahkan ke Keranjang',
+      description: `${quantity} x ${product.name} telah ditambahkan ke keranjang Anda.`,
     });
     setTimeout(() => setIsAdded(false), 2000);
   };
@@ -90,18 +91,55 @@ export default function ProductDetailPage() {
     return notFound();
   }
   
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name,
+    description: product.description,
+    image: product.image,
+    sku: product.id,
+    brand: {
+      '@type': 'Brand',
+      name: 'Sehati Kopi Digital',
+    },
+    offers: {
+      '@type': 'Offer',
+      url: `https://sehatikopi.id/products/${product.slug}`,
+      priceCurrency: 'IDR',
+      price: product.price,
+      availability: 'https://schema.org/InStock',
+    },
+    aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: product.rating,
+        reviewCount: product.reviews
+    }
+  };
+
   return (
+    <>
+    <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
     <div className="bg-secondary/50">
       <div className="container mx-auto px-4 py-8 md:py-12">
         <div className="mb-8">
             <Link href="/products" className="inline-flex items-center text-primary hover:underline">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Products
+              Kembali ke Produk
             </Link>
         </div>
         <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-start">
           <div className="relative aspect-square rounded-lg overflow-hidden shadow-xl">
-            <Image src={product.image} alt={product.name} fill className="object-cover" data-ai-hint={product.aiHint} />
+            <Image 
+                src={product.image} 
+                alt={`Kopi Arabika ${product.name}`} 
+                fill 
+                className="object-cover" 
+                data-ai-hint={product.aiHint}
+                priority
+            />
           </div>
 
           <div className="space-y-6">
@@ -114,14 +152,14 @@ export default function ProductDetailPage() {
                         <Star key={i} className={`w-5 h-5 ${i < Math.round(product.rating) ? 'fill-current' : 'text-gray-300 dark:text-gray-600'}`} />
                     ))}
                 </div>
-                <span className="text-foreground/60">({product.reviews} reviews)</span>
+                <span className="text-foreground/60">({product.reviews} ulasan)</span>
               </div>
             </div>
             
             <p className="text-lg text-foreground/80">{product.description}</p>
             
             <div className="flex items-center gap-2">
-              <span className="font-semibold">Roast:</span>
+              <span className="font-semibold">Tingkat Sangrai:</span>
               <span>{product.roast}</span>
             </div>
 
@@ -137,7 +175,7 @@ export default function ProductDetailPage() {
             </div>
             
             <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                <span className="font-semibold flex-shrink-0">Quantity:</span>
+                <span className="font-semibold flex-shrink-0">Jumlah:</span>
                 <div className="flex items-center border rounded-md self-start">
                     <Button variant="ghost" size="icon" className="h-10 w-10" onClick={() => setQuantity(q => Math.max(1, q-1))}><Minus/></Button>
                     <span className="px-4 font-bold text-lg">{quantity}</span>
@@ -149,12 +187,12 @@ export default function ProductDetailPage() {
               {isAdded ? (
                 <>
                   <Check/>
-                  Added!
+                  Ditambahkan!
                 </>
               ) : (
                 <>
                   <ShoppingCart/>
-                  Add to Cart
+                  Tambah ke Keranjang
                 </>
               )}
             </Button>
@@ -162,5 +200,6 @@ export default function ProductDetailPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }
