@@ -45,10 +45,9 @@ import {
 } from '@radix-ui/react-dialog';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { useCart } from '@/context/cart-context';
-import { useAuth } from '@/context/auth-context';
+import { useAuth, ADMIN_EMAILS } from '@/context/auth-context';
 import { ThemeToggle } from './theme-toggle';
 
-const ADMIN_EMAILS = ['dev@sidepe.com', 'rd.lapawawoi@gmail.com'];
 
 export function Header() {
   const pathname = usePathname();
@@ -77,7 +76,7 @@ export function Header() {
   const isUserAdmin = user && user.email && ADMIN_EMAILS.includes(user.email);
 
   const AuthNav = () => {
-    if (loading || !isClient) return <div className="h-10 w-24 rounded-md bg-muted animate-pulse" />;
+    if (loading) return <div className="h-10 w-24 rounded-md bg-muted animate-pulse" />;
     
     if (user) {
       return (
@@ -135,7 +134,7 @@ export function Header() {
   }
 
   const MobileAuth = () => {
-    if (loading || !isClient) {
+    if (loading) {
       return <div className="h-14 w-full rounded-md bg-muted animate-pulse" />;
     }
     if (user) {
@@ -176,22 +175,20 @@ export function Header() {
         </div>
         
         <div className="flex flex-1 items-center justify-end space-x-2 md:space-x-4">
-          {isClient && (
-            <nav className="hidden items-center space-x-6 text-sm font-medium md:flex">
-              {navLinks.map(({ href, label }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  className={cn(
-                    'transition-colors hover:text-primary',
-                    pathname === href ? 'text-primary' : 'text-foreground/60'
-                  )}
-                >
-                  {label}
-                </Link>
-              ))}
-            </nav>
-          )}
+          <nav className="hidden items-center space-x-6 text-sm font-medium md:flex">
+            {navLinks.map(({ href, label }) => (
+              <Link
+                key={href}
+                href={href}
+                className={cn(
+                  'transition-colors hover:text-primary',
+                  pathname === href ? 'text-primary' : 'text-foreground/60'
+                )}
+              >
+                {label}
+              </Link>
+            ))}
+          </nav>
           <div className="flex items-center gap-2">
              <Button asChild variant="ghost" size="icon">
                 <Link href="/search">
@@ -212,7 +209,7 @@ export function Header() {
             </Button>
             <ThemeToggle />
             <div className="hidden md:block">
-              <AuthNav />
+              {isClient && <AuthNav />}
             </div>
           </div>
           
@@ -302,7 +299,7 @@ export function Header() {
                     )}
                   </Link>
                 </Button>
-                <MobileAuth />
+                {isClient && <MobileAuth />}
               </div>
             </SheetContent>
           </Sheet>

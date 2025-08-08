@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -7,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { FormEvent, useEffect, useState } from 'react';
 import { getSettings, WebsiteSettings } from '@/lib/settings-data';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export function Footer() {
   const { toast } = useToast();
@@ -56,8 +58,10 @@ export function Footer() {
             </p>
             <div className="flex space-x-4">
               {isLoading ? (
-                <div className="h-6 w-24 flex items-center">
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                <div className="flex gap-2">
+                  <Skeleton className="h-6 w-6 rounded-full" />
+                  <Skeleton className="h-6 w-6 rounded-full" />
+                  <Skeleton className="h-6 w-6 rounded-full" />
                 </div>
               ) : settings ? (
                 <>
@@ -89,9 +93,9 @@ export function Footer() {
             <h4 className="font-semibold mb-4">Contact Us</h4>
              {isLoading ? (
               <div className="space-y-2">
-                <div className="h-4 w-3/4 rounded bg-muted animate-pulse"></div>
-                <div className="h-4 w-1/2 rounded bg-muted animate-pulse"></div>
-                <div className="h-4 w-1/2 rounded bg-muted animate-pulse"></div>
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-4 w-1/2" />
               </div>
             ) : settings ? (
               <ul className="space-y-2 text-sm text-foreground/80">

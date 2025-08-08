@@ -11,6 +11,7 @@ export interface CartItem extends Product {
 
 interface CartContextType {
   cart: CartItem[];
+  isCartReady: boolean;
   addToCart: (product: Product, quantity: number) => void;
   removeFromCart: (slug: string) => void;
   updateQuantity: (slug: string, quantity: number) => void;
@@ -24,25 +25,33 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
-  const [cart, setCart] = useState<CartItem[]>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const savedCart = localStorage.getItem('sehati-cart');
-        return savedCart ? JSON.parse(savedCart) : [];
-      } catch (e) {
-        return [];
-      }
-    }
-    return [];
-  });
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [isCartReady, setIsCartReady] = useState(false);
 
   useEffect(() => {
+    // This effect runs only on the client
     try {
-        localStorage.setItem('sehati-cart', JSON.stringify(cart));
+      const savedCart = localStorage.getItem('sehati-cart');
+      if (savedCart) {
+        setCart(JSON.parse(savedCart));
+      }
     } catch (e) {
-        console.error("Failed to save cart to localStorage", e);
+      console.error("Failed to load cart from localStorage", e);
     }
-  }, [cart]);
+    // Mark the cart as ready to be rendered
+    setIsCartReady(true);
+  }, []);
+
+  useEffect(() => {
+    // Save to localStorage whenever the cart changes, but only after it's ready
+    if (isCartReady) {
+      try {
+        localStorage.setItem('sehati-cart', JSON.stringify(cart));
+      } catch (e) {
+        console.error("Failed to save cart to localStorage", e);
+      }
+    }
+  }, [cart, isCartReady]);
 
   const addToCart = (product: Product, quantity: number) => {
     setCart(prevCart => {
@@ -88,6 +97,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     <CartContext.Provider
       value={{
         cart,
+        isCartReady,
         addToCart,
         removeFromCart,
         updateQuantity,

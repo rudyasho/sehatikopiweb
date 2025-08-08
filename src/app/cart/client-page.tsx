@@ -39,15 +39,11 @@ const LoadingSpinner = () => (
 
 
 export function CartClientPage() {
-  const { cart, updateQuantity, removeFromCart, subtotal, shipping, total, clearCart } = useCart();
+  const { cart, updateQuantity, removeFromCart, subtotal, shipping, total, clearCart, isCartReady } = useCart();
   const { user } = useAuth();
   const { toast } = useToast();
-  const [isClient, setIsClient] = useState(false);
   const router = useRouter();
   
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   const handleCheckout = async () => {
     const orderId = `SK-${Date.now()}`;
@@ -95,7 +91,7 @@ export function CartClientPage() {
   };
 
 
-  if (!isClient) {
+  if (!isCartReady) {
     return (
         <div className="bg-secondary/50">
             <div className="container mx-auto px-4 py-12">

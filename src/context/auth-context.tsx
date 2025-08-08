@@ -70,7 +70,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(userCredential.user, { displayName });
         // Manually update the user in state to reflect the new displayName
-        setUser(userCredential.user);
+        setUser({ ...userCredential.user, displayName });
         handleAuthSuccess(userCredential.user);
       } catch (error: any) {
         // Provide more specific error messages
