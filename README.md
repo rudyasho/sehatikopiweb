@@ -1,3 +1,4 @@
+
 # Sehati Kopi Digital
 
 This is a Next.js application for "Sehati Kopi Digital", a fictional Indonesian coffee house and roastery. The project was built entirely with an AI coding partner in Firebase Studio.
@@ -55,7 +56,7 @@ To get a local copy up and running, follow these simple steps.
    ```sh
    git clone <your-repo-url>
    ```
-2. Create a `.env` file in the root of the project and add your Firebase and Resend API keys. You can get your Firebase web app config from the Firebase console.
+2. Create a `.env.local` file in the root of the project and add your Firebase and Resend API keys. You can get your Firebase web app config from the Firebase console.
    ```env
    # Firebase Client SDK Keys
    NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSy...
@@ -68,10 +69,14 @@ To get a local copy up and running, follow these simple steps.
    # Firebase Admin SDK Keys (for server-side operations)
    FIREBASE_PROJECT_ID=your-project-id
    FIREBASE_CLIENT_EMAIL=firebase-adminsdk-...@your-project.iam.gserviceaccount.com
-   FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMII...\n-----END PRIVATE KEY-----\n"
+   # Important: The private key must be a single line string. Copy the key and replace all newlines with \n
+   FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
 
    # Resend API Key (for contact form)
    NEXT_PUBLIC_RESEND_API_KEY=re_...
+   
+   # Genkit - Google AI API Key
+   GEMINI_API_KEY=your-google-ai-api-key
    ```
    **Note**: For `FIREBASE_PRIVATE_KEY`, ensure the value is enclosed in double quotes (`"`) and newlines are represented as `\n`.
 
@@ -86,9 +91,33 @@ To get a local copy up and running, follow these simple steps.
 
 The application will be available at `http://localhost:9002`.
 
-### Admin Access
+### Running Genkit Locally
+
+To test AI features, you need to run the Genkit server separately.
+```sh
+npm run genkit:watch
+```
+
+## Admin Access
 
 To access the dashboard and other admin features, use one of the emails pre-configured in `src/context/auth-context.ts`:
 - **Default Emails**: `dev@sidepe.com` or `rd.lapawawoi@gmail.com`
 
 You can sign up with one of these emails and any password to gain admin access.
+
+## Troubleshooting
+
+### `npm install` fails with `ETARGET`
+
+If you see an error like `npm error notarget No matching version found for @genkit-ai/googleai@...`, it means a specified package version in `package.json` doesn't exist.
+
+**Solution**:
+1. Open `package.json`.
+2. Check the versions for all packages under `@genkit-ai/*` and `genkit`.
+3. Ensure the versions are correct and exist on npmjs.com. The project is stable with all `genkit` related packages at version `1.0.0`.
+4. After correcting the versions, delete `node_modules` and `package-lock.json`, then run `npm install` again.
+
+```sh
+rm -rf node_modules package-lock.json
+npm install
+```
