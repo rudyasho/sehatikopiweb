@@ -1,10 +1,10 @@
 
 'use client';
 
-import React, 'useState', useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, Coffee, Leaf, Star, ShoppingCart, Check, Loader2, BookOpen, Wand2 } from 'lucide-react';
+import { ArrowRight, Coffee, Leaf, Star, ShoppingCart, Check, Loader2, BookOpen } from 'lucide-react';
 
 import { useCart } from '@/context/cart-context';
 import { useToast } from '@/hooks/use-toast';
