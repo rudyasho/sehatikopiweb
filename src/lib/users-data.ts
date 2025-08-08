@@ -2,7 +2,7 @@
 'use server';
 
 import { admin } from './firebase-admin';
-import { SUPER_ADMIN_UID } from '@/context/auth-context';
+import { SUPER_ADMIN_EMAIL } from '@/context/auth-context';
 
 
 /**
@@ -33,7 +33,8 @@ export async function updateUserDisabledStatus(uid: string, disabled: boolean) {
     if (!admin) {
         throw new Error("Firebase Admin SDK is not initialized.");
     }
-    if (uid === SUPER_ADMIN_UID) {
+    const userToUpdate = await admin.auth().getUser(uid);
+    if (userToUpdate.email === SUPER_ADMIN_EMAIL) {
         throw new Error("Cannot modify the Super Admin account.");
     }
     await admin.auth().updateUser(uid, { disabled });
@@ -48,7 +49,8 @@ export async function deleteUserAccount(uid: string) {
     if (!admin) {
         throw new Error("Firebase Admin SDK is not initialized.");
     }
-    if (uid === SUPER_ADMIN_UID) {
+     const userToDelete = await admin.auth().getUser(uid);
+    if (userToDelete.email === SUPER_ADMIN_EMAIL) {
         throw new Error("Cannot delete the Super Admin account.");
     }
     await admin.auth().deleteUser(uid);

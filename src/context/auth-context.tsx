@@ -1,4 +1,3 @@
-
 // src/context/auth-context.tsx
 'use client';
 
@@ -9,8 +8,8 @@ import { useRouter } from 'next/navigation';
 
 export type User = FirebaseUser;
 
-export const SUPER_ADMIN_UID = "n7P0ALYxjSWIYZdybJWB7udBjvP2";
 export const ADMIN_EMAILS = ['dev@sidepe.com', 'rd.lapawawoi@gmail.com'];
+export const SUPER_ADMIN_EMAIL = 'dev@sidepe.com';
 
 export type AppUser = {
   uid: string;

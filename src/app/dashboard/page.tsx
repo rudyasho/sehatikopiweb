@@ -15,7 +15,7 @@ import {
     CalendarPlus, FilePlus2, Users, Settings, ImageUp, ShoppingBag
 } from 'lucide-react';
 
-import { useAuth, type User, type AppUser, SUPER_ADMIN_UID } from '@/context/auth-context';
+import { useAuth, type User, type AppUser, SUPER_ADMIN_EMAIL, ADMIN_EMAILS } from '@/context/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { getProducts, updateProduct, deleteProduct, addProduct, type Product } from '@/lib/products-data';
 import { getBlogPosts, updateBlogPost, deleteBlogPost, addBlogPost, type BlogPost } from '@/lib/blog-data';
@@ -933,14 +933,15 @@ const ManageUsersView = ({ currentUser }: { currentUser: User }) => {
         setIsLoading(true);
         try {
             const usersData = await listAllUsers();
-            setUsers(usersData.filter(user => user.uid !== currentUser.uid && user.uid !== SUPER_ADMIN_UID));
+            // Filter out the current admin and the super admin
+            setUsers(usersData.filter(user => user.email !== currentUser.email && user.email !== SUPER_ADMIN_EMAIL));
         } catch (error) {
             console.error("Failed to fetch users:", error);
             toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch users.' });
         } finally {
             setIsLoading(false);
         }
-    }, [toast, currentUser.uid]);
+    }, [toast, currentUser.email]);
 
     useEffect(() => {
         fetchUsers();
@@ -1391,7 +1392,7 @@ const ManageOrdersView = ({ onOrdersChanged }: { onOrdersChanged: () => void }) 
                                 <TableRow key={order.orderId}>
                                     <TableCell className="font-mono text-xs">{order.orderId}</TableCell>
                                     <TableCell>
-                                        <div>{order.customerInfo?.displayName}</div>
+                                        <div>{order.customerInfo?.displayName || 'N/A'}</div>
                                         <div className="text-xs text-muted-foreground">{order.customerInfo?.email}</div>
                                     </TableCell>
                                     <TableCell>{format(new Date(order.orderDate), 'MMM d, yyyy')}</TableCell>
@@ -1526,7 +1527,7 @@ const DashboardPage = () => {
 
 
   useEffect(() => {
-    if (!loading && (!user)) {
+    if (!loading && (!user || !ADMIN_EMAILS.includes(user.email || ''))) {
       router.push('/');
     }
   }, [user, loading, router]);
@@ -1547,7 +1548,7 @@ const DashboardPage = () => {
   }, [searchParams]);
 
   
-  if (loading || !user) {
+  if (loading || !user || !ADMIN_EMAILS.includes(user.email || '')) {
     return (
       <div className="flex h-screen items-center justify-center bg-secondary/50">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
