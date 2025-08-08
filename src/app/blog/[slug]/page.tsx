@@ -76,7 +76,7 @@ const RecommendedBlogs = async ({ currentSlug }: { currentSlug: string }) => {
                 <CardHeader className="p-0">
                   <Link href={`/blog/${post.slug}`}>
                     <div className="relative h-52 w-full">
-                      <Image src={post.image} alt={post.title} fill className="object-cover" data-ai-hint={post.aiHint ?? 'coffee'} />
+                      <Image src={post.image} alt={post.title} fill className="object-cover" />
                     </div>
                   </Link>
                 </CardHeader>
@@ -118,7 +118,7 @@ const RecommendedProducts = async () => {
             <Card key={product.id} className="overflow-hidden shadow-lg transform hover:-translate-y-1 transition-transform duration-300 bg-secondary/50">
               <Link href={`/products/${product.slug}`} className="block">
                 <div className="relative h-52 w-full">
-                  <Image src={product.image} alt={product.name} fill className="object-cover" data-ai-hint={product.aiHint}/>
+                  <Image src={product.image} alt={product.name} fill className="object-cover" />
                 </div>
               </Link>
               <CardContent className="p-4">
@@ -171,7 +171,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
             </header>
 
             <div className="relative aspect-video w-full mb-8 rounded-lg overflow-hidden">
-                <Image src={post.image} alt={post.title} fill className="object-cover" data-ai-hint={post.aiHint ?? 'coffee blog'} />
+                <Image src={post.image} alt={post.title} fill className="object-cover" />
             </div>
 
             <div

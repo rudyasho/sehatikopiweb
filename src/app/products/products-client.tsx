@@ -140,7 +140,6 @@ export function ProductsClientPage() {
                         alt={product.name}
                         fill
                         className="object-cover"
-                        data-ai-hint={product.aiHint}
                       />
                     </div>
                   </Link>

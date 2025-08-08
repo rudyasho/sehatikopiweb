@@ -83,7 +83,7 @@ export function SearchClientPage() {
                                                     <CardHeader className="p-0">
                                                         <Link href={`/products/${product.slug}`}>
                                                             <div className="relative h-52 w-full">
-                                                                <Image src={product.image} alt={product.name} fill className="object-cover" data-ai-hint={product.aiHint}/>
+                                                                <Image src={product.image} alt={product.name} fill className="object-cover" />
                                                             </div>
                                                         </Link>
                                                     </CardHeader>

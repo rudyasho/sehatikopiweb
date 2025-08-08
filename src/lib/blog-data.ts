@@ -10,7 +10,6 @@ export type BlogPost = {
     category: "Brewing Tips" | "Storytelling" | "Coffee Education" | "News";
     excerpt: string;
     image: string;
-    aiHint?: string;
     slug: string;
     content: string;
     author: string;
@@ -22,7 +21,6 @@ export type NewBlogPostData = {
     category: "Brewing Tips" | "Storytelling" | "Coffee Education" | "News";
     content: string;
     image: string;
-    aiHint: string;
     author: string;
 }
 

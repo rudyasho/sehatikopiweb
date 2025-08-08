@@ -76,7 +76,7 @@ const CheckoutSuccessPage = () => {
                         {lastOrder.items.map(item => (
                             <div key={item.slug} className="flex items-center gap-4">
                                 <div className="relative h-16 w-16 rounded-md overflow-hidden flex-shrink-0">
-                                    <Image src={item.image} alt={item.name} fill className="object-cover" data-ai-hint={item.aiHint}/>
+                                    <Image src={item.image} alt={item.name} fill className="object-cover" />
                                 </div>
                                 <div className="flex-grow">
                                     <p className="font-semibold">{item.name}</p>

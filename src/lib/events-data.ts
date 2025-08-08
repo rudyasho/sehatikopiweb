@@ -13,7 +13,6 @@ export type Event = {
     location: string;
     description: string;
     image: string;
-    aiHint: string;
 };
 
 export type EventFormData = Omit<Event, 'id'>;
@@ -27,7 +26,6 @@ const initialEvents: Omit<Event, 'id'>[] = [
     location: 'Sehati Kopi Roastery, Jakarta',
     description: 'Join us for an immersive coffee cupping session. Learn to identify different flavor notes and aromas from our single-origin Indonesian coffees. Perfect for beginners and enthusiasts alike.',
     image: 'https://images.unsplash.com/photo-1545665225-b23b99e4d45e?q=80&w=1287&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    aiHint: 'coffee cupping',
   },
   {
     title: 'Latte Art Workshop',
@@ -36,7 +34,6 @@ const initialEvents: Omit<Event, 'id'>[] = [
     location: 'Sehati Kopi Flagship Store',
     description: 'Unleash your inner artist! Our expert baristas will guide you through the basics of milk steaming and pouring techniques to create beautiful latte art. All materials provided.',
     image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    aiHint: 'latte art workshop',
   },
   {
     title: 'Meet the Farmer: Gayo Highlands',
@@ -45,7 +42,6 @@ const initialEvents: Omit<Event, 'id'>[] = [
     location: 'Online via Zoom',
     description: 'A special virtual event where you can meet the farmers behind our Aceh Gayo beans. Hear their stories, learn about their farming practices, and participate in a live Q&A session.',
     image: 'https://images.unsplash.com/photo-1509223103657-2a29718ea935?q=80&w=1332&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    aiHint: 'coffee farmer',
   },
 ];
 

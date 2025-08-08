@@ -137,7 +137,6 @@ export default function ProductDetailPage() {
                 alt={`Kopi Arabika ${product.name}`} 
                 fill 
                 className="object-cover" 
-                data-ai-hint={product.aiHint}
                 priority
             />
           </div>

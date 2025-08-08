@@ -57,7 +57,6 @@ const productFormSchema = z.object({
   roast: z.string().min(3, "Roast level is required."),
   tags: z.string().min(3, "Please add at least one tag, comma separated."),
   image: z.string().url("Image URL is required."),
-  aiHint: z.string().min(2, "AI hint is required for image search.")
 });
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
@@ -67,7 +66,6 @@ const blogPostFormSchema = z.object({
     category: z.enum(['Brewing Tips', 'Storytelling', 'Coffee Education', 'News']),
     content: z.string().min(50, "Content needs to be at least 50 characters.").max(500000, "Content is too long. Please reduce its size."),
     image: z.string().url("Please provide a valid image URL."),
-    aiHint: z.string().min(2, "AI hint is required for image search."),
     author: z.string().min(1, "Author name is required."),
 });
 
@@ -80,7 +78,6 @@ const eventFormSchema = z.object({
   location: z.string().min(5, "Event location is required."),
   description: z.string().min(10, "Description is required."),
   image: z.string().url("Image URL is required."),
-  aiHint: z.string().min(2, "AI hint is required for image search.")
 });
 
 type EventFormValues = z.infer<typeof eventFormSchema>;
@@ -131,7 +128,6 @@ const ProductForm = ({ product, onFormSubmit, closeDialog }: { product?: Product
             roast: product?.roast || '', 
             tags: product?.tags.join(', ') || '', 
             image: product?.image || '', 
-            aiHint: product?.aiHint || '' 
         },
     });
     
@@ -241,17 +237,7 @@ const ProductForm = ({ product, onFormSubmit, closeDialog }: { product?: Product
                             )}
                             </div>
                         </Card>
-                         <FormField control={form.control} name="aiHint" render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>AI Hint</FormLabel>
-                                <FormControl>
-                                  <div className="flex gap-2">
-                                    <Input placeholder="e.g., coffee cup" {...field} />
-                                  </div>
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )} />
+                         
                         <FormField control={form.control} name="image" render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Image URL</FormLabel>
@@ -286,7 +272,6 @@ const EventForm = ({ event, onFormSubmit, closeDialog, isCreatingNew }: { event?
             location: event?.location || '',
             description: event?.description || '',
             image: event?.image || '',
-            aiHint: event?.aiHint || ''
         },
     });
 
@@ -358,14 +343,6 @@ const EventForm = ({ event, onFormSubmit, closeDialog, isCreatingNew }: { event?
                     <FormItem>
                         <FormLabel>Image URL</FormLabel>
                         <FormControl><Input type="url" placeholder="https://example.com/image.png" {...field} /></FormControl>
-                        <FormMessage />
-                    </FormItem>
-                )} />
-                <FormField control={form.control} name="aiHint" render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>AI Hint</FormLabel>
-                        <FormControl><Input placeholder="e.g., coffee cupping" {...field} /></FormControl>
-                        <CardDescription className="text-xs pt-1">Keywords for Unsplash search.</CardDescription>
                         <FormMessage />
                     </FormItem>
                 )} />
@@ -522,7 +499,6 @@ const BlogPostForm = ({ post, onFormSubmit, closeDialog, isCreatingNew, currentU
             category: post?.category || 'Coffee Education',
             content: post?.content || '', 
             image: post?.image || '',
-            aiHint: post?.aiHint || '',
             author: post?.author || currentUser?.displayName || 'Sehati Kopi Team',
         },
     });
@@ -533,7 +509,7 @@ const BlogPostForm = ({ post, onFormSubmit, closeDialog, isCreatingNew, currentU
             if (isCreatingNew) {
                 await addBlogPost(data);
                 toast({ title: "Post Created!", description: `"${data.title}" has been created.` });
-                form.reset({ category: 'Coffee Education', title: '', content: '', image: '', aiHint: '', author: currentUser?.displayName || '' });
+                form.reset({ category: 'Coffee Education', title: '', content: '', image: '', author: currentUser?.displayName || '' });
             } else if (post) {
                 await updateBlogPost(post.id, data);
                 toast({ title: "Post Updated!", description: `"${data.title}" has been updated.` });
@@ -596,14 +572,6 @@ const BlogPostForm = ({ post, onFormSubmit, closeDialog, isCreatingNew, currentU
                         <FormItem>
                             <FormLabel>Image URL</FormLabel>
                             <FormControl><Input type="url" placeholder="https://example.com/image.png" {...field} /></FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )} />
-                    <FormField control={form.control} name="aiHint" render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>AI Hint</FormLabel>
-                            <FormControl><Input placeholder="e.g., coffee cup" {...field} /></FormControl>
-                             <CardDescription className="text-xs pt-1">Keywords for Unsplash search.</CardDescription>
                             <FormMessage />
                         </FormItem>
                     )} />
