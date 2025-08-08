@@ -2,6 +2,7 @@
 'use client';
 
 import React from 'react';
+import { Poppins, Playfair_Display } from 'next/font/google';
 
 import './globals.css';
 import { cn } from '@/lib/utils';
@@ -12,6 +13,18 @@ import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { Toaster } from "@/components/ui/toaster"
 
+const poppins = Poppins({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  variable: '--font-body',
+});
+
+const playfairDisplay = Playfair_Display({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  variable: '--font-headline',
+});
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -19,12 +32,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id" suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet" />
-      </head>
-      <body className={cn('min-h-screen bg-background font-body antialiased')}>
+      <head />
+      <body className={cn('min-h-screen bg-background font-body antialiased', poppins.variable, playfairDisplay.variable)}>
         <ThemeProvider
             attribute="class"
             defaultTheme="system"
