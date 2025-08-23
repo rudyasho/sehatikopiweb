@@ -69,11 +69,11 @@ const Page = () => {
             <TabsTrigger value="manual" className="py-2">Manual Brew</TabsTrigger>
             <TabsTrigger value="signature" className="py-2">Signature</TabsTrigger>
           </TabsList>
-          {isLoading || !menuItems ? (
-            <TabsContent value="hot">
-              <MenuSkeleton />
-            </TabsContent>
-          ) : (
+          {isLoading ? (
+             <TabsContent value="hot">
+                <MenuSkeleton />
+              </TabsContent>
+          ) : menuItems ? (
             (Object.keys(menuItems) as MenuCategory[]).map((category) => (
               <TabsContent key={category} value={category}>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
@@ -97,6 +97,8 @@ const Page = () => {
                 </div>
               </TabsContent>
             ))
+          ) : (
+            <div className="text-center py-16 text-destructive">Could not load menu.</div>
           )}
         </Tabs>
       </div>

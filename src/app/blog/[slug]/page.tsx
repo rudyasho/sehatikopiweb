@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Metadata, ResolvingMetadata } from 'next';
 import { marked } from 'marked';
+import hljs from 'highlight.js';
+import 'highlight.js/styles/atom-one-dark.css';
 import { format } from 'date-fns';
 import { ArrowLeft } from 'lucide-react';
 
@@ -14,6 +16,17 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardTitle, CardDescription, CardFooter, CardHeader } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { BlogPostClientWrapper, PostFooter } from './client-page';
+
+
+marked.setOptions({
+  highlight: function (code, lang) {
+    const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+    return hljs.highlight(code, { language }).value;
+  },
+  langPrefix: 'hljs language-',
+  breaks: true,
+  gfm: true,
+});
 
 
 type Props = {

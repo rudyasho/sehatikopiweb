@@ -1,4 +1,3 @@
-
 import { MetadataRoute } from 'next'
 import { getProducts } from '@/lib/products-data';
 import { getBlogPosts } from '@/lib/blog-data';
@@ -18,7 +17,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/menu',
     '/events',
     '/cart',
-    '/recommendations',
     '/search',
   ].map((route) => ({
     url: `${BASE_URL}${route}`,

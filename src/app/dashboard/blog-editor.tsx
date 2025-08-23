@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
@@ -38,14 +37,6 @@ const ImageInsertionDialog = ({ onInsertImage }: { onInsertImage: (url: string, 
 
     const handleInsert = () => {
         if (imageUrl) {
-            if (imageUrl.startsWith('data:image')) {
-                toast({
-                    variant: 'destructive',
-                    title: 'Insertion Not Allowed',
-                    description: 'Please use a hosted image URL. Base64 images cannot be embedded in the post content.',
-                });
-                return;
-            }
             onInsertImage(imageUrl, imageAlt || 'blog image');
         }
     };
@@ -196,7 +187,7 @@ export const BlogEditor: React.FC<BlogEditorProps> = ({ value, onChange }) => {
           ref={textareaRef}
           value={content}
           onChange={handleContentChange}
-          className="w-full h-full min-h-[50vh] p-4 font-mono text-sm bg-background border rounded-b-md focus:outline-none focus:ring-1 focus:ring-primary"
+          className="w-full h-full min-h-[50vh] p-4 font-code text-sm bg-background border rounded-b-md focus:outline-none focus:ring-1 focus:ring-primary"
           placeholder="Write your post content here using Markdown..."
         />
       </div>

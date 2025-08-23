@@ -24,6 +24,7 @@ const AboutPage = () => {
           src="https://images.unsplash.com/photo-1541167760496-1628856ab772?q=80&w=1337&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
           alt="Coffee shop interior"
           fill
+          priority
           className="absolute z-0 object-cover"
         />
         <div className="absolute inset-0 bg-black/60 z-10" />
@@ -44,6 +45,7 @@ const AboutPage = () => {
               alt="Old photo of coffee farmers"
               fill
               className="object-cover"
+              sizes="(max-width: 768px) 100vw, 50vw"
             />
           </div>
           <div>
@@ -66,7 +68,7 @@ const AboutPage = () => {
             The principles that guide every bean we roast and every cup we serve.
           </p>
           <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card className="text-center shadow-lg bg-background">
+            <Card className="text-center shadow-lg bg-background transform hover:-translate-y-2 transition-transform duration-300">
               <CardHeader>
                 <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit">
                   <Heart className="h-8 w-8 text-primary" />
@@ -77,7 +79,7 @@ const AboutPage = () => {
                 <p>We honor the unique character of each coffee's origin, telling its true story through meticulous roasting and transparent sourcing.</p>
               </CardContent>
             </Card>
-            <Card className="text-center shadow-lg bg-background">
+            <Card className="text-center shadow-lg bg-background transform hover:-translate-y-2 transition-transform duration-300">
               <CardHeader>
                 <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit">
                   <Leaf className="h-8 w-8 text-primary" />
@@ -88,7 +90,7 @@ const AboutPage = () => {
                 <p>We are committed to environmentally-friendly practices and ensuring fair compensation for our partner farmers, sustaining both land and livelihood.</p>
               </CardContent>
             </Card>
-            <Card className="text-center shadow-lg bg-background">
+            <Card className="text-center shadow-lg bg-background transform hover:-translate-y-2 transition-transform duration-300">
               <CardHeader>
                 <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit">
                   <Users className="h-8 w-8 text-primary" />

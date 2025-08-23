@@ -1,4 +1,3 @@
-
 'use client';
 
 import { notFound, useParams } from 'next/navigation';
@@ -125,10 +124,12 @@ export default function ProductDetailPage() {
     <div className="bg-secondary/50">
       <div className="container mx-auto px-4 py-8 md:py-12">
         <div className="mb-8">
-            <Link href="/products" className="inline-flex items-center text-primary hover:underline">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Kembali ke Produk
-            </Link>
+            <Button asChild variant="link" className="p-0 text-base">
+                <Link href="/products" className="inline-flex items-center text-primary hover:underline">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Kembali ke Produk
+                </Link>
+            </Button>
         </div>
         <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-start">
           <div className="relative aspect-square rounded-lg overflow-hidden shadow-xl">
@@ -137,6 +138,7 @@ export default function ProductDetailPage() {
                 alt={`Kopi Arabika ${product.name}`} 
                 fill 
                 className="object-cover" 
+                sizes="(max-width: 768px) 100vw, 50vw"
                 priority
             />
           </div>

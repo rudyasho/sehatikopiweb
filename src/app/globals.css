@@ -67,3 +67,44 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Add custom prose styles to style the markdown content from blog posts */
+@layer components {
+    .prose {
+        h2 {
+            @apply font-headline text-3xl mt-8 mb-4;
+        }
+        h3 {
+            @apply font-headline text-2xl mt-6 mb-3;
+        }
+        p {
+            @apply leading-relaxed mb-4;
+        }
+        a {
+            @apply text-primary underline;
+        }
+        ul {
+            @apply list-disc pl-5 mb-4;
+        }
+        ol {
+            @apply list-decimal pl-5 mb-4;
+        }
+        blockquote {
+            @apply border-l-4 border-primary pl-4 italic text-muted-foreground my-6;
+        }
+        pre {
+             @apply bg-secondary/80 text-foreground p-4 rounded-md my-6 overflow-x-auto;
+        }
+        code {
+            @apply font-code text-sm;
+        }
+        /* Style code blocks within pre tags */
+        pre code {
+            @apply bg-transparent p-0;
+        }
+        /* Style inline code */
+        :not(pre) > code {
+            @apply bg-secondary/80 text-primary font-semibold px-1 py-0.5 rounded-sm;
+        }
+    }
+}
