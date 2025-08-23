@@ -806,7 +806,7 @@ const ManageEventsView = ({ onEventsChanged }: { onEventsChanged: () => void }) 
                 }}>
                     <DialogTrigger asChild>
                         <Button onClick={() => { setEditingEvent(null); setIsFormOpen(true); }}>
-                           <CalendarPlus /> Add New Event
+                           <CalendarPlus className="mr-2" /> Add New Event
                         </Button>
                     </DialogTrigger>
                     <DialogContent>
@@ -1487,9 +1487,10 @@ const DashboardPage = () => {
   const { user, loading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
+  
   const [activeView, setActiveView] = useState<DashboardView>('overview');
-  const [refreshKey, setRefreshKey] = useState(0);
   const [initialPostToEdit, setInitialPostToEdit] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const [stats, setStats] = useState({ totalProducts: 0, totalReviews: 0, blogPosts: 0, events: 0 });
   const [products, setProducts] = useState<Product[]>([]);
@@ -1528,7 +1529,7 @@ const DashboardPage = () => {
 
   useEffect(() => {
     if (!loading && (!user || !ADMIN_EMAILS.includes(user.email || ''))) {
-      router.push('/');
+      router.replace('/');
     }
   }, [user, loading, router]);
   
@@ -1537,13 +1538,19 @@ const DashboardPage = () => {
       const editPostId = searchParams.get('edit');
       
       if (view) {
-          setActiveView(view);
+        setActiveView(view);
+      } else {
+        setActiveView('overview');
       }
+
       if (editPostId) {
           setInitialPostToEdit(editPostId);
+          // If a post is being edited, force the view to 'manageBlog'
           if (view !== 'manageBlog') {
-              setActiveView('manageBlog');
+            setActiveView('manageBlog');
           }
+      } else {
+        setInitialPostToEdit(null);
       }
   }, [searchParams]);
 
@@ -1600,6 +1607,12 @@ const DashboardPage = () => {
       { id: 'manageUsers', label: 'Manage Users', icon: Users },
   ];
 
+  const handleViewChange = (view: DashboardView) => {
+    setActiveView(view);
+    setInitialPostToEdit(null); // Reset post-to-edit when explicitly changing views
+    router.push('/dashboard?view=' + view, { scroll: false });
+  }
+
   return (
     <div className="bg-secondary/50 min-h-screen">
         <div className="container mx-auto px-4 py-8 md:py-12">
@@ -1617,11 +1630,7 @@ const DashboardPage = () => {
                                      <Button
                                         key={item.id}
                                         variant={activeView === item.id ? 'secondary' : 'ghost'}
-                                        onClick={() => {
-                                            setActiveView(item.id as DashboardView);
-                                            setInitialPostToEdit(null);
-                                            router.push('/dashboard?view=' + item.id, { scroll: false });
-                                        }}
+                                        onClick={() => handleViewChange(item.id as DashboardView)}
                                         className="justify-start text-base px-4 py-6"
                                      >
                                         <item.icon className="mr-3 h-5 w-5" />
@@ -1634,11 +1643,7 @@ const DashboardPage = () => {
                 </aside>
 
                  <div className="md:hidden">
-                    <Select value={activeView} onValueChange={(value) => {
-                        setActiveView(value as DashboardView)
-                        setInitialPostToEdit(null);
-                        router.push('/dashboard?view=' + value, { scroll: false });
-                     }}>
+                    <Select value={activeView} onValueChange={(value) => handleViewChange(value as DashboardView)}>
                       <SelectTrigger className="w-full h-12 text-base">
                         <SelectValue placeholder="Select a view" />
                       </SelectTrigger>

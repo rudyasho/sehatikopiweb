@@ -47,6 +47,7 @@ import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { useCart } from '@/context/cart-context';
 import { useAuth, ADMIN_EMAILS } from '@/context/auth-context';
 import { ThemeToggle } from './theme-toggle';
+import { Separator } from '../ui/separator';
 
 
 export function Header() {
@@ -75,14 +76,14 @@ export function Header() {
   const isUserAdmin = user && user.email && ADMIN_EMAILS.includes(user.email);
 
   const AuthNav = () => {
-    if (loading) return <div className="h-10 w-24 rounded-md bg-muted animate-pulse" />;
+    if (loading) return <div className="h-10 w-10 rounded-full bg-muted animate-pulse" />;
     
     if (user) {
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-              <Avatar className="h-10 w-10">
+              <Avatar className="h-10 w-10 border-2 border-transparent hover:border-primary transition-colors">
                  <AvatarImage src={user.photoURL || undefined} alt={user.displayName || 'User'} />
                  <AvatarFallback>{user.displayName?.charAt(0) || 'U'}</AvatarFallback>
               </Avatar>
@@ -100,21 +101,21 @@ export function Header() {
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <Link href="/profile">
-                <User />
+                <User className="mr-2 h-4 w-4" />
                 <span>Profile</span>
               </Link>
             </DropdownMenuItem>
             {isUserAdmin && (
               <DropdownMenuItem asChild>
                 <Link href="/dashboard">
-                  <LayoutDashboard />
+                  <LayoutDashboard className="mr-2 h-4 w-4" />
                   <span>Dashboard</span>
                 </Link>
               </DropdownMenuItem>
             )}
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={logout}>
-              <LogOut />
+              <LogOut className="mr-2 h-4 w-4" />
               <span>Log out</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -125,7 +126,7 @@ export function Header() {
     return (
       <Button asChild>
         <Link href="/login">
-          <LogIn />
+          <LogIn className="mr-2 h-4 w-4" />
           Login
         </Link>
       </Button>
@@ -146,7 +147,7 @@ export function Header() {
               setIsMobileMenuOpen(false);
           }}
         >
-          <LogOut />
+          <LogOut className="mr-4 h-5 w-5" />
           Logout
         </Button>
       );
@@ -154,9 +155,10 @@ export function Header() {
     return (
       <Button asChild
         className="w-full justify-start text-lg p-6"
+        variant="default"
       >
         <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
-            <LogIn />
+            <LogIn className="mr-4 h-5 w-5" />
             Login / Sign Up
         </Link>
       </Button>
@@ -230,7 +232,7 @@ export function Header() {
                 <span className="sr-only">Toggle Menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="flex flex-col">
+            <SheetContent side="left" className="flex flex-col p-4">
                <VisuallyHidden>
                   <DialogTitle>Mobile Menu</DialogTitle>
                   <DialogDescription>
@@ -247,18 +249,18 @@ export function Header() {
                    <span className="sr-only">Close Menu</span>
                 </Button>
               </div>
-              <nav className="flex flex-col space-y-2 pt-6 flex-grow">
+              <nav className="flex flex-col space-y-2 pt-4 flex-grow">
                 {navLinks.map(({ href, label, icon: Icon }) => (
                   <Link
                     key={href}
                     href={href}
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={cn(
-                      'flex items-center gap-3 rounded-md p-3 text-lg font-medium transition-colors hover:bg-secondary',
+                      'flex items-center gap-4 rounded-md p-3 text-lg font-medium transition-colors hover:bg-secondary',
                       pathname === href ? 'bg-secondary text-primary' : 'text-foreground/80'
                     )}
                   >
-                    <Icon />
+                    <Icon className="h-5 w-5" />
                     <span>{label}</span>
                   </Link>
                 ))}
@@ -270,11 +272,11 @@ export function Header() {
                     href="/profile"
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={cn(
-                      'flex items-center gap-3 rounded-md p-3 text-lg font-medium transition-colors hover:bg-secondary',
+                      'flex items-center gap-4 rounded-md p-3 text-lg font-medium transition-colors hover:bg-secondary',
                       pathname === '/profile' ? 'bg-secondary text-primary' : 'text-foreground/80'
                     )}
                   >
-                    <User />
+                    <User className="h-5 w-5" />
                     <span>Profile</span>
                   </Link>
                   {isUserAdmin &&
@@ -282,33 +284,35 @@ export function Header() {
                     href="/dashboard"
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={cn(
-                      'flex items-center gap-3 rounded-md p-3 text-lg font-medium transition-colors hover:bg-secondary',
+                      'flex items-center gap-4 rounded-md p-3 text-lg font-medium transition-colors hover:bg-secondary',
                       pathname === '/dashboard' ? 'bg-secondary text-primary' : 'text-foreground/80'
                     )}
                   >
-                    <LayoutDashboard />
+                    <LayoutDashboard className="h-5 w-5" />
                     <span>Dashboard</span>
                   </Link>
                   }
+                  <Separator className="my-2" />
                   </>
                 )}
-                 <Button asChild className="w-full relative justify-start text-lg p-6">
-                  <Link href="/search" onClick={() => setIsMobileMenuOpen(false)}>
-                    <Search />
+                 <Button asChild className="w-full justify-start text-lg p-3">
+                  <Link href="/search" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-4">
+                    <Search className="h-5 w-5" />
                     Search
                   </Link>
                 </Button>
-                <Button asChild className="w-full relative justify-start text-lg p-6">
-                  <Link href="/cart" onClick={() => setIsMobileMenuOpen(false)}>
-                    <ShoppingCart />
+                <Button asChild className="w-full justify-start text-lg p-3">
+                  <Link href="/cart" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-4">
+                    <ShoppingCart className="h-5 w-5" />
                     Shopping Cart
                     {isClient && itemCount > 0 && (
-                      <span className="absolute right-4 flex h-6 w-6 items-center justify-center rounded-full bg-primary-foreground text-sm text-primary">
+                      <span className="ml-auto flex h-6 w-6 items-center justify-center rounded-full bg-primary text-sm text-primary-foreground">
                         {itemCount}
                       </span>
                     )}
                   </Link>
                 </Button>
+                <Separator className="my-2" />
                 {isClient && <MobileAuth />}
               </div>
             </SheetContent>
