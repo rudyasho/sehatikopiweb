@@ -4,6 +4,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { 
   Coffee, 
   Menu, 
@@ -162,8 +163,19 @@ export function Header() {
     )
   }
 
+  const headerVariants = {
+    hidden: { y: -100, opacity: 0 },
+    visible: { y: 0, opacity: 1, transition: { duration: 0.5, ease: "easeOut" } },
+  };
+
+
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <motion.header
+        initial="hidden"
+        animate="visible"
+        variants={headerVariants}
+        className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+    >
       <div className="container flex h-16 items-center">
         <div className="mr-4 flex">
           <Link href="/" className="flex items-center space-x-2">
@@ -303,6 +315,6 @@ export function Header() {
           </Sheet>
         </div>
       </div>
-    </header>
+    </motion.header>
   );
 }

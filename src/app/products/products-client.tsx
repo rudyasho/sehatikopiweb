@@ -1,6 +1,8 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import {
   Card,
   CardContent,
@@ -15,7 +17,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useCart } from '@/context/cart-context';
 import { useToast } from '@/hooks/use-toast';
-import { ShoppingCart, Check, ListFilter, Loader2 } from 'lucide-react';
+import { ShoppingCart, Check, ListFilter } from 'lucide-react';
 import { ProductFilters, type Filters } from './product-filters';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -108,6 +110,19 @@ export function ProductsClientPage() {
       </div>
   );
 
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut"
+      }
+    }
+  };
+
+
   return (
     <div className="bg-secondary/50">
       <div className="container mx-auto px-4 py-12">
@@ -127,57 +142,66 @@ export function ProductsClientPage() {
         
         filteredAndSortedProducts.length > 0 ? (
           <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredAndSortedProducts.map((product) => (
-              <Card
-                key={product.id}
-                className="text-left overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 shadow-lg bg-background flex flex-col"
+            {filteredAndSortedProducts.map((product, i) => (
+              <motion.div
+                  key={product.id}
+                  variants={cardVariants}
+                  initial="hidden"
+                  animate="visible"
+                  transition={{ delay: (i % 3) * 0.1 }}
+                  whileHover={{ y: -5, scale: 1.03 }}
+                  className="h-full"
               >
-                <CardHeader className="p-0">
-                  <Link href={`/products/${product.slug}`}>
-                    <div className="relative h-60 w-full">
-                      <Image
-                        src={product.image}
-                        alt={product.name}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                  </Link>
-                </CardHeader>
-                <CardContent className="p-6 flex-grow">
-                  <CardTitle className="font-headline text-2xl text-primary">
-                    {product.name}
-                  </CardTitle>
-                  <CardDescription className="mt-2 h-16">
-                    {product.description.substring(0, 100)}...
-                  </CardDescription>
-                </CardContent>
-                <CardFooter className="flex flex-col sm:flex-row justify-between items-center p-6 bg-secondary/50 gap-4">
-                  <span className="text-xl font-bold text-primary self-center sm:self-auto">
-                    {new Intl.NumberFormat('id-ID', {
-                      style: 'currency',
-                      currency: 'IDR',
-                      minimumFractionDigits: 0,
-                    }).format(product.price)}
-                  </span>
-                  <div className="flex gap-2 w-full sm:w-auto">
-                    <Button asChild variant="outline" className="flex-1">
-                      <Link href={`/products/${product.slug}`}>View</Link>
-                    </Button>
-                    <Button
-                      onClick={() => handleAddToCart(product)}
-                      disabled={addedProducts[product.slug]}
-                      className="flex-1"
-                    >
-                      {addedProducts[product.slug] ? (
-                        <Check />
-                      ) : (
-                        <ShoppingCart />
-                      )}
-                    </Button>
-                  </div>
-                </CardFooter>
-              </Card>
+                  <Card
+                    className="text-left overflow-hidden shadow-lg bg-background flex flex-col h-full"
+                  >
+                    <CardHeader className="p-0">
+                      <Link href={`/products/${product.slug}`}>
+                        <div className="relative h-60 w-full">
+                          <Image
+                            src={product.image}
+                            alt={product.name}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                      </Link>
+                    </CardHeader>
+                    <CardContent className="p-6 flex-grow">
+                      <CardTitle className="font-headline text-2xl text-primary">
+                        {product.name}
+                      </CardTitle>
+                      <CardDescription className="mt-2 h-16">
+                        {product.description.substring(0, 100)}...
+                      </CardDescription>
+                    </CardContent>
+                    <CardFooter className="flex flex-col sm:flex-row justify-between items-center p-6 bg-secondary/50 gap-4 mt-auto">
+                      <span className="text-xl font-bold text-primary self-center sm:self-auto">
+                        {new Intl.NumberFormat('id-ID', {
+                          style: 'currency',
+                          currency: 'IDR',
+                          minimumFractionDigits: 0,
+                        }).format(product.price)}
+                      </span>
+                      <div className="flex gap-2 w-full sm:w-auto">
+                        <Button asChild variant="outline" className="flex-1">
+                          <Link href={`/products/${product.slug}`}>View</Link>
+                        </Button>
+                        <Button
+                          onClick={() => handleAddToCart(product)}
+                          disabled={addedProducts[product.slug]}
+                          className="flex-1"
+                        >
+                          {addedProducts[product.slug] ? (
+                            <Check />
+                          ) : (
+                            <ShoppingCart />
+                          )}
+                        </Button>
+                      </div>
+                    </CardFooter>
+                  </Card>
+              </motion.div>
             ))}
           </div>
         ) : (

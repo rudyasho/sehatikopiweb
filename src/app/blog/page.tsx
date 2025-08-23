@@ -1,6 +1,9 @@
+
+'use client';
+import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Metadata } from 'next';
+import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { Twitter, Facebook, MessageCircle } from 'lucide-react';
 
@@ -8,7 +11,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { getBlogPosts } from '@/lib/blog-data';
+import { getBlogPosts, type BlogPost } from '@/lib/blog-data';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const StaticShare = ({ slug, title }: { slug: string, title: string }) => (
     <div className="flex items-center gap-2">
@@ -31,14 +35,45 @@ const StaticShare = ({ slug, title }: { slug: string, title: string }) => (
     </div>
 )
 
-export const metadata: Metadata = {
-  title: 'Blog',
-  description: 'Stories, guides, and insights from the world of Indonesian coffee. Explore our journal for the latest articles on brewing, culture, and news.',
+const cardVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      ease: "easeOut"
+    }
+  }
 };
 
-export default async function BlogPage() {
-  const blogPosts = await getBlogPosts();
+
+export default function BlogPage() {
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      setIsLoading(true);
+      const posts = await getBlogPosts();
+      setBlogPosts(posts);
+      setIsLoading(false);
+    }
+    fetchPosts();
+  }, []);
   
+  if (isLoading) {
+     return (
+        <div className="bg-secondary/50">
+            <div className="container mx-auto px-4 py-12">
+                <Skeleton className="h-12 w-1/2 mx-auto mb-4" />
+                <Skeleton className="h-6 w-3/4 mx-auto mb-12" />
+                <Skeleton className="h-[400px] w-full" />
+            </div>
+        </div>
+     )
+  }
+
   if (blogPosts.length === 0) {
      return (
         <div className="bg-secondary/50">
@@ -97,32 +132,41 @@ export default async function BlogPage() {
                 <h2 className="font-headline text-3xl font-bold text-primary text-center my-12">More Articles</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {otherPosts.map((post) => (
-                    <Card key={post.id} className="flex flex-col overflow-hidden shadow-lg transform hover:-translate-y-1 transition-transform duration-300 bg-background">
-                    <CardHeader className="p-0">
-                        <Link href={`/blog/${post.slug}`}>
-                        <div className="relative h-60 w-full">
-                            <Image src={post.image || 'https://placehold.co/600x400.png'} alt={post.title || 'Blog post image'} fill className="object-cover" />
-                        </div>
-                        </Link>
-                    </CardHeader>
-                    <CardContent className="p-6 flex-grow">
-                        <div className="flex items-center gap-4 mb-2">
-                            <Badge variant="secondary">{post.category}</Badge>
-                            {post.date && <span className="text-xs text-muted-foreground">{format(new Date(post.date), "MMM d, yyyy")}</span>}
-                        </div>
-                        <Link href={`/blog/${post.slug}`}>
-                        <CardTitle className="font-headline text-2xl text-primary hover:underline">{post.title}</CardTitle>
-                        </Link>
-                        <CardDescription className="mt-2 text-base">{post.excerpt}</CardDescription>
-                    </CardContent>
-                    <CardFooter className="p-6 bg-secondary/50 flex flex-col items-start gap-4">
-                        <Button asChild variant="link" className="p-0 h-auto text-primary">
-                            <Link href={`/blog/${post.slug}`}>Read More &rarr;</Link>
-                        </Button>
-                        <Separator className="my-2" />
-                        <StaticShare slug={post.slug} title={post.title} />
-                    </CardFooter>
-                    </Card>
+                    <motion.div
+                        key={post.id}
+                        variants={cardVariants}
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true, amount: 0.3 }}
+                        whileHover={{ y: -5, scale: 1.03 }}
+                    >
+                        <Card className="flex flex-col overflow-hidden shadow-lg bg-background h-full">
+                        <CardHeader className="p-0">
+                            <Link href={`/blog/${post.slug}`}>
+                            <div className="relative h-60 w-full">
+                                <Image src={post.image || 'https://placehold.co/600x400.png'} alt={post.title || 'Blog post image'} fill className="object-cover" />
+                            </div>
+                            </Link>
+                        </CardHeader>
+                        <CardContent className="p-6 flex-grow">
+                            <div className="flex items-center gap-4 mb-2">
+                                <Badge variant="secondary">{post.category}</Badge>
+                                {post.date && <span className="text-xs text-muted-foreground">{format(new Date(post.date), "MMM d, yyyy")}</span>}
+                            </div>
+                            <Link href={`/blog/${post.slug}`}>
+                            <CardTitle className="font-headline text-2xl text-primary hover:underline">{post.title}</CardTitle>
+                            </Link>
+                            <CardDescription className="mt-2 text-base">{post.excerpt}</CardDescription>
+                        </CardContent>
+                        <CardFooter className="p-6 bg-secondary/50 flex flex-col items-start gap-4 mt-auto">
+                            <Button asChild variant="link" className="p-0 h-auto text-primary">
+                                <Link href={`/blog/${post.slug}`}>Read More &rarr;</Link>
+                            </Button>
+                            <Separator className="my-2" />
+                            <StaticShare slug={post.slug} title={post.title} />
+                        </CardFooter>
+                        </Card>
+                    </motion.div>
                 ))}
                 </div>
             </section>
