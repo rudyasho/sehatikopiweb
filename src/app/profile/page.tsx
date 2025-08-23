@@ -137,7 +137,7 @@ const ProfilePage = () => {
             <CardHeader className="p-6">
                 <div className="flex flex-col sm:flex-row items-center gap-6">
                      <Avatar className="h-24 w-24 border-4 border-primary">
-                        <AvatarImage src={user.photoURL || undefined} alt={user.displayName || 'User'} data-ai-hint="person smiling"/>
+                        <AvatarImage src={user.photoURL || undefined} alt={user.displayName || 'User'} />
                         <AvatarFallback>{user.displayName?.charAt(0) || 'U'}</AvatarFallback>
                     </Avatar>
                     <div className="flex-grow text-center sm:text-left">
