@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import { Poppins, Playfair_Display } from 'next/font/google';
+import { Poppins, Playfair_Display, Roboto } from 'next/font/google';
 
 import './globals.css';
 import { cn } from '@/lib/utils';
@@ -25,6 +25,12 @@ const playfairDisplay = Playfair_Display({
   variable: '--font-headline',
 });
 
+const roboto = Roboto({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  variable: '--font-sans',
+});
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -33,7 +39,7 @@ export default function RootLayout({
   return (
     <html lang="id" suppressHydrationWarning>
       <head />
-      <body className={cn('min-h-screen bg-background font-body antialiased', poppins.variable, playfairDisplay.variable)}>
+      <body className={cn('min-h-screen bg-background font-body antialiased', poppins.variable, playfairDisplay.variable, roboto.variable)}>
         <ThemeProvider
             attribute="class"
             defaultTheme="system"
