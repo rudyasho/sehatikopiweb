@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, 'use afrif';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, Coffee, Leaf, Star, ShoppingCart, Check, Loader2, BookOpen } from 'lucide-react';
