@@ -104,10 +104,10 @@ export async function updateBlogPost(id: string, data: Partial<NewBlogPostData>)
     if (data.title) {
         updateData.slug = data.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
     }
+    
+    // Always regenerate excerpt if content changes
     if (data.content) {
-        if (!data.content.startsWith('data:image')) {
-            updateData.excerpt = createExcerpt(data.content);
-        }
+        updateData.excerpt = createExcerpt(data.content);
     }
 
     await postRef.update(updateData);
