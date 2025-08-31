@@ -1,6 +1,7 @@
+
 'use client';
 
-import { Poppins, Playfair_Display, Roboto_Mono } from 'next/font/google';
+import { Poppins, Playfair_Display, Roboto } from 'next/font/google';
 
 import './globals.css';
 import { cn } from '@/lib/utils';
@@ -25,7 +26,7 @@ const playfairDisplay = Playfair_Display({
   display: 'swap',
 });
 
-const robotoMono = Roboto_Mono({
+const roboto = Roboto({
   subsets: ['latin'],
   weight: ['400', '700'],
   variable: '--font-code',
@@ -39,7 +40,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id">
-      <body className={cn('min-h-screen bg-background font-body antialiased', poppins.variable, playfairDisplay.variable, robotoMono.variable)}>
+      <body className={cn('min-h-screen bg-background font-body antialiased', poppins.variable, playfairDisplay.variable, roboto.variable)}>
         <ThemeProvider
             attribute="class"
             defaultTheme="light"
