@@ -512,6 +512,21 @@ const BlogPostForm = ({ post, onFormSubmit, closeDialog, isCreatingNew, currentU
         },
     });
 
+    const convertGoogleDriveLink = (url: string): string => {
+        const regex = /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/;
+        const match = url.match(regex);
+        if (match && match[1]) {
+            return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+        }
+        return url;
+    };
+    
+    const handleUrlChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const rawUrl = event.target.value;
+        const convertedUrl = convertGoogleDriveLink(rawUrl);
+        form.setValue('image', convertedUrl, { shouldValidate: true });
+    };
+
     const onSubmit = async (data: BlogPostFormValues) => {
         setIsSubmitting(true);
         try {
@@ -580,7 +595,12 @@ const BlogPostForm = ({ post, onFormSubmit, closeDialog, isCreatingNew, currentU
                     <FormField control={form.control} name="image" render={({ field }) => (
                         <FormItem>
                             <FormLabel>Image URL</FormLabel>
-                            <FormControl><Input type="url" placeholder="https://example.com/image.png" {...field} /></FormControl>
+                            <FormControl><Input 
+                                type="url" 
+                                placeholder="https://example.com/image.png or Google Drive link"
+                                defaultValue={field.value}
+                                onChange={handleUrlChange}
+                            /></FormControl>
                             <FormMessage />
                         </FormItem>
                     )} />
