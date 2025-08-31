@@ -1,3 +1,4 @@
+
 // src/app/dashboard/page.tsx
 'use client';
 
@@ -10,7 +11,7 @@ import { z } from 'zod';
 import { format } from 'date-fns';
 import { 
     Coffee, Star, Calendar, Newspaper, Loader2, PlusCircle, Edit, BarChart3, LayoutGrid, 
-    Save, ListOrdered, Trash2, BookText, Image as ImageIcon, CalendarCheck, MapPin, 
+    Save, ListOrdered, Trash2, BookText, Image as ImageIcon, CalendarCheck,
     CalendarPlus, FilePlus2, Users, Settings, ImageUp, ShoppingBag
 } from 'lucide-react';
 
@@ -36,7 +37,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogClose } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { BlogEditor } from './blog-editor';
 import { Label } from '@/components/ui/label';
