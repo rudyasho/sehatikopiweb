@@ -1,10 +1,8 @@
-
-import { initializeApp, getApps, getApp, FirebaseOptions } from "firebase/app";
+// src/lib/firebase.ts
+import { initializeApp, getApps, getApp, type FirebaseOptions } from "firebase/app";
 import { getAuth, connectAuthEmulator } from "firebase/auth";
 import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
 
-
-// Client-side Firebase configuration should ONLY use public environment variables.
 const firebaseConfig: FirebaseOptions = {
   apiKey: "AIzaSyBWJoWerUztk9opWD1J6I45TwhdoDp6dnY",
   authDomain: "sehati-kopi-digital-fy12l.firebaseapp.com",
@@ -14,33 +12,23 @@ const firebaseConfig: FirebaseOptions = {
   appId: "1:1013267327927:web:fce6c5d0f7e2b834871632"
 };
 
-function initializeFirebaseApp(config: FirebaseOptions) {
-    const isConfigured = config && config.apiKey && config.projectId;
 
-    if (!isConfigured) {
-        console.warn("Client-side Firebase config is incomplete or missing. Firebase features like Auth will be disabled. Please check your NEXT_PUBLIC_ environment variables.");
-        return null;
-    }
+// Initialize Firebase
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-    const app = !getApps().length ? initializeApp(config) : getApp();
-
-    if (process.env.NODE_ENV === 'development') {
-      try {
-        const auth = getAuth(app);
+// Connect to emulators in development
+if (process.env.NODE_ENV === 'development') {
+    // Check if emulators are already running to avoid re-connecting on hot-reloads
+    if ((auth as any)._emulatorConfig === undefined) {
         connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
-
-        const db = getFirestore(app);
-        connectFirestoreEmulator(db, "127.0.0.1", 8080);
-        console.log("Firebase client connected to Auth and Firestore emulators.");
-
-      } catch (e) {
-         // This can happen with hot-reloading.
-      }
+        console.log("Firebase client connected to Auth emulator.");
     }
-
-    return app;
+    if ((db as any)._settings.host !== "127.0.0.1:8080") {
+        connectFirestoreEmulator(db, "127.0.0.1", 8080);
+        console.log("Firebase client connected to Firestore emulator.");
+    }
 }
-
-const app = initializeFirebaseApp(firebaseConfig);
 
 export { app };
