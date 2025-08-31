@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { getOrdersByUserId, type Order } from '@/lib/orders-data';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import Link from 'next/link';
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
@@ -25,6 +26,7 @@ const getStatusVariant = (status: string) => {
         case 'shipped': return 'default';
         case 'delivered': return 'secondary';
         case 'pending': return 'outline';
+        case 'cancelled': return 'destructive';
         default: return 'secondary';
     }
 }
@@ -69,7 +71,7 @@ const OrderHistory = ({ userId }: { userId: string }) => {
                 <h3 className="mt-4 text-xl font-semibold">No Orders Yet</h3>
                 <p className="mt-1 text-foreground/60">Your past orders will appear here.</p>
                 <Button asChild size="sm" className="mt-4">
-                    <a href="/products">Start Shopping</a>
+                    <Link href="/products">Start Shopping</Link>
                 </Button>
             </div>
         )

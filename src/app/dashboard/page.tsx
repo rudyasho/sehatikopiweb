@@ -10,7 +10,7 @@ import { z } from 'zod';
 import { format } from 'date-fns';
 import { 
     Coffee, Star, Calendar, Newspaper, Loader2, PlusCircle, Edit, BarChart3, LayoutGrid, 
-    Save, ListOrdered, Trash2, BookText, Image as ImageIcon, FileText, CalendarCheck, MapPin, 
+    Save, ListOrdered, Trash2, BookText, Image as ImageIcon, CalendarCheck, MapPin, 
     CalendarPlus, FilePlus2, Users, Settings, ImageUp, ShoppingBag
 } from 'lucide-react';
 
@@ -36,7 +36,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { BlogEditor } from './blog-editor';
 import { Label } from '@/components/ui/label';
@@ -241,7 +241,7 @@ const ProductForm = ({ product, onFormSubmit, onFormCancel }: { product?: Produc
                              {imageUrl ? (
                                 <Image src={imageUrl} alt="Product Preview" fill className="object-cover" />
                             ) : (
-                                <span className="text-sm text-muted-foreground">Image Preview</span>
+                                <ImageIcon className="h-16 w-16 text-muted-foreground" />
                             )}
                             </div>
                         </Card>
@@ -374,7 +374,7 @@ const EventForm = ({ event, onFormSubmit, onFormCancel }: { event?: Event | null
 };
 
 
-const AddProductView = ({ onProductAdded }: { onProductAdded: () => void }) => (
+const AddProductView = ({ onDataChange }: { onDataChange: () => void }) => (
   <Card className="shadow-lg bg-background">
     <CardHeader>
       <CardTitle className="font-headline text-2xl text-primary flex items-center gap-2">
@@ -383,12 +383,12 @@ const AddProductView = ({ onProductAdded }: { onProductAdded: () => void }) => (
       <CardDescription>Fill in the details to add a new coffee to the collection.</CardDescription>
     </CardHeader>
     <CardContent>
-        <ProductForm onFormSubmit={onProductAdded} onFormCancel={() => {}} />
+        <ProductForm onFormSubmit={onDataChange} onFormCancel={() => {}} />
     </CardContent>
   </Card>
 );
 
-const ManageProductsView = ({ onProductsChanged }: { onProductsChanged: () => void }) => {
+const ManageProductsView = ({ onDataChange }: { onDataChange: () => void }) => {
     const [products, setProducts] = useState<Product[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const { toast } = useToast();
@@ -409,13 +409,13 @@ const ManageProductsView = ({ onProductsChanged }: { onProductsChanged: () => vo
             }
         };
         fetchProducts();
-    }, [toast, onProductsChanged]);
+    }, [toast, onDataChange]);
 
     const handleDelete = async (productId: string, productName: string) => {
         try {
             await deleteProduct(productId);
             toast({ title: "Product Deleted", description: `"${productName}" has been removed.` });
-            onProductsChanged();
+            onDataChange();
         } catch (error) {
             console.error(`Failed to delete product ${productId}:`, error);
             toast({ variant: 'destructive', title: 'Error', description: 'Could not delete product.' });
@@ -439,7 +439,7 @@ const ManageProductsView = ({ onProductsChanged }: { onProductsChanged: () => vo
     const handleProductFormSubmit = () => {
         setIsProductDialogOpen(false);
         setEditingProduct(null);
-        onProductsChanged();
+        onDataChange();
     };
 
     const handleProductFormCancel = () => {
@@ -658,7 +658,7 @@ const BlogPostForm = ({ post, onFormSubmit, onFormCancel, isCreatingNew, current
     );
 };
 
-const AddBlogPostView = ({ currentUser, onPostAdded }: { currentUser: User, onPostAdded: () => void }) => (
+const AddBlogPostView = ({ currentUser, onDataChange }: { currentUser: User, onDataChange: () => void }) => (
     <Card className="shadow-lg bg-background">
         <CardHeader>
             <CardTitle className="font-headline text-2xl text-primary flex items-center gap-2">
@@ -667,12 +667,12 @@ const AddBlogPostView = ({ currentUser, onPostAdded }: { currentUser: User, onPo
             <CardDescription>Manually craft a new article for your blog.</CardDescription>
         </CardHeader>
         <CardContent>
-            <BlogPostForm isCreatingNew currentUser={currentUser} onFormSubmit={onPostAdded} onFormCancel={() => {}} />
+            <BlogPostForm isCreatingNew currentUser={currentUser} onFormSubmit={onDataChange} onFormCancel={() => {}} />
         </CardContent>
     </Card>
 );
 
-const ManageBlogPostsView = ({ onPostsChanged, initialPostToEdit }: { onPostsChanged: () => void, initialPostToEdit?: string | null }) => {
+const ManageBlogPostsView = ({ onDataChange, initialPostToEdit }: { onDataChange: () => void, initialPostToEdit?: string | null }) => {
     const [posts, setPosts] = useState<BlogPost[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const { toast } = useToast();
@@ -703,13 +703,13 @@ const ManageBlogPostsView = ({ onPostsChanged, initialPostToEdit }: { onPostsCha
             }
         };
         fetchPosts();
-    }, [initialPostToEdit, toast, onPostsChanged, router]);
+    }, [initialPostToEdit, toast, onDataChange, router]);
 
     const handleDelete = async (postId: string, postTitle: string) => {
         try {
             await deleteBlogPost(postId);
             toast({ title: "Post Deleted", description: `"${postTitle}" has been removed.` });
-            onPostsChanged();
+            onDataChange();
         } catch (error) {
             console.error(`Failed to delete post ${postId}:`, error);
             toast({ variant: 'destructive', title: 'Error', description: 'Could not delete the post.' });
@@ -733,7 +733,7 @@ const ManageBlogPostsView = ({ onPostsChanged, initialPostToEdit }: { onPostsCha
     const handlePostFormSubmit = () => {
         setIsPostDialogOpen(false);
         setEditingPost(null);
-        onPostsChanged();
+        onDataChange();
     };
 
     const handlePostFormCancel = () => {
@@ -820,7 +820,7 @@ const ManageBlogPostsView = ({ onPostsChanged, initialPostToEdit }: { onPostsCha
     );
 };
 
-const ManageEventsView = ({ onEventsChanged }: { onEventsChanged: () => void }) => {
+const ManageEventsView = ({ onDataChange }: { onDataChange: () => void }) => {
     const [events, setEvents] = useState<Event[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const { toast } = useToast();
@@ -841,13 +841,13 @@ const ManageEventsView = ({ onEventsChanged }: { onEventsChanged: () => void }) 
             }
         };
         fetchEvents();
-    }, [toast, onEventsChanged]);
+    }, [toast, onDataChange]);
 
     const handleDelete = async (eventId: string, eventTitle: string) => {
         try {
             await deleteEvent(eventId);
             toast({ title: "Event Deleted", description: `"${eventTitle}" has been removed.` });
-            onEventsChanged();
+            onDataChange();
         } catch (error) {
             console.error(`Failed to delete event ${eventId}:`, error);
             toast({ variant: 'destructive', title: 'Error', description: 'Could not delete event.' });
@@ -866,7 +866,7 @@ const ManageEventsView = ({ onEventsChanged }: { onEventsChanged: () => void }) 
 
     const handleFormSubmit = () => {
         closeForm();
-        onEventsChanged();
+        onDataChange();
     };
 
     if (isLoading) {
@@ -1398,7 +1398,7 @@ const getStatusVariant = (status: string) => {
     }
 }
 
-const ManageOrdersView = ({ onOrdersChanged }: { onOrdersChanged: () => void }) => {
+const ManageOrdersView = ({ onDataChange }: { onDataChange: () => void }) => {
     const [orders, setOrders] = useState<Order[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const { toast } = useToast();
@@ -1419,14 +1419,14 @@ const ManageOrdersView = ({ onOrdersChanged }: { onOrdersChanged: () => void }) 
             }
         };
         fetchOrders();
-    }, [toast, onOrdersChanged]);
+    }, [toast, onDataChange]);
 
     const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {
         setIsSubmitting(true);
         try {
             await updateOrderStatus(orderId, newStatus);
             toast({ title: 'Status Updated', description: `Order ${orderId} is now "${newStatus}".` });
-            onOrdersChanged();
+            onDataChange();
             if (selectedOrder?.orderId === orderId) {
                 setSelectedOrder(prev => prev ? {...prev, status: newStatus} : null);
             }
@@ -1651,17 +1651,17 @@ const DashboardPage = () => {
         case 'overview':
             return <AnalyticsOverview stats={stats} products={products} isLoading={isDataLoading} />;
         case 'addProduct':
-            return <AddProductView onProductAdded={handleDataChange} />;
+            return <AddProductView onDataChange={handleDataChange} />;
         case 'addBlog':
-            return <AddBlogPostView currentUser={user} onPostAdded={handleDataChange} />;
+            return <AddBlogPostView currentUser={user} onDataChange={handleDataChange} />;
         case 'manageProducts':
-            return <ManageProductsView onProductsChanged={handleDataChange} />;
+            return <ManageProductsView onDataChange={handleDataChange} />;
         case 'manageBlog':
-            return <ManageBlogPostsView onPostsChanged={handleDataChange} initialPostToEdit={initialPostToEdit} />;
+            return <ManageBlogPostsView onDataChange={handleDataChange} initialPostToEdit={initialPostToEdit} />;
         case 'manageEvents':
-            return <ManageEventsView onEventsChanged={handleDataChange} />;
+            return <ManageEventsView onDataChange={handleDataChange} />;
         case 'manageOrders':
-            return <ManageOrdersView onOrdersChanged={handleDataChange} />;
+            return <ManageOrdersView onDataChange={handleDataChange} />;
         case 'manageUsers':
             return <ManageUsersView currentUser={user} />;
         case 'settings':
@@ -1754,4 +1754,3 @@ export default function DashboardPageWithSuspense() {
         <DashboardPage />
     );
 }
-
