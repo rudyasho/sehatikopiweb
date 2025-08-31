@@ -10,9 +10,9 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Minus, Plus, Trash2, ArrowLeft, ShoppingCart, Loader2 } from 'lucide-react';
 import { useCart } from '@/context/cart-context';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@/context/auth-context';
-import { addOrder } from '@/lib/orders-data';
+import { addOrder, OrderStatus } from '@/lib/orders-data';
 import { useToast } from '@/hooks/use-toast';
 
 const formatCurrency = (amount: number) => {
@@ -54,7 +54,7 @@ export function CartClientPage() {
       shipping,
       total,
       orderDate: new Date().toISOString(),
-      status: 'Pending',
+      status: 'Pending' as OrderStatus,
     };
 
     if (user) {
