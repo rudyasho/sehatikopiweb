@@ -2,7 +2,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithRedirect, signOut, type User as FirebaseUser, createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPassword } from 'firebase/auth';
+import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut, type User as FirebaseUser, createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPassword } from 'firebase/auth';
 import { app } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 
@@ -108,17 +108,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const provider = new GoogleAuthProvider();
     setLoading(true);
     try {
-      // Use signInWithRedirect instead of signInWithPopup
-      await signInWithRedirect(auth, provider);
-      // The user will be redirected to Google's sign-in page,
-      // and then back to the app. The onAuthStateChanged listener
-      // will then pick up the authentication state.
+      const userCredential = await signInWithPopup(auth, provider);
+      handleAuthSuccess(userCredential.user);
     } catch (error) {
       console.error("Error during Google sign-in:", error);
-      setLoading(false);
-    } 
-    // No finally block to set loading to false here, as the page will redirect.
-    // The loading state will be reset on page load.
+    } finally {
+        setLoading(false);
+    }
   };
 
   const logout = async () => {
