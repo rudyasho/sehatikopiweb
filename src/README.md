@@ -14,13 +14,13 @@ This is a Next.js application for "Sehati Kopi Digital", a fictional Indonesian 
 - **About & Contact Pages**: Static pages for company information and a functional contact form powered by Resend for email delivery.
 - **Business Dashboard**: A comprehensive admin panel with multiple functions:
     - **Analytics**: An overview page showing key business metrics and charts for product popularity, roast, and origin distribution.
-    - **Product, Blog & Event Management**: Full CRUD (Create, Read, Update, Delete) interfaces for managing content.
+    - **Product, Blog & Event Management**: Full CRUD (Create, Read, Update, Delete) interfaces for managing content, including support for **Google Drive URLs for images**.
     - **User Management**: A view for admins to see all registered users, disable/enable their accounts, or delete them.
     - **Website & Hero Settings**: Panels to dynamically update sitewide information without code changes.
 - **Centralized Search**: A dedicated search page to find products and blog articles efficiently.
 - **User Authentication**: A complete authentication system using Firebase (Email/Password & Google) allowing users to sign up, log in, and view a profile page with their real order history saved in Firestore. Admin roles grant access to protected features.
 - **SEO Optimized**: Includes dynamic metadata, a `sitemap.xml`, and `robots.txt` for optimal search engine ranking.
-- **Dark Mode**: A fully implemented dark mode for user preference.
+- **Dark Mode**: A fully implemented dark mode for user preference, with a 'light' theme as the default.
 
 ## Tech Stack
 
@@ -62,7 +62,7 @@ To get a local copy up and running, follow these simple steps.
    FIREBASE_PROJECT_ID=your-project-id
    FIREBASE_CLIENT_EMAIL=firebase-adminsdk-...@your-project.iam.gserviceaccount.com
    # Important: The private key must be a single line string. Copy the key and replace all newlines with \n
-   FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMII...\n-----END PRIVATE KEY-----\n"
+   FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
 
    # Resend API Key (for contact form)
    NEXT_PUBLIC_RESEND_API_KEY=re_...
@@ -80,9 +80,24 @@ To get a local copy up and running, follow these simple steps.
 
 The application will be available at `http://localhost:9002`.
 
-### Admin Access
+### Using Google Drive for Images
+
+The dashboard supports using Google Drive shareable links for product and blog post images. When you paste a link, it will be automatically converted to a direct image URL.
+
+**Important**: For this to work, the sharing setting for the image file on Google Drive **must be set to "Anyone with the link"**.
+
+## Admin Access
 
 To access the dashboard and other admin features, use one of the emails pre-configured in `src/context/auth-context.ts`:
 - **Default Emails**: `dev@sidepe.com` or `rd.lapawawoi@gmail.com`
 
 You can sign up with one of these emails and any password to gain admin access.
+
+## Troubleshooting
+
+If you encounter persistent issues with dependencies after pulling changes, it can be helpful to clear out the old packages and reinstall from scratch.
+
+```sh
+rm -rf node_modules package-lock.json
+npm install
+```
