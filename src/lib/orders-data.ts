@@ -1,3 +1,4 @@
+
 // src/lib/orders-data.ts
 'use server';
 
@@ -24,7 +25,7 @@ const ordersCollection = dbAdmin?.collection('orders');
 
 export async function addOrder(orderData: Omit<Order, 'customerInfo'>) {
     if (!dbAdmin || !ordersCollection) {
-        throw new Error("Firestore Admin not initialized. Cannot add order.");
+        throw new Error("Firestore Admin not initialized.");
     }
     
     // The document ID will be the unique orderId
@@ -35,7 +36,7 @@ export async function addOrder(orderData: Omit<Order, 'customerInfo'>) {
 export async function getOrdersByUserId(userId: string): Promise<Order[]> {
     noStore();
     if (!dbAdmin || !ordersCollection) {
-        console.error("Firestore Admin is not initialized. Cannot get orders for user.");
+        console.error("Firestore Admin is not initialized. Cannot get orders.");
         return [];
     }
 
@@ -57,14 +58,13 @@ export async function getAllOrders(): Promise<Order[]> {
 
     // Fetch user info for each order that has a userId
     const userIds = [...new Set(orders.map(o => o.userId).filter((id): id is string => !!id))];
-    
+
     if (userIds.length === 0) {
         return orders; // Return orders without customer info if no users are associated
     }
-    
-    // The check at the top guarantees dbAdmin is not null here.
+
     const userRecords = await Promise.all(userIds.map(uid => dbAdmin.auth().getUser(uid).catch(() => null)));
-    
+
     const usersMap = userRecords.reduce((acc, user) => {
         if (user) {
             acc[user.uid] = {
@@ -87,7 +87,7 @@ export async function getAllOrders(): Promise<Order[]> {
 
 export async function updateOrderStatus(orderId: string, status: OrderStatus): Promise<void> {
     if (!dbAdmin || !ordersCollection) {
-        throw new Error("Firestore Admin not initialized. Cannot update order status.");
+        throw new Error("Firestore Admin not initialized.");
     }
     
     const orderRef = ordersCollection.doc(orderId);
