@@ -55,6 +55,10 @@ export async function getAllOrders(): Promise<Order[]> {
 
     // Fetch user info for each order
     const userIds = [...new Set(orders.map(o => o.userId))];
+    if (!dbAdmin) {
+        console.error("Firestore Admin is not initialized. Cannot fetch user details for orders.");
+        return orders; // Return orders without customer info
+    }
     const userRecords = await Promise.all(userIds.map(uid => dbAdmin.auth().getUser(uid).catch(() => null)));
     
     const usersMap = userRecords.reduce((acc, user) => {
