@@ -47,7 +47,7 @@ Berikut adalah serangkaian prompt terperinci yang dirancang untuk memandu AI cod
 "Buat halaman keranjang belanja (`/cart`) yang menampilkan ringkasan item, memungkinkan pengguna untuk mengubah kuantitas atau menghapus item, dan menunjukkan subtotal, biaya pengiriman, dan total. Implementasikan tombol 'Checkout via WhatsApp' yang menghasilkan pesan pre-filled dengan detail pesanan dan mengarahkannya ke WhatsApp Web/API. Setelah checkout, data pesanan juga harus disimpan ke koleksi 'orders' di Firestore yang ditautkan dengan UID pengguna (jika login)."
 
 **Prompt 8: Halaman Konfirmasi Pesanan**
-"Buat halaman konfirmasi (`/checkout/success`) yang ditampilkan setelah pengguna dialihkan dari proses checkout. Halaman ini harus menampilkan ringkasan pesanan terakhir dari `sessionStorage` (sebagai fallback jika pengguna tidak login) dan mengucapkan terima kasih kepada pelanggan."
+"Buat halaman konfirmasi (`/checkout/success`) yang ditampilkan setelah pengguna menyelesaikan proses checkout. Halaman ini harus menampilkan ringkasan pesanan terakhir dari `sessionStorage` (sebagai fallback jika pengguna tidak login) dan mengucapkan terima kasih kepada pelanggan."
 
 ---
 
