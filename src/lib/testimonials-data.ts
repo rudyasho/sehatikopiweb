@@ -86,5 +86,3 @@ export async function getTestimonials(): Promise<Testimonial[]> {
     
     return list;
 }
-
-

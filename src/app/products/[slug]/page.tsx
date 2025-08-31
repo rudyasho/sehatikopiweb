@@ -150,7 +150,7 @@ export default function ProductDetailPage() {
               <div className="flex items-center gap-2 mt-2">
                 <div className="flex text-amber-500">
                     {[...Array(5)].map((_, i) => (
-                        <Star key={i} className={`w-5 h-5 ${i < Math.round(product.rating) ? 'fill-current' : 'text-gray-300 dark:text-gray-600'}`} />
+                        <Star key={`star-${i}`} className={`w-5 h-5 ${i < Math.round(product.rating) ? 'fill-current' : 'text-gray-300 dark:text-gray-600'}`} />
                     ))}
                 </div>
                 <span className="text-foreground/60">({product.reviews} ulasan)</span>
