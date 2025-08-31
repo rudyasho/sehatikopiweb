@@ -15,18 +15,21 @@ const poppins = Poppins({
   subsets: ['latin'],
   weight: ['400', '700'],
   variable: '--font-body',
+  display: 'swap',
 });
 
 const playfairDisplay = Playfair_Display({
   subsets: ['latin'],
   weight: ['400', '700'],
   variable: '--font-headline',
+  display: 'swap',
 });
 
 const robotoMono = Roboto_Mono({
   subsets: ['latin'],
   weight: ['400', '700'],
   variable: '--font-code',
+  display: 'swap',
 });
 
 export default function RootLayout({
