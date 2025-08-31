@@ -12,31 +12,24 @@ const firebaseConfig: FirebaseOptions = {
   appId: "1:1013267327927:web:fce6c5d0f7e2b834871632"
 };
 
+
 // Initialize Firebase App
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
 const db = getFirestore(app);
 
 // Connect to emulators in development.
-// This is done outside of a useEffect or try-catch to ensure it's reliably set
-// on server start in the dev environment.
 if (process.env.NODE_ENV === 'development') {
-    // Check if emulators are already connected to prevent errors on hot-reloads
+    // This is a common pattern to avoid reconnecting on hot reloads.
+    // The emulators don't throw an error if you connect more than once,
+    // but it's good practice to avoid it.
     if ((auth as any)._emulatorConfig === undefined) {
-        try {
-            connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
-            console.log("Firebase Auth emulator connected.");
-        } catch(e) {
-            console.error("Failed to connect to auth emulator", e);
-        }
+        connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
+        console.log("Firebase Auth emulator connected.");
     }
     if ((db as any)._settings.host !== "127.0.0.1:8080") {
-         try {
-            connectFirestoreEmulator(db, "127.0.0.1", 8080);
-            console.log("Firestore emulator connected.");
-        } catch(e) {
-            console.error("Failed to connect to firestore emulator", e);
-        }
+        connectFirestoreEmulator(db, "127.0.0.1", 8080);
+        console.log("Firestore emulator connected.");
     }
 }
 

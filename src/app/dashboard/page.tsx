@@ -1,4 +1,3 @@
-
 // src/app/dashboard/page.tsx
 'use client';
 
@@ -131,17 +130,16 @@ const ProductForm = ({ product, onFormSubmit, onFormCancel }: { product?: Produc
         },
     });
 
-    const convertGoogleDriveLink = (url: string): string => {
-        const regex = /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/;
-        const match = url.match(regex);
-        if (match && match[1]) {
-            return `https://drive.google.com/uc?export=view&id=${match[1]}`;
-        }
-        return url;
-    };
-    
     const handleUrlChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const rawUrl = event.target.value;
+        const convertGoogleDriveLink = (url: string): string => {
+            const regex = /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/;
+            const match = url.match(regex);
+            if (match && match[1]) {
+                return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+            }
+            return url;
+        };
         const convertedUrl = convertGoogleDriveLink(rawUrl);
         setImageUrl(convertedUrl);
         form.setValue('image', convertedUrl, { shouldValidate: true });
@@ -539,17 +537,16 @@ const BlogPostForm = ({ post, onFormSubmit, onFormCancel, isCreatingNew, current
         },
     });
 
-    const convertGoogleDriveLink = (url: string): string => {
-        const regex = /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/;
-        const match = url.match(regex);
-        if (match && match[1]) {
-            return `https://drive.google.com/uc?export=view&id=${match[1]}`;
-        }
-        return url;
-    };
-    
     const handleUrlChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const rawUrl = event.target.value;
+        const convertGoogleDriveLink = (url: string): string => {
+            const regex = /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/;
+            const match = url.match(regex);
+            if (match && match[1]) {
+                return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+            }
+            return url;
+        };
         const convertedUrl = convertGoogleDriveLink(rawUrl);
         form.setValue('image', convertedUrl, { shouldValidate: true });
     };

@@ -2,7 +2,7 @@
 'use client';
 
 import { notFound, useParams } from 'next/navigation';
-import { getProductBySlug } from '@/lib/products-data';
+import { getProductBySlug, getProducts } from '@/lib/products-data';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
@@ -13,6 +13,46 @@ import { useCart } from '@/context/cart-context';
 import type { Product } from '@/lib/products-data';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Metadata } from 'next';
+
+
+// This function is not directly used by the client component,
+// but Next.js can use it for static generation if needed.
+export async function generateStaticParams() {
+  const products = await getProducts();
+  return products.map((product) => ({
+    slug: product.slug,
+  }));
+}
+
+// Dynamically generate metadata for each product page
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const product = await getProductBySlug(params.slug);
+
+  if (!product) {
+    return {
+      title: 'Product Not Found',
+    }
+  }
+
+  return {
+    title: product.name,
+    description: product.description,
+    openGraph: {
+        title: `${product.name} - Sehati Kopi`,
+        description: product.description,
+        images: [
+            {
+                url: product.image,
+                width: 800,
+                height: 800,
+                alt: product.name,
+            }
+        ],
+    }
+  }
+}
+
 
 export default function ProductDetailPage() {
   const params = useParams();
