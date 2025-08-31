@@ -129,11 +129,21 @@ const ProductForm = ({ product, onFormSubmit, closeDialog }: { product?: Product
             image: product?.image || '', 
         },
     });
+
+    const convertGoogleDriveLink = (url: string): string => {
+        const regex = /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/;
+        const match = url.match(regex);
+        if (match && match[1]) {
+            return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+        }
+        return url;
+    };
     
     const handleUrlChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const url = event.target.value;
-        setImageUrl(url);
-        form.setValue('image', url);
+        const rawUrl = event.target.value;
+        const convertedUrl = convertGoogleDriveLink(rawUrl);
+        setImageUrl(convertedUrl);
+        form.setValue('image', convertedUrl, { shouldValidate: true });
     }
 
     const onSubmit = async (data: ProductFormValues) => {
@@ -241,7 +251,12 @@ const ProductForm = ({ product, onFormSubmit, closeDialog }: { product?: Product
                             <FormItem>
                                 <FormLabel>Image URL</FormLabel>
                                 <FormControl>
-                                    <Input type="url" placeholder="https://example.com/image.png" {...field} onChange={handleUrlChange} />
+                                    <Input
+                                        type="url"
+                                        placeholder="https://example.com/image.png or Google Drive link"
+                                        defaultValue={field.value}
+                                        onChange={handleUrlChange}
+                                    />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
