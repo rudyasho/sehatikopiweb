@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
@@ -140,11 +141,26 @@ const MarkdownToolbar = ({ textareaRef, onContentChange }: { textareaRef: React.
 
 export const BlogEditor: React.FC<BlogEditorProps> = ({ value, onChange }) => {
   const [content, setContent] = useState(value);
+  const [renderedHtml, setRenderedHtml] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   
   useEffect(() => {
     setContent(value);
   }, [value]);
+
+  useEffect(() => {
+    const renderMarkdown = async () => {
+        try {
+            const html = await marked.parse(content || '');
+            setRenderedHtml(html);
+        } catch (error) {
+            console.error("Markdown parsing error:", error);
+            setRenderedHtml("<p>Error parsing content.</p>");
+        }
+    };
+    renderMarkdown();
+  }, [content]);
+
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = e.target.value;
@@ -156,16 +172,6 @@ export const BlogEditor: React.FC<BlogEditorProps> = ({ value, onChange }) => {
     setContent(newValue);
     onChange(newValue);
   };
-
-  const renderedHtml = useMemo(() => {
-    try {
-      return marked.parse(content || '');
-    } catch (error) {
-      console.error("Markdown parsing error:", error);
-      return "<p>Error parsing content.</p>";
-    }
-  }, [content]);
-
 
   return (
     <Card className="grid grid-cols-1 md:grid-cols-2 w-full border-0 shadow-none">
