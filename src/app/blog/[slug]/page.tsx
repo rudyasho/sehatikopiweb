@@ -19,14 +19,14 @@ import { BlogPostClientWrapper, PostFooter } from './client-page';
 
 
 marked.setOptions({
-  highlight: function (code, lang) {
+  highlight: function (code: string, lang: string) {
     const language = hljs.getLanguage(lang) ? lang : 'plaintext';
     return hljs.highlight(code, { language }).value;
   },
   langPrefix: 'hljs language-',
   breaks: true,
   gfm: true,
-});
+} as any);
 
 
 type Props = {
