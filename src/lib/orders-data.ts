@@ -56,6 +56,12 @@ export async function getAllOrders(): Promise<Order[]> {
     // Fetch user info for each order
     const userIds = [...new Set(orders.map(o => o.userId))];
 
+    // Add a definitive null check right before usage to satisfy TypeScript's control flow analysis
+    if (!dbAdmin) {
+        console.error("dbAdmin is not available for fetching user records.");
+        return orders; // Return orders without customer info
+    }
+
     const userRecords = await Promise.all(userIds.map(uid => dbAdmin.auth().getUser(uid).catch(() => null)));
     
     const usersMap = userRecords.reduce((acc, user) => {
