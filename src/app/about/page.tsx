@@ -10,9 +10,9 @@ export const metadata: Metadata = {
 };
 
 const teamMembers = [
-  { name: 'Budi Santoso', role: 'Founder & Head Roaster', avatar: 'https://placehold.co/100x100.png' },
-  { name: 'Siti Aminah', role: 'Head of Farmer Relations', avatar: 'https://placehold.co/100x100.png' },
-  { name: 'Adi Prasetyo', role: 'Lead Barista & Trainer', avatar: 'https://placehold.co/100x100.png' },
+  { name: 'Budi Santoso', role: 'Founder & Head Roaster', avatar: 'https://images.unsplash.com/photo-1574091983337-b78650545f93?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxNXx8cG90cmV0JTIwbGVsYWtpfGVufDB8fHx8MTc1NjYyMzE3NXww&ixlib=rb-4.1.0&q=80&w=1080' },
+  { name: 'Siti Aminah', role: 'Head of Farmer Relations', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1287&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
+  { name: 'Adi Prasetyo', role: 'Lead Barista & Trainer', avatar: 'https://images.unsplash.com/photo-1593628525442-f94a810619e0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMXx8cG90cmV0JTIwcHJpYSUyMHxlbnwwfHx8fDE3NTY2MjMwNjZ8MA&ixlib=rb-4.1.0&q=80&w=1080' },
 ];
 
 const AboutPage = () => {

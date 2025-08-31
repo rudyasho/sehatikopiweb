@@ -284,7 +284,7 @@ function Testimonials() {
             <Card className="text-left shadow-lg bg-secondary/50 h-full">
             <CardHeader className="flex flex-row items-center gap-4 p-6">
                 <Avatar className="h-16 w-16">
-                <Image src={testimonial.avatar} alt={testimonial.name} width={100} height={100} data-ai-hint="man" />
+                <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
                 <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <div>
