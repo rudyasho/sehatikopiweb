@@ -1,4 +1,3 @@
-
 // src/app/dashboard/page.tsx
 'use client';
 
@@ -37,7 +36,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogClose } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { BlogEditor } from './blog-editor';
 import { Label } from '@/components/ui/label';
@@ -755,7 +754,7 @@ const ManageBlogPostsView = ({ onDataChange, initialPostToEdit }: { onDataChange
                     <DialogContent className="max-w-4xl">
                          <DialogHeader>
                             <DialogTitle className="font-headline text-2xl text-primary">Edit Blog Post</DialogTitle>
-                            <DialogDescription>Editing post: "{editingPost?.title}"</DialogDescription>
+                            <CardDescription>Editing post: "{editingPost?.title}"</CardDescription>
                          </DialogHeader>
                          {editingPost && (
                             <BlogPostForm 
@@ -1490,7 +1489,7 @@ const ManageOrdersView = ({ onDataChange }: { onDataChange: () => void }) => {
                                             <DialogContent className="max-w-2xl">
                                                 <DialogHeader>
                                                     <DialogTitle className="font-headline text-2xl text-primary">Order Details</DialogTitle>
-                                                    <DialogDescription>Order ID: {selectedOrder?.orderId}</DialogDescription>
+                                                    <CardDescription>Order ID: {selectedOrder?.orderId}</CardDescription>
                                                 </DialogHeader>
                                                 {selectedOrder && (
                                                     <div className="space-y-4 max-h-[70vh] overflow-y-auto p-1">

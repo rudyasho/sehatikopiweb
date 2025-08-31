@@ -117,7 +117,7 @@ const ProfilePage = () => {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push('/'); // Redirect to home if not logged in
+      router.replace('/login'); 
     }
   }, [user, loading, router]);
 
@@ -153,8 +153,10 @@ const ProfilePage = () => {
                     </div>
                      <div className="flex flex-col sm:flex-row gap-2 self-center sm:self-start">
                         {isUserAdmin && (
-                            <Button variant="outline" onClick={() => router.push('/dashboard')}>
-                            <LayoutDashboard /> Dashboard
+                            <Button asChild variant="outline">
+                               <Link href="/dashboard">
+                                <LayoutDashboard /> Dashboard
+                               </Link>
                             </Button>
                         )}
                         <Button variant="outline" onClick={logout}>

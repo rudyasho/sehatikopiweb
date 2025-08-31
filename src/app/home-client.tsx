@@ -195,6 +195,7 @@ const HeroSection = () => {
         src={heroData.imageUrl}
         alt="Latar belakang biji kopi arabika panggang"
         fill
+        sizes="100vw"
         className="absolute z-0 object-cover"
         priority
       />
