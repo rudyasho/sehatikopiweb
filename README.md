@@ -14,13 +14,13 @@ This is a Next.js application for "Sehati Kopi Digital", a fictional Indonesian 
 - **About & Contact Pages**: Static pages for company information and a functional contact form powered by Resend for email delivery.
 - **Business Dashboard**: A comprehensive admin panel with multiple functions:
     - **Analytics**: An overview page showing key business metrics and charts for product popularity, roast, and origin distribution.
-    - **Product, Blog & Event Management**: Full CRUD (Create, Read, Update, Delete) interfaces for managing content.
+    - **Product, Blog & Event Management**: Full CRUD (Create, Read, Update, Delete) interfaces for managing content, including support for **Google Drive URLs for images**.
     - **User Management**: A view for admins to see all registered users, disable/enable their accounts, or delete them.
     - **Website & Hero Settings**: Panels to dynamically update sitewide information without code changes.
 - **Centralized Search**: A dedicated search page to find products and blog articles efficiently.
 - **User Authentication**: A complete authentication system using Firebase (Email/Password & Google) allowing users to sign up, log in, and view a profile page with their real order history saved in Firestore. Admin roles grant access to protected features.
 - **SEO Optimized**: Includes dynamic metadata, a `sitemap.xml`, and `robots.txt` for optimal search engine ranking.
-- **Dark Mode**: A fully implemented dark mode for user preference.
+- **Dark Mode**: A fully implemented dark mode for user preference, with a 'light' theme as the default.
 
 ## Tech Stack
 
@@ -79,6 +79,12 @@ To get a local copy up and running, follow these simple steps.
    ```
 
 The application will be available at `http://localhost:9002`.
+
+### Using Google Drive for Images
+
+The dashboard supports using Google Drive shareable links for product and blog post images. When you paste a link, it will be automatically converted to a direct image URL.
+
+**Important**: For this to work, the sharing setting for the image file on Google Drive **must be set to "Anyone with the link"**.
 
 ## Admin Access
 
