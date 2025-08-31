@@ -111,7 +111,7 @@ const MetricCard = ({ title, value, icon: Icon, isLoading }: { title: string, va
     )
 };
 
-const ProductForm = ({ product, onFormSubmit, closeDialog }: { product?: Product | null, onFormSubmit: () => void, closeDialog?: () => void }) => {
+const ProductForm = ({ product, onFormSubmit, onFormCancel }: { product?: Product | null, onFormSubmit: () => void, onFormCancel: () => void }) => {
     const { toast } = useToast();
     const router = useRouter();
     const [imageUrl, setImageUrl] = useState(product?.image || '');
@@ -170,7 +170,6 @@ const ProductForm = ({ product, onFormSubmit, closeDialog }: { product?: Product
                 setImageUrl('');
             }
             onFormSubmit();
-            if (closeDialog) closeDialog();
         } catch (error) {
             console.error("Failed to submit product:", error);
             toast({
@@ -264,16 +263,19 @@ const ProductForm = ({ product, onFormSubmit, closeDialog }: { product?: Product
                     </div>
                 </div>
 
-                <Button type="submit" size="lg" className="!mt-8 w-full md:w-auto" disabled={isSubmitting}>
-                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    {product ? 'Update Product' : 'Add Product'}
-                </Button>
+                 <div className="flex gap-2 !mt-8">
+                    <Button type="submit" size="lg" className="w-full md:w-auto" disabled={isSubmitting}>
+                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        {product ? 'Update Product' : 'Add Product'}
+                    </Button>
+                    {product && <Button type="button" variant="outline" onClick={onFormCancel}>Cancel</Button>}
+                </div>
             </form>
         </Form>
     )
 }
 
-const EventForm = ({ event, onFormSubmit, closeDialog, isCreatingNew }: { event?: Event | null, onFormSubmit: () => void, closeDialog: () => void, isCreatingNew: boolean }) => {
+const EventForm = ({ event, onFormSubmit, onFormCancel }: { event?: Event | null, onFormSubmit: () => void, onFormCancel: () => void }) => {
     const { toast } = useToast();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -292,21 +294,20 @@ const EventForm = ({ event, onFormSubmit, closeDialog, isCreatingNew }: { event?
     const onSubmit = async (data: EventFormValues) => {
         setIsSubmitting(true);
         try {
-            if (isCreatingNew) {
-                await addEvent(data);
-                toast({ title: "Event Added!", description: `"${data.title}" has been added.` });
-            } else if (event) {
+            if (event) {
                 await updateEvent(event.id, data);
                 toast({ title: "Event Updated!", description: `"${data.title}" has been updated.` });
+            } else {
+                await addEvent(data);
+                toast({ title: "Event Added!", description: `"${data.title}" has been added.` });
             }
             onFormSubmit();
-            closeDialog();
         } catch (error) {
             console.error("Failed to submit event:", error);
             toast({
                 variant: 'destructive',
                 title: "Error!",
-                description: `Could not ${isCreatingNew ? 'add' : 'update'} the event.`,
+                description: `Could not ${event ? 'update' : 'add'} the event.`,
             });
         } finally {
             setIsSubmitting(false);
@@ -360,10 +361,13 @@ const EventForm = ({ event, onFormSubmit, closeDialog, isCreatingNew }: { event?
                         <FormMessage />
                     </FormItem>
                 )} />
-                 <Button type="submit" size="lg" className="!mt-6 w-full" disabled={isSubmitting}>
-                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    {isCreatingNew ? 'Add Event' : 'Update Event'}
-                </Button>
+                 <div className="flex gap-2 !mt-6">
+                    <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
+                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        {event ? 'Update Event' : 'Add Event'}
+                    </Button>
+                    <Button type="button" variant="outline" onClick={onFormCancel}>Cancel</Button>
+                </div>
             </form>
         </Form>
     );
@@ -379,7 +383,7 @@ const AddProductView = ({ onProductAdded }: { onProductAdded: () => void }) => (
       <CardDescription>Fill in the details to add a new coffee to the collection.</CardDescription>
     </CardHeader>
     <CardContent>
-        <ProductForm onFormSubmit={onProductAdded} />
+        <ProductForm onFormSubmit={onProductAdded} onFormCancel={() => {}} />
     </CardContent>
   </Card>
 );
@@ -388,6 +392,7 @@ const ManageProductsView = ({ onProductsChanged }: { onProductsChanged: () => vo
     const [products, setProducts] = useState<Product[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const { toast } = useToast();
+    const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -425,6 +430,27 @@ const ManageProductsView = ({ onProductsChanged }: { onProductsChanged: () => vo
         )
     }
 
+    if (editingProduct) {
+        return (
+             <Card className="shadow-lg bg-background">
+                <CardHeader>
+                    <CardTitle className="font-headline text-2xl text-primary flex items-center gap-2"><Edit /> Edit Product</CardTitle>
+                    <CardDescription>Editing product: "{editingProduct.name}"</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <ProductForm 
+                        product={editingProduct} 
+                        onFormSubmit={() => {
+                            setEditingProduct(null);
+                            onProductsChanged();
+                        }}
+                        onFormCancel={() => setEditingProduct(null)}
+                    />
+                </CardContent>
+            </Card>
+        )
+    }
+
     return (
         <Card className="shadow-lg bg-background">
             <CardHeader>
@@ -451,19 +477,9 @@ const ManageProductsView = ({ onProductsChanged }: { onProductsChanged: () => vo
                                     <TableCell className="text-muted-foreground">{product.origin}</TableCell>
                                     <TableCell className="text-right">{formatCurrency(product.price)}</TableCell>
                                     <TableCell className="text-center space-x-2">
-                                        <Dialog>
-                                            <DialogTrigger asChild>
-                                                <Button variant="outline" size="icon" aria-label={`Edit ${product.name}`}>
-                                                    <Edit />
-                                                </Button>
-                                            </DialogTrigger>
-                                            <DialogContent className="sm:max-w-4xl">
-                                                <DialogHeader>
-                                                    <DialogTitle className="font-headline text-2xl text-primary">Edit Product</DialogTitle>
-                                                </DialogHeader>
-                                                <ProductForm product={product} onFormSubmit={onProductsChanged} closeDialog={() => (document.querySelector('[data-radix-dialog-close]') as HTMLElement)?.click()} />
-                                            </DialogContent>
-                                        </Dialog>
+                                         <Button variant="outline" size="icon" aria-label={`Edit ${product.name}`} onClick={() => setEditingProduct(product)}>
+                                            <Edit />
+                                        </Button>
 
                                         <AlertDialog>
                                             <AlertDialogTrigger asChild>
@@ -497,7 +513,7 @@ const ManageProductsView = ({ onProductsChanged }: { onProductsChanged: () => vo
     );
 }
 
-const BlogPostForm = ({ post, onFormSubmit, closeDialog, isCreatingNew, currentUser }: { post?: BlogPost | null, onFormSubmit: () => void, closeDialog?: () => void, isCreatingNew?: boolean, currentUser?: User | null }) => {
+const BlogPostForm = ({ post, onFormSubmit, onFormCancel, isCreatingNew, currentUser }: { post?: BlogPost | null, onFormSubmit: () => void, onFormCancel: () => void, isCreatingNew?: boolean, currentUser?: User | null }) => {
     const { toast } = useToast();
     const [isSubmitting, setIsSubmitting] = useState(false);
     
@@ -539,7 +555,6 @@ const BlogPostForm = ({ post, onFormSubmit, closeDialog, isCreatingNew, currentU
                 toast({ title: "Post Updated!", description: `"${data.title}" has been updated.` });
             }
             onFormSubmit();
-            if (closeDialog) closeDialog();
         } catch (error) {
             console.error("Failed to submit blog post:", error);
             const errorMessage = error instanceof Error ? error.message : `Could not ${isCreatingNew ? 'create' : 'update'} the post.`;
@@ -621,10 +636,13 @@ const BlogPostForm = ({ post, onFormSubmit, closeDialog, isCreatingNew, currentU
                         )}
                         />
                 </div>
-                <Button type="submit" size="lg" className="!mt-8 w-full md:w-auto" disabled={isSubmitting}>
-                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    {isCreatingNew ? 'Create Post' : 'Update Post'}
-                </Button>
+                <div className="flex gap-2 !mt-8">
+                    <Button type="submit" size="lg" className="w-full md:w-auto" disabled={isSubmitting}>
+                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        {isCreatingNew ? 'Create Post' : 'Update Post'}
+                    </Button>
+                    {!isCreatingNew && <Button type="button" variant="outline" onClick={onFormCancel}>Cancel</Button>}
+                </div>
             </form>
         </Form>
     );
@@ -639,7 +657,7 @@ const AddBlogPostView = ({ currentUser, onPostAdded }: { currentUser: User, onPo
             <CardDescription>Manually craft a new article for your blog.</CardDescription>
         </CardHeader>
         <CardContent>
-            <BlogPostForm isCreatingNew currentUser={currentUser} onFormSubmit={onPostAdded} />
+            <BlogPostForm isCreatingNew currentUser={currentUser} onFormSubmit={onPostAdded} onFormCancel={() => {}} />
         </CardContent>
     </Card>
 );
@@ -650,6 +668,7 @@ const ManageBlogPostsView = ({ onPostsChanged, initialPostToEdit }: { onPostsCha
     const { toast } = useToast();
     const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
     const { user } = useAuth();
+    const router = useRouter();
 
     useEffect(() => {
         const fetchPosts = async () => {
@@ -661,6 +680,8 @@ const ManageBlogPostsView = ({ onPostsChanged, initialPostToEdit }: { onPostsCha
                     const postToEdit = postsData.find(p => p.id === initialPostToEdit);
                     if (postToEdit) {
                         setEditingPost(postToEdit);
+                        // Optional: remove the query param from URL without re-rendering
+                        router.replace('/dashboard?view=manageBlog', { scroll: false });
                     }
                 }
             } catch (error) {
@@ -671,7 +692,7 @@ const ManageBlogPostsView = ({ onPostsChanged, initialPostToEdit }: { onPostsCha
             }
         };
         fetchPosts();
-    }, [initialPostToEdit, toast, onPostsChanged]);
+    }, [initialPostToEdit, toast, onPostsChanged, router]);
 
     const handleDelete = async (postId: string, postTitle: string) => {
         try {
@@ -689,6 +710,28 @@ const ManageBlogPostsView = ({ onPostsChanged, initialPostToEdit }: { onPostsCha
             <Card className="shadow-lg bg-background p-6">
                 <Skeleton className="h-8 w-1/4 mb-4" />
                 <Skeleton className="h-64 w-full" />
+            </Card>
+        )
+    }
+
+    if (editingPost) {
+        return (
+            <Card className="shadow-lg bg-background">
+                <CardHeader>
+                    <CardTitle className="font-headline text-2xl text-primary flex items-center gap-2"><Edit /> Edit Blog Post</CardTitle>
+                    <CardDescription>Editing post: "{editingPost.title}"</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <BlogPostForm 
+                        post={editingPost}
+                        currentUser={user}
+                        onFormSubmit={() => {
+                            setEditingPost(null);
+                            onPostsChanged();
+                        }}
+                        onFormCancel={() => setEditingPost(null)}
+                    />
+                </CardContent>
             </Card>
         )
     }
@@ -719,19 +762,9 @@ const ManageBlogPostsView = ({ onPostsChanged, initialPostToEdit }: { onPostsCha
                                     <TableCell className="text-muted-foreground">{post.author}</TableCell>
                                     <TableCell>{post.date ? format(new Date(post.date), "MMM d, yyyy") : 'N/A'}</TableCell>
                                     <TableCell className="text-center space-x-2">
-                                        <Dialog open={editingPost?.id === post.id} onOpenChange={(isOpen) => !isOpen && setEditingPost(null)}>
-                                            <DialogTrigger asChild>
-                                                <Button variant="outline" size="icon" onClick={() => setEditingPost(post)} aria-label={`Edit ${post.title}`}>
-                                                    <Edit />
-                                                </Button>
-                                            </DialogTrigger>
-                                            <DialogContent className="sm:max-w-4xl">
-                                                <DialogHeader>
-                                                    <DialogTitle className="font-headline text-2xl text-primary">Edit Blog Post</DialogTitle>
-                                                </DialogHeader>
-                                                 {editingPost && <BlogPostForm post={editingPost} currentUser={user} onFormSubmit={onPostsChanged} closeDialog={() => setEditingPost(null)} />}
-                                            </DialogContent>
-                                        </Dialog>
+                                         <Button variant="outline" size="icon" onClick={() => setEditingPost(post)} aria-label={`Edit ${post.title}`}>
+                                            <Edit />
+                                        </Button>
 
                                         <AlertDialog>
                                             <AlertDialogTrigger asChild>
@@ -799,10 +832,19 @@ const ManageEventsView = ({ onEventsChanged }: { onEventsChanged: () => void }) 
         }
     };
 
-    const handleFormSubmit = () => {
-        onEventsChanged();
-        setIsFormOpen(false);
+    const openForm = (event: Event | null) => {
+        setEditingEvent(event);
+        setIsFormOpen(true);
+    }
+    
+    const closeForm = () => {
         setEditingEvent(null);
+        setIsFormOpen(false);
+    }
+
+    const handleFormSubmit = () => {
+        closeForm();
+        onEventsChanged();
     };
 
     if (isLoading) {
@@ -823,29 +865,24 @@ const ManageEventsView = ({ onEventsChanged }: { onEventsChanged: () => void }) 
                     </CardTitle>
                     <CardDescription>Add, edit, or delete events and workshops.</CardDescription>
                 </div>
-                <Dialog open={isFormOpen} onOpenChange={(open) => {
-                    setIsFormOpen(open);
-                    if (!open) setEditingEvent(null);
-                }}>
-                    <DialogTrigger asChild>
-                        <Button onClick={() => { setEditingEvent(null); setIsFormOpen(true); }}>
-                           <CalendarPlus className="mr-2" /> Add New Event
-                        </Button>
-                    </DialogTrigger>
+                <Button onClick={() => openForm(null)}>
+                    <CalendarPlus className="mr-2" /> Add New Event
+                </Button>
+            </CardHeader>
+            <CardContent>
+                 <Dialog open={isFormOpen} onOpenChange={(open) => !open && closeForm()}>
                     <DialogContent>
                         <DialogHeader>
                             <DialogTitle className="font-headline text-2xl text-primary">{editingEvent ? 'Edit Event' : 'Add New Event'}</DialogTitle>
                         </DialogHeader>
                         <EventForm
-                            isCreatingNew={!editingEvent}
                             event={editingEvent}
                             onFormSubmit={handleFormSubmit}
-                            closeDialog={() => setIsFormOpen(false)}
+                            onFormCancel={closeForm}
                         />
                     </DialogContent>
                 </Dialog>
-            </CardHeader>
-            <CardContent>
+
                 <div className="border rounded-lg">
                     <Table>
                         <TableHeader>
@@ -861,7 +898,7 @@ const ManageEventsView = ({ onEventsChanged }: { onEventsChanged: () => void }) 
                                     <TableCell className="font-medium">{event.title}</TableCell>
                                     <TableCell>{event.date}</TableCell>
                                     <TableCell className="text-center space-x-2">
-                                        <Button variant="outline" size="icon" onClick={() => { setEditingEvent(event); setIsFormOpen(true); }} aria-label={`Edit ${event.title}`}>
+                                        <Button variant="outline" size="icon" onClick={() => openForm(event)} aria-label={`Edit ${event.title}`}>
                                             <Edit />
                                         </Button>
                                         <AlertDialog>
@@ -973,8 +1010,7 @@ const ManageUsersView = ({ currentUser }: { currentUser: User }) => {
         try {
             await updateUserDisabledStatus(uid, !disabled);
             toast({ title: 'User Updated', description: `User has been ${!disabled ? 'disabled' : 'enabled'}.` });
-            const updatedUsers = users.map(u => u.uid === uid ? { ...u, disabled: !disabled } : u);
-            setUsers(updatedUsers);
+            setUsers(prevUsers => prevUsers.map(u => u.uid === uid ? { ...u, disabled: !disabled } : u));
         } catch (error: any) {
             console.error("Failed to update user status:", error);
             toast({ variant: 'destructive', title: 'Error', description: error.message || 'Could not update user status.' });

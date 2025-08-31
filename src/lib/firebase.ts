@@ -36,15 +36,13 @@ function initializeFirebaseApp(config: FirebaseOptions) {
         console.log("Firebase client connected to Auth and Firestore emulators.");
 
       } catch (e) {
-         // This can happen with hot-reloading. The connection was already made.
-         // console.warn("Firebase client emulator connection error:", e);
+         // This can happen with hot-reloading.
       }
     }
 
     return app;
 }
 
-// Initialize the app and export it
 const app = initializeFirebaseApp(firebaseConfig);
 
 export { app };

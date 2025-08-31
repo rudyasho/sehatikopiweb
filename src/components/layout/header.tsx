@@ -3,46 +3,21 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  Coffee, 
-  Menu, 
-  X, 
-  ShoppingCart, 
-  LayoutDashboard,
-  Home,
-  ShoppingBag,
-  BookOpen,
-  Calendar,
-  Newspaper,
-  Info,
-  Mail,
-  User,
-  LogOut,
-  Search,
-  LogIn
+  Coffee, Menu, X, ShoppingCart, LayoutDashboard, Home, ShoppingBag, 
+  BookOpen, Calendar, Newspaper, Info, Mail, User, LogOut, Search, LogIn
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, 
+  DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
-import {
-  DialogTitle,
-  DialogDescription,
-} from '@radix-ui/react-dialog';
+import { DialogTitle, DialogDescription } from '@radix-ui/react-dialog';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { useCart } from '@/context/cart-context';
 import { useAuth, ADMIN_EMAILS } from '@/context/auth-context';
