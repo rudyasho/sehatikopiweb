@@ -9,13 +9,13 @@ import 'highlight.js/styles/atom-one-dark.css';
 import { format } from 'date-fns';
 import { ArrowLeft } from 'lucide-react';
 
-import { getBlogPosts, getPostBySlug, type BlogPost } from '@/lib/blog-data';
+import { getBlogPosts, getPostBySlug } from '@/lib/blog-data';
 import { getProducts } from '@/lib/products-data';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardTitle, CardDescription, CardFooter, CardHeader } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { BlogPostClientWrapper, PostFooter } from './client-page';
+import { PostFooter } from './client-page';
 
 
 marked.setOptions({
@@ -164,40 +164,38 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
   return (
     <div className="bg-background">
       <div className="container mx-auto px-4 py-8 md:py-12">
-        <BlogPostClientWrapper post={post}>
-            <article className="max-w-4xl mx-auto bg-card p-6 md:p-12 rounded-lg shadow-xl">
-            <div className="mb-6 md:mb-8 flex justify-between items-center">
-                <Button asChild variant="link" className="p-0">
-                <Link href="/blog" className="inline-flex items-center text-primary hover:underline">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Blog
-                </Link>
-                </Button>
+        <article className="max-w-4xl mx-auto bg-card p-6 md:p-12 rounded-lg shadow-xl">
+        <div className="mb-6 md:mb-8 flex justify-between items-center">
+            <Button asChild variant="link" className="p-0">
+            <Link href="/blog" className="inline-flex items-center text-primary hover:underline">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Blog
+            </Link>
+            </Button>
+        </div>
+        <header className="mb-6 md:mb-8 border-b pb-6 md:pb-8">
+            <Badge variant="secondary" className="mb-4">{post.category}</Badge>
+            <h1 className="font-headline text-3xl md:text-5xl font-bold text-primary">{post.title}</h1>
+            <div className="mt-4 text-sm text-foreground/60">
+            <span>By {post.author}</span>
+            {post.date && <span> • {format(new Date(post.date), "MMMM d, yyyy")}</span>}
             </div>
-            <header className="mb-6 md:mb-8 border-b pb-6 md:pb-8">
-                <Badge variant="secondary" className="mb-4">{post.category}</Badge>
-                <h1 className="font-headline text-3xl md:text-5xl font-bold text-primary">{post.title}</h1>
-                <div className="mt-4 text-sm text-foreground/60">
-                <span>By {post.author}</span>
-                {post.date && <span> • {format(new Date(post.date), "MMMM d, yyyy")}</span>}
-                </div>
-            </header>
+        </header>
 
-            <div className="relative aspect-video w-full mb-8 rounded-lg overflow-hidden">
-                <Image src={post.image} alt={post.title} fill className="object-cover" />
-            </div>
+        <div className="relative aspect-video w-full mb-8 rounded-lg overflow-hidden">
+            <Image src={post.image} alt={post.title} fill className="object-cover" />
+        </div>
 
-            <div
-                className="prose dark:prose-invert lg:prose-xl max-w-none text-foreground/90 prose-headings:text-primary prose-h2:font-headline"
-                dangerouslySetInnerHTML={{ __html: renderedContent as string }}
-            />
-            
-            <PostFooter post={post} />
+        <div
+            className="prose dark:prose-invert lg:prose-xl max-w-none text-foreground/90 prose-headings:text-primary prose-h2:font-headline"
+            dangerouslySetInnerHTML={{ __html: renderedContent as string }}
+        />
+        
+        <PostFooter post={post} />
 
-            <RecommendedBlogs currentSlug={post.slug} />
-            <RecommendedProducts />
-            </article>
-        </BlogPostClientWrapper>
+        <RecommendedBlogs currentSlug={post.slug} />
+        <RecommendedProducts />
+        </article>
       </div>
     </div>
   );

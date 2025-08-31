@@ -1,4 +1,3 @@
-
 // src/app/blog/[slug]/client-page.tsx
 'use client';
 
@@ -60,15 +59,6 @@ const ShareButtons = ({ title, slug }: { title: string, slug: string }) => {
   );
 };
 
-
-export const BlogPostClientWrapper = ({ post, children }: { post: BlogPost; children: React.ReactNode }) => {
-    return (
-        <div>
-            {/* The main post content, rendered on the server */}
-            {children}
-        </div>
-    );
-};
 
 export const PostFooter = ({ post }: { post: BlogPost }) => {
     const { user } = useAuth();

@@ -24,8 +24,6 @@ export type NewBlogPostData = {
     author: string;
 }
 
-export type BlogPostUpdateData = Partial<Omit<NewBlogPostData, 'tags'>>;
-
 
 const blogCollection = dbAdmin?.collection('blog');
 
@@ -97,7 +95,7 @@ export async function addBlogPost(post: NewBlogPostData): Promise<BlogPost> {
     } as BlogPost;
 }
 
-export async function updateBlogPost(id: string, data: BlogPostUpdateData): Promise<void> {
+export async function updateBlogPost(id: string, data: Partial<NewBlogPostData>): Promise<void> {
     if (!blogCollection) throw new Error("Firestore Admin not initialized.");
     
     const postRef = blogCollection.doc(id);

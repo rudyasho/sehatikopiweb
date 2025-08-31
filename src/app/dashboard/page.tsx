@@ -1,7 +1,7 @@
 // src/app/dashboard/page.tsx
 'use client';
 
-import React, { useEffect, useState, useMemo, Suspense } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { useForm } from 'react-hook-form';
@@ -669,6 +669,7 @@ const ManageBlogPostsView = ({ onPostsChanged, initialPostToEdit }: { onPostsCha
     const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
     const { user } = useAuth();
     const router = useRouter();
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     useEffect(() => {
         const fetchPosts = async () => {
@@ -680,7 +681,7 @@ const ManageBlogPostsView = ({ onPostsChanged, initialPostToEdit }: { onPostsCha
                     const postToEdit = postsData.find(p => p.id === initialPostToEdit);
                     if (postToEdit) {
                         setEditingPost(postToEdit);
-                        // Optional: remove the query param from URL without re-rendering
+                        setIsDialogOpen(true);
                         router.replace('/dashboard?view=manageBlog', { scroll: false });
                     }
                 }
@@ -714,26 +715,20 @@ const ManageBlogPostsView = ({ onPostsChanged, initialPostToEdit }: { onPostsCha
         )
     }
 
-    if (editingPost) {
-        return (
-            <Card className="shadow-lg bg-background">
-                <CardHeader>
-                    <CardTitle className="font-headline text-2xl text-primary flex items-center gap-2"><Edit /> Edit Blog Post</CardTitle>
-                    <CardDescription>Editing post: "{editingPost.title}"</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <BlogPostForm 
-                        post={editingPost}
-                        currentUser={user}
-                        onFormSubmit={() => {
-                            setEditingPost(null);
-                            onPostsChanged();
-                        }}
-                        onFormCancel={() => setEditingPost(null)}
-                    />
-                </CardContent>
-            </Card>
-        )
+    const handleEditClick = (post: BlogPost) => {
+        setEditingPost(post);
+        setIsDialogOpen(true);
+    };
+
+    const handleFormSubmit = () => {
+        setIsDialogOpen(false);
+        setEditingPost(null);
+        onPostsChanged();
+    };
+
+    const handleFormCancel = () => {
+        setIsDialogOpen(false);
+        setEditingPost(null);
     }
 
     return (
@@ -745,6 +740,23 @@ const ManageBlogPostsView = ({ onPostsChanged, initialPostToEdit }: { onPostsCha
                 <CardDescription>Edit or delete existing articles from your blog.</CardDescription>
             </CardHeader>
             <CardContent>
+                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                    <DialogContent className="max-w-4xl">
+                         <DialogHeader>
+                            <DialogTitle className="font-headline text-2xl text-primary">Edit Blog Post</DialogTitle>
+                            <DialogDescription>Editing post: "{editingPost?.title}"</DialogDescription>
+                         </DialogHeader>
+                         {editingPost && (
+                            <BlogPostForm 
+                                post={editingPost}
+                                currentUser={user}
+                                onFormSubmit={handleFormSubmit}
+                                onFormCancel={handleFormCancel}
+                            />
+                         )}
+                    </DialogContent>
+                </Dialog>
+
                 <div className="border rounded-lg">
                     <Table>
                         <TableHeader>
@@ -762,7 +774,7 @@ const ManageBlogPostsView = ({ onPostsChanged, initialPostToEdit }: { onPostsCha
                                     <TableCell className="text-muted-foreground">{post.author}</TableCell>
                                     <TableCell>{post.date ? format(new Date(post.date), "MMM d, yyyy") : 'N/A'}</TableCell>
                                     <TableCell className="text-center space-x-2">
-                                         <Button variant="outline" size="icon" onClick={() => setEditingPost(post)} aria-label={`Edit ${post.title}`}>
+                                         <Button variant="outline" size="icon" onClick={() => handleEditClick(post)} aria-label={`Edit ${post.title}`}>
                                             <Edit />
                                         </Button>
 
@@ -1541,7 +1553,7 @@ const ManageOrdersView = ({ onOrdersChanged }: { onOrdersChanged: () => void }) 
 };
 
 
-const DashboardClientPage = () => {
+const DashboardPage = () => {
   const { user, loading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -1725,30 +1737,9 @@ const DashboardClientPage = () => {
   );
 };
 
-const DashboardLoading = () => (
-    <div className="bg-secondary/50 min-h-screen">
-        <div className="container mx-auto px-4 py-8 md:py-12">
-            <header className="mb-8">
-                <Skeleton className="h-12 w-1/3" />
-                <Skeleton className="h-6 w-1/4 mt-2" />
-            </header>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8 items-start">
-                <aside className="hidden md:block md:col-span-1 sticky top-24">
-                     <Skeleton className="h-96 w-full" />
-                </aside>
-                 <main className="md:col-span-3 space-y-8">
-                     <Skeleton className="h-[80vh] w-full" />
-                 </main>
-            </div>
-        </div>
-    </div>
-);
 
-
-export default function DashboardPage() {
+export default function DashboardPageWithSuspense() {
     return (
-        <Suspense fallback={<DashboardLoading />}>
-            <DashboardClientPage />
-        </Suspense>
+        <DashboardPage />
     );
 }

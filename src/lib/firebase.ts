@@ -15,7 +15,6 @@ const firebaseConfig: FirebaseOptions = {
 };
 
 function initializeFirebaseApp(config: FirebaseOptions) {
-    // Check if all necessary keys are present
     const isConfigured = config && config.apiKey && config.projectId;
 
     if (!isConfigured) {
@@ -25,7 +24,6 @@ function initializeFirebaseApp(config: FirebaseOptions) {
 
     const app = !getApps().length ? initializeApp(config) : getApp();
 
-    // Connect to emulators in development
     if (process.env.NODE_ENV === 'development') {
       try {
         const auth = getAuth(app);

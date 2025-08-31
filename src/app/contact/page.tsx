@@ -1,9 +1,8 @@
-
 // src/app/contact/page.tsx
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Phone, Mail, MapPin, Share2, Loader2 } from 'lucide-react';
+import { Phone, Mail, MapPin, Share2 } from 'lucide-react';
 import { ContactForm } from './contact-form';
 import { useEffect, useState } from 'react';
 import { getSettings, WebsiteSettings } from '@/lib/settings-data';

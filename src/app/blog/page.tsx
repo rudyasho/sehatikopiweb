@@ -1,9 +1,7 @@
-
-'use client';
+// src/app/blog/page.tsx
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { Twitter, Facebook, MessageCircle } from 'lucide-react';
 
@@ -13,6 +11,12 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { getBlogPosts, type BlogPost } from '@/lib/blog-data';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: 'Blog',
+    description: 'Stories, guides, and insights from the world of Indonesian coffee. Explore our articles on brewing, origins, and coffee culture.',
+}
 
 const StaticShare = ({ slug, title }: { slug: string, title: string }) => (
     <div className="flex items-center gap-2">
@@ -35,46 +39,10 @@ const StaticShare = ({ slug, title }: { slug: string, title: string }) => (
     </div>
 )
 
-const cardVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.5,
-      ease: "easeOut"
-    }
-  }
-};
-
-
-export default function BlogPage() {
-  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchPosts = async () => {
-      setIsLoading(true);
-      const posts = await getBlogPosts();
-      setBlogPosts(posts);
-      setIsLoading(false);
-    }
-    fetchPosts();
-  }, []);
+export default async function BlogPage() {
+  const blogPosts = await getBlogPosts();
   
-  if (isLoading) {
-     return (
-        <div className="bg-secondary/50">
-            <div className="container mx-auto px-4 py-12">
-                <Skeleton className="h-12 w-1/2 mx-auto mb-4" />
-                <Skeleton className="h-6 w-3/4 mx-auto mb-12" />
-                <Skeleton className="h-[400px] w-full" />
-            </div>
-        </div>
-     )
-  }
-
-  if (blogPosts.length === 0) {
+  if (!blogPosts || blogPosts.length === 0) {
      return (
         <div className="bg-secondary/50">
             <div className="container mx-auto px-4 py-12 text-center">
@@ -132,15 +100,7 @@ export default function BlogPage() {
                 <h2 className="font-headline text-3xl font-bold text-primary text-center my-12">More Articles</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {otherPosts.map((post) => (
-                    <motion.div
-                        key={post.id}
-                        variants={cardVariants}
-                        initial="hidden"
-                        whileInView="visible"
-                        viewport={{ once: true, amount: 0.3 }}
-                        whileHover={{ y: -5, scale: 1.03 }}
-                    >
-                        <Card className="flex flex-col overflow-hidden shadow-lg bg-background h-full">
+                    <Card key={post.id} className="flex flex-col overflow-hidden shadow-lg bg-background h-full">
                         <CardHeader className="p-0">
                             <Link href={`/blog/${post.slug}`}>
                             <div className="relative h-60 w-full">
@@ -165,8 +125,7 @@ export default function BlogPage() {
                             <Separator className="my-2" />
                             <StaticShare slug={post.slug} title={post.title} />
                         </CardFooter>
-                        </Card>
-                    </motion.div>
+                    </Card>
                 ))}
                 </div>
             </section>
