@@ -1,3 +1,4 @@
+
 // src/app/dashboard/page.tsx
 'use client';
 
@@ -11,7 +12,7 @@ import { format } from 'date-fns';
 import { 
     Coffee, Star, Calendar, Newspaper, Loader2, PlusCircle, Edit, BarChart3, LayoutGrid, 
     Save, ListOrdered, Trash2, BookText, Image as ImageIcon, CalendarCheck,
-    CalendarPlus, FilePlus2, Users, Settings, ImageUp, ShoppingBag
+    CalendarPlus, FilePlus2, Users, Settings, ImageUp, ShoppingBag, X, Menu
 } from 'lucide-react';
 
 import { useAuth, type User, type AppUser, SUPER_ADMIN_EMAIL, ADMIN_EMAILS } from '@/context/auth-context';
@@ -38,6 +39,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Sheet, SheetTrigger, SheetContent } from '@/components/ui/sheet';
 import { BlogEditor } from './blog-editor';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
@@ -129,17 +131,18 @@ const ProductForm = ({ product, onFormSubmit, onFormCancel }: { product?: Produc
             image: product?.image || '', 
         },
     });
+    
+    const convertGoogleDriveLink = (url: string): string => {
+        const regex = /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/;
+        const match = url.match(regex);
+        if (match && match[1]) {
+            return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+        }
+        return url;
+    };
 
     const handleUrlChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const rawUrl = event.target.value;
-        const convertGoogleDriveLink = (url: string): string => {
-            const regex = /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/;
-            const match = url.match(regex);
-            if (match && match[1]) {
-                return `https://drive.google.com/uc?export=view&id=${match[1]}`;
-            }
-            return url;
-        };
         const convertedUrl = convertGoogleDriveLink(rawUrl);
         setImageUrl(convertedUrl);
         form.setValue('image', convertedUrl, { shouldValidate: true });
@@ -487,13 +490,13 @@ const ManageProductsView = ({ onDataChange }: { onDataChange: () => void }) => {
                                     <TableCell className="text-right">{formatCurrency(product.price)}</TableCell>
                                     <TableCell className="text-center space-x-2">
                                          <Button variant="outline" size="icon" aria-label={`Edit ${product.name}`} onClick={() => handleEditClick(product)}>
-                                            <Edit />
+                                            <Edit className="h-4 w-4" />
                                         </Button>
 
                                         <AlertDialog>
                                             <AlertDialogTrigger asChild>
                                                 <Button variant="destructive" size="icon" aria-label={`Delete ${product.name}`}>
-                                                    <Trash2 />
+                                                    <Trash2 className="h-4 w-4" />
                                                 </Button>
                                             </AlertDialogTrigger>
                                             <AlertDialogContent>
@@ -537,16 +540,17 @@ const BlogPostForm = ({ post, onFormSubmit, onFormCancel, isCreatingNew, current
         },
     });
 
+    const convertGoogleDriveLink = (url: string): string => {
+        const regex = /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/;
+        const match = url.match(regex);
+        if (match && match[1]) {
+            return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+        }
+        return url;
+    };
+
     const handleUrlChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const rawUrl = event.target.value;
-        const convertGoogleDriveLink = (url: string): string => {
-            const regex = /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/;
-            const match = url.match(regex);
-            if (match && match[1]) {
-                return `https://drive.google.com/uc?export=view&id=${match[1]}`;
-            }
-            return url;
-        };
         const convertedUrl = convertGoogleDriveLink(rawUrl);
         form.setValue('image', convertedUrl, { shouldValidate: true });
     };
@@ -783,13 +787,13 @@ const ManageBlogPostsView = ({ onDataChange, initialPostToEdit }: { onDataChange
                                     <TableCell>{post.date ? format(new Date(post.date), "MMM d, yyyy") : 'N/A'}</TableCell>
                                     <TableCell className="text-center space-x-2">
                                          <Button variant="outline" size="icon" onClick={() => handleEditClick(post)} aria-label={`Edit ${post.title}`}>
-                                            <Edit />
+                                            <Edit className="h-4 w-4" />
                                         </Button>
 
                                         <AlertDialog>
                                             <AlertDialogTrigger asChild>
                                                 <Button variant="destructive" size="icon" aria-label={`Delete ${post.title}`}>
-                                                    <Trash2 />
+                                                    <Trash2 className="h-4 w-4" />
                                                 </Button>
                                             </AlertDialogTrigger>
                                             <AlertDialogContent>
@@ -886,7 +890,7 @@ const ManageEventsView = ({ onDataChange }: { onDataChange: () => void }) => {
                     <CardDescription>Add, edit, or delete events and workshops.</CardDescription>
                 </div>
                 <Button onClick={() => openForm(null)}>
-                    <CalendarPlus className="mr-2" /> Add New Event
+                    <CalendarPlus className="mr-2 h-4 w-4" /> Add New Event
                 </Button>
             </CardHeader>
             <CardContent>
@@ -919,12 +923,12 @@ const ManageEventsView = ({ onDataChange }: { onDataChange: () => void }) => {
                                     <TableCell>{event.date}</TableCell>
                                     <TableCell className="text-center space-x-2">
                                         <Button variant="outline" size="icon" onClick={() => openForm(event)} aria-label={`Edit ${event.title}`}>
-                                            <Edit />
+                                            <Edit className="h-4 w-4" />
                                         </Button>
                                         <AlertDialog>
                                             <AlertDialogTrigger asChild>
                                                 <Button variant="destructive" size="icon" aria-label={`Delete ${event.title}`}>
-                                                    <Trash2 />
+                                                    <Trash2 className="h-4 w-4" />
                                                 </Button>
                                             </AlertDialogTrigger>
                                             <AlertDialogContent>
@@ -1240,7 +1244,7 @@ const SettingsView = () => {
                         </Card>
 
                         <Button type="submit" size="lg" disabled={isSubmitting}>
-                            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2"/>}
+                            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
                             Save Settings
                         </Button>
                     </form>
@@ -1376,7 +1380,7 @@ const HeroSettingsView = () => {
                         />
 
                         <Button type="submit" size="lg" disabled={isSubmitting}>
-                            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2"/>}
+                            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
                             Save Hero Settings
                         </Button>
                     </form>
@@ -1402,6 +1406,7 @@ const ManageOrdersView = ({ onDataChange }: { onDataChange: () => void }) => {
     const { toast } = useToast();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+    const [isOrderDialogOpen, setOrderDialogOpen] = useState(false);
 
     useEffect(() => {
         const fetchOrders = async () => {
@@ -1420,14 +1425,14 @@ const ManageOrdersView = ({ onDataChange }: { onDataChange: () => void }) => {
     }, [toast, onDataChange]);
 
     const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {
+        if (!selectedOrder) return;
         setIsSubmitting(true);
         try {
             await updateOrderStatus(orderId, newStatus);
             toast({ title: 'Status Updated', description: `Order ${orderId} is now "${newStatus}".` });
             onDataChange();
-            if (selectedOrder?.orderId === orderId) {
-                setSelectedOrder(prev => prev ? {...prev, status: newStatus} : null);
-            }
+            // Optimistically update the selected order in the dialog
+            setSelectedOrder(prev => prev ? {...prev, status: newStatus} : null);
         } catch (error) {
             console.error("Failed to update order status:", error);
             toast({ variant: 'destructive', title: 'Update Failed', description: 'Could not update order status.' });
@@ -1445,6 +1450,11 @@ const ManageOrdersView = ({ onDataChange }: { onDataChange: () => void }) => {
         );
     }
 
+    const handleViewClick = (order: Order) => {
+        setSelectedOrder(order);
+        setOrderDialogOpen(true);
+    }
+
     return (
         <Card className="shadow-lg bg-background">
             <CardHeader>
@@ -1454,6 +1464,69 @@ const ManageOrdersView = ({ onDataChange }: { onDataChange: () => void }) => {
                 <CardDescription>View customer orders and update their fulfillment status.</CardDescription>
             </CardHeader>
             <CardContent>
+                <Dialog open={isOrderDialogOpen} onOpenChange={setOrderDialogOpen}>
+                    <DialogContent className="max-w-2xl">
+                        <DialogHeader>
+                            <DialogTitle className="font-headline text-2xl text-primary">Order Details</DialogTitle>
+                            <CardDescription>Order ID: {selectedOrder?.orderId}</CardDescription>
+                        </DialogHeader>
+                        {selectedOrder && (
+                            <div className="space-y-4 max-h-[70vh] overflow-y-auto p-1">
+                                <div className="p-4 border rounded-lg bg-secondary/50">
+                                    <h3 className="font-semibold mb-2">Customer Info</h3>
+                                    <p><strong>Name:</strong> {selectedOrder.customerInfo?.displayName || 'Guest User'}</p>
+                                    <p><strong>Email:</strong> {selectedOrder.customerInfo?.email || 'N/A'}</p>
+                                    <p><strong>Order Date:</strong> {format(new Date(selectedOrder.orderDate), 'PPP p')}</p>
+                                </div>
+                                <div className="p-4 border rounded-lg bg-secondary/50">
+                                    <h3 className="font-semibold mb-2">Items</h3>
+                                    {selectedOrder.items.map(item => (
+                                        <div key={item.slug} className="flex justify-between items-center py-1">
+                                            <span>{item.quantity}x {item.name}</span>
+                                            <span>{formatCurrency(item.price * item.quantity)}</span>
+                                        </div>
+                                    ))}
+                                    <Separator className="my-2"/>
+                                    <div className="flex justify-between items-center font-semibold">
+                                        <span>Subtotal</span>
+                                        <span>{formatCurrency(selectedOrder.subtotal)}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center font-semibold">
+                                        <span>Shipping</span>
+                                        <span>{formatCurrency(selectedOrder.shipping)}</span>
+                                    </div>
+                                     <Separator className="my-2"/>
+                                    <div className="flex justify-between items-center font-bold text-lg text-primary">
+                                        <span>Total</span>
+                                        <span>{formatCurrency(selectedOrder.total)}</span>
+                                    </div>
+                                </div>
+                                <div className="p-4 border rounded-lg bg-secondary/50">
+                                    <h3 className="font-semibold mb-2">Update Status</h3>
+                                    <div className="flex items-center gap-2">
+                                        <Select 
+                                            defaultValue={selectedOrder.status}
+                                            onValueChange={(value) => handleStatusChange(selectedOrder.orderId, value as OrderStatus)}
+                                        >
+                                            <SelectTrigger disabled={isSubmitting}>
+                                                <SelectValue/>
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="Pending">Pending</SelectItem>
+                                                <SelectItem value="Shipped">Shipped</SelectItem>
+                                                <SelectItem value="Delivered">Delivered</SelectItem>
+                                                <SelectItem value="Cancelled">Cancelled</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+                                 <DialogClose asChild>
+                                    <Button variant="outline" className="w-full">Close</Button>
+                                 </DialogClose>
+                            </div>
+                        )}
+                    </DialogContent>
+                </Dialog>
                 <div className="border rounded-lg">
                     <Table>
                         <TableHeader>
@@ -1480,76 +1553,7 @@ const ManageOrdersView = ({ onDataChange }: { onDataChange: () => void }) => {
                                     </TableCell>
                                     <TableCell className="text-right">{formatCurrency(order.total)}</TableCell>
                                     <TableCell className="text-center">
-                                        <Dialog>
-                                            <DialogTrigger asChild>
-                                                <Button variant="outline" size="sm" onClick={() => setSelectedOrder(order)}>View</Button>
-                                            </DialogTrigger>
-                                            <DialogContent className="max-w-2xl">
-                                                <DialogHeader>
-                                                    <DialogTitle className="font-headline text-2xl text-primary">Order Details</DialogTitle>
-                                                    <CardDescription>Order ID: {selectedOrder?.orderId}</CardDescription>
-                                                </DialogHeader>
-                                                {selectedOrder && (
-                                                    <div className="space-y-4 max-h-[70vh] overflow-y-auto p-1">
-                                                        <div className="p-4 border rounded-lg bg-secondary/50">
-                                                            <h3 className="font-semibold mb-2">Customer Info</h3>
-                                                            <p><strong>Name:</strong> {selectedOrder.customerInfo?.displayName || 'Guest User'}</p>
-                                                            <p><strong>Email:</strong> {selectedOrder.customerInfo?.email || 'N/A'}</p>
-                                                            <p><strong>Order Date:</strong> {format(new Date(selectedOrder.orderDate), 'PPP p')}</p>
-                                                        </div>
-                                                        <div className="p-4 border rounded-lg bg-secondary/50">
-                                                            <h3 className="font-semibold mb-2">Items</h3>
-                                                            {selectedOrder.items.map(item => (
-                                                                <div key={item.slug} className="flex justify-between items-center py-1">
-                                                                    <span>{item.quantity}x {item.name}</span>
-                                                                    <span>{formatCurrency(item.price * item.quantity)}</span>
-                                                                </div>
-                                                            ))}
-                                                            <Separator className="my-2"/>
-                                                            <div className="flex justify-between items-center font-semibold">
-                                                                <span>Subtotal</span>
-                                                                <span>{formatCurrency(selectedOrder.subtotal)}</span>
-                                                            </div>
-                                                            <div className="flex justify-between items-center font-semibold">
-                                                                <span>Shipping</span>
-                                                                <span>{formatCurrency(selectedOrder.shipping)}</span>
-                                                            </div>
-                                                             <Separator className="my-2"/>
-                                                            <div className="flex justify-between items-center font-bold text-lg text-primary">
-                                                                <span>Total</span>
-                                                                <span>{formatCurrency(selectedOrder.total)}</span>
-                                                            </div>
-                                                        </div>
-                                                        <div className="p-4 border rounded-lg bg-secondary/50">
-                                                            <h3 className="font-semibold mb-2">Update Status</h3>
-                                                            <div className="flex items-center gap-2">
-                                                                <Select 
-                                                                    defaultValue={selectedOrder.status}
-                                                                    onValueChange={(value) => handleStatusChange(selectedOrder.orderId, value as OrderStatus)}
-                                                                >
-                                                                    <SelectTrigger>
-                                                                        <SelectValue/>
-                                                                    </SelectTrigger>
-                                                                    <SelectContent>
-                                                                        <SelectItem value="Pending">Pending</SelectItem>
-                                                                        <SelectItem value="Shipped">Shipped</SelectItem>
-                                                                        <SelectItem value="Delivered">Delivered</SelectItem>
-                                                                        <SelectItem value="Cancelled">Cancelled</SelectItem>
-                                                                    </SelectContent>
-                                                                </Select>
-                                                                <Button disabled={isSubmitting}>
-                                                                    {isSubmitting && <Loader2 className="animate-spin mr-2" />}
-                                                                    Save
-                                                                </Button>
-                                                            </div>
-                                                        </div>
-                                                         <DialogClose asChild>
-                                                            <Button variant="outline" className="w-full">Close</Button>
-                                                         </DialogClose>
-                                                    </div>
-                                                )}
-                                            </DialogContent>
-                                        </Dialog>
+                                        <Button variant="outline" size="sm" onClick={() => handleViewClick(order)}>View</Button>
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -1570,6 +1574,7 @@ const DashboardPage = () => {
   const [activeView, setActiveView] = useState<DashboardView>('overview');
   const [initialPostToEdit, setInitialPostToEdit] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const [stats, setStats] = useState({ totalProducts: 0, totalReviews: 0, blogPosts: 0, events: 0 });
   const [products, setProducts] = useState<Product[]>([]);
@@ -1673,8 +1678,6 @@ const DashboardPage = () => {
   
   const sidebarNavItems = [
       { id: 'overview', label: 'Overview', icon: LayoutGrid },
-      { id: 'heroSettings', label: 'Hero Settings', icon: ImageUp },
-      { id: 'settings', label: 'Website Settings', icon: Settings },
       { id: 'manageOrders', label: 'Manage Orders', icon: ShoppingBag },
       { id: 'manageProducts', label: 'Manage Products', icon: ListOrdered },
       { id: 'addProduct', label: 'Add Product', icon: PlusCircle },
@@ -1682,60 +1685,63 @@ const DashboardPage = () => {
       { id: 'addBlog', label: 'Create Post', icon: FilePlus2 },
       { id: 'manageEvents', label: 'Manage Events', icon: CalendarCheck },
       { id: 'manageUsers', label: 'Manage Users', icon: Users },
+      { id: 'heroSettings', label: 'Hero Settings', icon: ImageUp },
+      { id: 'settings', label: 'Website Settings', icon: Settings },
   ];
 
   const handleViewChange = (view: DashboardView) => {
     setActiveView(view);
     setInitialPostToEdit(null); // Reset post-to-edit when explicitly changing views
     router.push('/dashboard?view=' + view, { scroll: false });
+    setMobileMenuOpen(false); // Close mobile menu on selection
   }
+  
+  const SidebarNav = ({ className }: { className?: string }) => (
+    <nav className={`flex flex-col space-y-2 ${className}`}>
+        {sidebarNavItems.map(item => (
+             <Button
+                key={item.id}
+                variant={activeView === item.id ? 'secondary' : 'ghost'}
+                onClick={() => handleViewChange(item.id as DashboardView)}
+                className="justify-start text-base px-4 py-6"
+             >
+                <item.icon className="mr-3 h-5 w-5" />
+                {item.label}
+             </Button>
+        ))}
+    </nav>
+  );
 
   return (
     <div className="bg-secondary/50 min-h-screen">
         <div className="container mx-auto px-4 py-8 md:py-12">
-            <header className="mb-8">
-                <h1 className="font-headline text-4xl md:text-5xl font-bold text-primary">Dashboard</h1>
-                <p className="mt-1 text-lg text-foreground/80">Welcome back, {user.displayName}!</p>
+            <header className="mb-8 flex items-center justify-between">
+                <div>
+                    <h1 className="font-headline text-4xl md:text-5xl font-bold text-primary">Dashboard</h1>
+                    <p className="mt-1 text-lg text-foreground/80">Welcome back, {user.displayName}!</p>
+                </div>
+                 <Sheet open={isMobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+                    <SheetTrigger asChild className="md:hidden">
+                      <Button variant="outline" size="icon">
+                        <Menu className="h-6 w-6"/>
+                        <span className="sr-only">Open Menu</span>
+                      </Button>
+                    </SheetTrigger>
+                    <SheetContent side="left" className="w-full max-w-sm p-4">
+                        <h2 className="font-headline text-2xl font-bold text-primary mb-4 border-b pb-4">Menu</h2>
+                        <SidebarNav />
+                    </SheetContent>
+                </Sheet>
             </header>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8 items-start">
                 <aside className="hidden md:block md:col-span-1 sticky top-24">
                     <Card className="shadow-lg bg-background">
                         <CardContent className="p-4">
-                            <nav className="flex flex-col space-y-2">
-                                {sidebarNavItems.map(item => (
-                                     <Button
-                                        key={item.id}
-                                        variant={activeView === item.id ? 'secondary' : 'ghost'}
-                                        onClick={() => handleViewChange(item.id as DashboardView)}
-                                        className="justify-start text-base px-4 py-6"
-                                     >
-                                        <item.icon className="mr-3 h-5 w-5" />
-                                        {item.label}
-                                     </Button>
-                                ))}
-                            </nav>
+                            <SidebarNav />
                         </CardContent>
                     </Card>
                 </aside>
-
-                 <div className="md:hidden">
-                    <Select value={activeView} onValueChange={(value) => handleViewChange(value as DashboardView)}>
-                      <SelectTrigger className="w-full h-12 text-base">
-                        <SelectValue placeholder="Select a view" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {sidebarNavItems.map(item => (
-                          <SelectItem key={item.id} value={item.id}>
-                            <div className="flex items-center gap-3">
-                                <item.icon className="h-5 w-5" />
-                                <span>{item.label}</span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                </div>
 
                 <main className="md:col-span-3 space-y-8">
                     {renderContent()}

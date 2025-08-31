@@ -9,6 +9,7 @@ import {
   Coffee, Menu, X, ShoppingCart, LayoutDashboard, Home, ShoppingBag, 
   BookOpen, Calendar, Newspaper, Info, Mail, User, LogOut, Search, LogIn
 } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -17,12 +18,10 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
-import { DialogTitle, DialogDescription } from '@radix-ui/react-dialog';
-import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { useCart } from '@/context/cart-context';
 import { useAuth, ADMIN_EMAILS } from '@/context/auth-context';
 import { ThemeToggle } from './theme-toggle';
-import { Separator } from '../ui/separator';
+import { Separator } from '@/components/ui/separator';
 
 
 export function Header() {
@@ -108,37 +107,98 @@ export function Header() {
     );
   }
 
-  const MobileAuth = () => {
-    if (loading) {
-      return <div className="h-14 w-full rounded-md bg-muted animate-pulse" />;
-    }
-    if (user) {
-      return (
-        <Button 
-          variant="secondary"
-          className="w-full justify-start text-lg p-6"
-          onClick={() => {
-              logout();
-              setIsMobileMenuOpen(false);
-          }}
-        >
-          <LogOut className="mr-4 h-5 w-5" />
-          Logout
-        </Button>
-      );
-    }
-    return (
-      <Button asChild
-        className="w-full justify-start text-lg p-6"
-        variant="default"
-      >
-        <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
-            <LogIn className="mr-4 h-5 w-5" />
-            Login / Sign Up
-        </Link>
-      </Button>
-    )
-  }
+  const MobileNav = () => (
+    <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+        <SheetTrigger asChild className="md:hidden">
+            <Button variant="ghost" size="icon">
+            <Menu />
+            <span className="sr-only">Toggle Menu</span>
+            </Button>
+        </SheetTrigger>
+        <SheetContent side="left" className="flex flex-col p-0 w-full max-w-sm">
+            <div className="flex items-center justify-between border-b p-4">
+            <Link href="/" className="flex items-center space-x-2" onClick={() => setIsMobileMenuOpen(false)}>
+                <Coffee className="h-6 w-6 text-primary" />
+                <span className="font-bold font-headline text-lg">Sehati Kopi</span>
+            </Link>
+            <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(false)}>
+                <X />
+                <span className="sr-only">Close Menu</span>
+            </Button>
+            </div>
+            <nav className="flex flex-col space-y-1 p-4 flex-grow overflow-y-auto">
+            {navLinks.map(({ href, label, icon: Icon }) => (
+                <Link
+                key={href}
+                href={href}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={cn(
+                    'flex items-center gap-4 rounded-md p-3 text-lg font-medium transition-colors hover:bg-secondary',
+                    pathname === href ? 'bg-secondary text-primary' : 'text-foreground/80'
+                )}
+                >
+                <Icon className="h-5 w-5" />
+                <span>{label}</span>
+                </Link>
+            ))}
+             <Separator className="my-2"/>
+              {user && (
+                <>
+                 <Link
+                    href="/profile"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={cn(
+                      'flex items-center gap-4 rounded-md p-3 text-lg font-medium transition-colors hover:bg-secondary',
+                      pathname === '/profile' ? 'bg-secondary text-primary' : 'text-foreground/80'
+                    )}
+                  >
+                    <User className="h-5 w-5" />
+                    <span>Profile</span>
+                  </Link>
+                  {isUserAdmin && (
+                      <Link
+                        href="/dashboard"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className={cn(
+                          'flex items-center gap-4 rounded-md p-3 text-lg font-medium transition-colors hover:bg-secondary',
+                          pathname.startsWith('/dashboard') ? 'bg-secondary text-primary' : 'text-foreground/80'
+                        )}
+                      >
+                        <LayoutDashboard className="h-5 w-5" />
+                        <span>Dashboard</span>
+                      </Link>
+                  )}
+                </>
+              )}
+            </nav>
+            <div className="mt-auto border-t p-4">
+                 {user ? (
+                      <Button 
+                        variant="ghost"
+                        className="w-full justify-start text-lg p-3"
+                        onClick={() => {
+                            logout();
+                            setIsMobileMenuOpen(false);
+                        }}
+                        >
+                        <LogOut className="mr-4 h-5 w-5" />
+                        Logout
+                        </Button>
+                 ) : (
+                    <Button asChild
+                        className="w-full justify-center text-lg p-3"
+                        variant="default"
+                    >
+                        <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
+                            <LogIn className="mr-4 h-5 w-5" />
+                            Login / Sign Up
+                        </Link>
+                    </Button>
+                 )}
+            </div>
+        </SheetContent>
+    </Sheet>
+  );
 
   const headerVariants = {
     hidden: { y: -100, opacity: 0 },
@@ -179,13 +239,13 @@ export function Header() {
           <div className="flex items-center gap-2">
              <Button asChild variant="ghost" size="icon">
                 <Link href="/search">
-                    <Search />
+                    <Search className="h-4 w-4" />
                     <span className="sr-only">Search</span>
                 </Link>
             </Button>
              <Button asChild variant="ghost" size="icon" className="relative">
               <Link href="/cart">
-                <ShoppingCart />
+                <ShoppingCart className="h-4 w-4" />
                 {isClient && itemCount > 0 && (
                   <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
                     {itemCount}
@@ -199,99 +259,9 @@ export function Header() {
               {isClient && <AuthNav />}
             </div>
           </div>
-          
-          <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-            <SheetTrigger asChild className="md:hidden">
-              <Button variant="ghost" size="icon">
-                <Menu />
-                <span className="sr-only">Toggle Menu</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="flex flex-col p-4">
-               <VisuallyHidden>
-                  <DialogTitle>Mobile Menu</DialogTitle>
-                  <DialogDescription>
-                    Main navigation links for Sehati Kopi.
-                  </DialogDescription>
-                </VisuallyHidden>
-              <div className="flex items-center justify-between border-b pb-4">
-                <Link href="/" className="flex items-center space-x-2" onClick={() => setIsMobileMenuOpen(false)}>
-                  <Coffee className="h-6 w-6 text-primary" />
-                  <span className="font-bold font-headline text-lg">Sehati Kopi</span>
-                </Link>
-                <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(false)}>
-                   <X />
-                   <span className="sr-only">Close Menu</span>
-                </Button>
-              </div>
-              <nav className="flex flex-col space-y-2 pt-4 flex-grow">
-                {navLinks.map(({ href, label, icon: Icon }) => (
-                  <Link
-                    key={href}
-                    href={href}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className={cn(
-                      'flex items-center gap-4 rounded-md p-3 text-lg font-medium transition-colors hover:bg-secondary',
-                      pathname === href ? 'bg-secondary text-primary' : 'text-foreground/80'
-                    )}
-                  >
-                    <Icon className="h-5 w-5" />
-                    <span>{label}</span>
-                  </Link>
-                ))}
-              </nav>
-              <div className="mt-auto border-t pt-4 space-y-2">
-                {isClient && user && (
-                  <>
-                  <Link
-                    href="/profile"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className={cn(
-                      'flex items-center gap-4 rounded-md p-3 text-lg font-medium transition-colors hover:bg-secondary',
-                      pathname === '/profile' ? 'bg-secondary text-primary' : 'text-foreground/80'
-                    )}
-                  >
-                    <User className="h-5 w-5" />
-                    <span>Profile</span>
-                  </Link>
-                  {isUserAdmin &&
-                   <Link
-                    href="/dashboard"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className={cn(
-                      'flex items-center gap-4 rounded-md p-3 text-lg font-medium transition-colors hover:bg-secondary',
-                      pathname === '/dashboard' ? 'bg-secondary text-primary' : 'text-foreground/80'
-                    )}
-                  >
-                    <LayoutDashboard className="h-5 w-5" />
-                    <span>Dashboard</span>
-                  </Link>
-                  }
-                  <Separator className="my-2" />
-                  </>
-                )}
-                 <Button asChild className="w-full justify-start text-lg p-3">
-                  <Link href="/search" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-4">
-                    <Search className="h-5 w-5" />
-                    Search
-                  </Link>
-                </Button>
-                <Button asChild className="w-full justify-start text-lg p-3">
-                  <Link href="/cart" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-4">
-                    <ShoppingCart className="h-5 w-5" />
-                    Shopping Cart
-                    {isClient && itemCount > 0 && (
-                      <span className="ml-auto flex h-6 w-6 items-center justify-center rounded-full bg-primary text-sm text-primary-foreground">
-                        {itemCount}
-                      </span>
-                    )}
-                  </Link>
-                </Button>
-                <Separator className="my-2" />
-                {isClient && <MobileAuth />}
-              </div>
-            </SheetContent>
-          </Sheet>
+          <div className="md:hidden">
+            <MobileNav />
+          </div>
         </div>
       </div>
     </motion.header>

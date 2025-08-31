@@ -195,9 +195,9 @@ export function ProductsClientPage() {
                           aria-label={`Add ${product.name} to cart`}
                         >
                           {addedProducts[product.slug] ? (
-                            <Check />
+                            <Check className="h-4 w-4" />
                           ) : (
-                            <ShoppingCart />
+                            <ShoppingCart className="h-4 w-4" />
                           )}
                         </Button>
                       </div>

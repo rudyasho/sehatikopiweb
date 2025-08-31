@@ -164,38 +164,38 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
   return (
     <div className="bg-background">
       <div className="container mx-auto px-4 py-8 md:py-12">
-        <article className="max-w-4xl mx-auto bg-card p-6 md:p-12 rounded-lg shadow-xl">
-        <div className="mb-6 md:mb-8 flex justify-between items-center">
-            <Button asChild variant="link" className="p-0">
-            <Link href="/blog" className="inline-flex items-center text-primary hover:underline">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Blog
-            </Link>
-            </Button>
-        </div>
-        <header className="mb-6 md:mb-8 border-b pb-6 md:pb-8">
-            <Badge variant="secondary" className="mb-4">{post.category}</Badge>
-            <h1 className="font-headline text-3xl md:text-5xl font-bold text-primary">{post.title}</h1>
-            <div className="mt-4 text-sm text-foreground/60">
-            <span>By {post.author}</span>
-            {post.date && <span> • {format(new Date(post.date), "MMMM d, yyyy")}</span>}
+        <div className="max-w-4xl mx-auto">
+            <div className="mb-6 md:mb-8">
+                <Button asChild variant="link" className="p-0">
+                <Link href="/blog" className="inline-flex items-center text-primary hover:underline">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back to Blog
+                </Link>
+                </Button>
             </div>
-        </header>
-
-        <div className="relative aspect-video w-full mb-8 rounded-lg overflow-hidden">
-            <Image src={post.image} alt={post.title} fill className="object-cover" />
+            <Card className="shadow-xl overflow-hidden">
+                <div className="relative aspect-video w-full">
+                    <Image src={post.image} alt={post.title} fill className="object-cover" />
+                </div>
+                <article className="p-6 md:p-12">
+                    <header className="mb-6 md:mb-8 border-b pb-6 md:pb-8">
+                        <Badge variant="secondary" className="mb-4">{post.category}</Badge>
+                        <h1 className="font-headline text-3xl md:text-5xl font-bold text-primary">{post.title}</h1>
+                        <div className="mt-4 text-sm text-foreground/60">
+                        <span>By {post.author}</span>
+                        {post.date && <span> • {format(new Date(post.date), "MMMM d, yyyy")}</span>}
+                        </div>
+                    </header>
+                    <div
+                        className="prose dark:prose-invert lg:prose-xl max-w-none text-foreground/90 prose-headings:text-primary prose-h2:font-headline"
+                        dangerouslySetInnerHTML={{ __html: renderedContent as string }}
+                    />
+                    <PostFooter post={post} />
+                </article>
+            </Card>
+            <RecommendedBlogs currentSlug={post.slug} />
+            <RecommendedProducts />
         </div>
-
-        <div
-            className="prose dark:prose-invert lg:prose-xl max-w-none text-foreground/90 prose-headings:text-primary prose-h2:font-headline"
-            dangerouslySetInnerHTML={{ __html: renderedContent as string }}
-        />
-        
-        <PostFooter post={post} />
-
-        <RecommendedBlogs currentSlug={post.slug} />
-        <RecommendedProducts />
-        </article>
       </div>
     </div>
   );
