@@ -19,7 +19,7 @@ const nextConfig = {
         hostname: 'lh3.googleusercontent.com',
       },
       {
-        protocol: 'https-alias',
+        protocol: 'https',
         hostname: 'placehold.co'
       }
     ],
