@@ -23,7 +23,9 @@ export type Order = {
 const ordersCollection = dbAdmin?.collection('orders');
 
 export async function addOrder(orderData: Omit<Order, 'customerInfo'>) {
-    if (!dbAdmin || !ordersCollection) throw new Error("Firestore Admin not initialized.");
+    if (!dbAdmin || !ordersCollection) {
+        throw new Error("Firestore Admin not initialized. Cannot add order.");
+    }
     
     // The document ID will be the unique orderId
     const orderRef = ordersCollection.doc(orderData.orderId);
@@ -33,7 +35,7 @@ export async function addOrder(orderData: Omit<Order, 'customerInfo'>) {
 export async function getOrdersByUserId(userId: string): Promise<Order[]> {
     noStore();
     if (!dbAdmin || !ordersCollection) {
-        console.error("Firestore Admin is not initialized. Cannot get orders.");
+        console.error("Firestore Admin is not initialized. Cannot get orders for user.");
         return [];
     }
 
@@ -45,7 +47,6 @@ export async function getOrdersByUserId(userId: string): Promise<Order[]> {
 
 export async function getAllOrders(): Promise<Order[]> {
     noStore();
-    // Add a definitive guard clause at the top of the function.
     if (!dbAdmin || !ordersCollection) {
         console.error("Firestore Admin is not initialized. Cannot get all orders.");
         return [];
@@ -61,6 +62,7 @@ export async function getAllOrders(): Promise<Order[]> {
         return orders; // Return orders without customer info if no users are associated
     }
     
+    // The check at the top guarantees dbAdmin is not null here.
     const userRecords = await Promise.all(userIds.map(uid => dbAdmin.auth().getUser(uid).catch(() => null)));
     
     const usersMap = userRecords.reduce((acc, user) => {
@@ -84,7 +86,9 @@ export async function getAllOrders(): Promise<Order[]> {
 
 
 export async function updateOrderStatus(orderId: string, status: OrderStatus): Promise<void> {
-    if (!dbAdmin || !ordersCollection) throw new Error("Firestore Admin not initialized.");
+    if (!dbAdmin || !ordersCollection) {
+        throw new Error("Firestore Admin not initialized. Cannot update order status.");
+    }
     
     const orderRef = ordersCollection.doc(orderId);
     await orderRef.update({ status });
