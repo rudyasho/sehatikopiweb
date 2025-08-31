@@ -1474,7 +1474,7 @@ const ManageOrdersView = ({ onDataChange }: { onDataChange: () => void }) => {
                                 <TableRow key={order.orderId}>
                                     <TableCell className="font-mono text-xs">{order.orderId}</TableCell>
                                     <TableCell>
-                                        <div>{order.customerInfo?.displayName || 'N/A'}</div>
+                                        <div>{order.customerInfo?.displayName || 'Guest User'}</div>
                                         <div className="text-xs text-muted-foreground">{order.customerInfo?.email}</div>
                                     </TableCell>
                                     <TableCell>{format(new Date(order.orderDate), 'MMM d, yyyy')}</TableCell>
@@ -1496,8 +1496,8 @@ const ManageOrdersView = ({ onDataChange }: { onDataChange: () => void }) => {
                                                     <div className="space-y-4 max-h-[70vh] overflow-y-auto p-1">
                                                         <div className="p-4 border rounded-lg bg-secondary/50">
                                                             <h3 className="font-semibold mb-2">Customer Info</h3>
-                                                            <p><strong>Name:</strong> {selectedOrder.customerInfo?.displayName || 'N/A'}</p>
-                                                            <p><strong>Email:</strong> {selectedOrder.customerInfo?.email}</p>
+                                                            <p><strong>Name:</strong> {selectedOrder.customerInfo?.displayName || 'Guest User'}</p>
+                                                            <p><strong>Email:</strong> {selectedOrder.customerInfo?.email || 'N/A'}</p>
                                                             <p><strong>Order Date:</strong> {format(new Date(selectedOrder.orderDate), 'PPP p')}</p>
                                                         </div>
                                                         <div className="p-4 border rounded-lg bg-secondary/50">
