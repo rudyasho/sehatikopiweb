@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { Poppins, Playfair_Display, Roboto_Mono } from 'next/font/google';
 
 import './globals.css';
@@ -37,7 +36,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id" suppressHydrationWarning>
-      <head />
       <body className={cn('min-h-screen bg-background font-body antialiased', poppins.variable, playfairDisplay.variable, robotoMono.variable)}>
         <ThemeProvider
             attribute="class"
