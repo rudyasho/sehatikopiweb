@@ -15,19 +15,19 @@ export type Testimonial = {
 const initialTestimonials: Omit<Testimonial, 'id'>[] = [
   {
     name: 'Andi P.',
-    avatar: 'https://placehold.co/100x100.png',
+    avatar: 'https://images.unsplash.com/photo-1593628525442-f94a810619e0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMXx8cG90cmV0JTIwcHJpYSUyMHxlbnwwfHx8fDE3NTY2MjMwNjZ8MA&ixlib=rb-4.1.0&q=80&w=1080',
     review: 'Kopi Arabika dari Sehati Kopi adalah yang terbaik yang pernah saya coba! Aroma dan rasanya benar-benar tiada duanya. Permata sejati.',
     rating: 5,
   },
   {
     name: 'Siti K.',
-    avatar: 'https://placehold.co/100x100.png',
+    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1287&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     review: 'Sehati Kopi sudah menjadi ritual harian saya. Sangrai mereka konsisten dan pengirimannya selalu cepat. Sangat direkomendasikan!',
     rating: 5,
   },
   {
     name: 'Budi S.',
-    avatar: 'https://placehold.co/100x100.png',
+    avatar: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     review: 'Saya suka cerita di balik kopi dan semangat timnya. Anda bisa merasakan kualitasnya di setiap cangkir.',
     rating: 5,
   },
@@ -86,3 +86,4 @@ export async function getTestimonials(): Promise<Testimonial[]> {
     
     return list;
 }
+
