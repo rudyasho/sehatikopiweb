@@ -33,6 +33,7 @@ if (!admin.apps.length) {
         console.warn("Firebase Admin environment variables are not set. Skipping Admin SDK initialization. Server-side Firebase operations will fail.");
     }
 } else {
+    // If already initialized, get the firestore instance
     dbAdmin = getFirestore();
 }
 
