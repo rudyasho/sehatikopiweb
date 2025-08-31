@@ -4,18 +4,19 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { format } from 'date-fns';
+import { Loader2, Mail, LogOut, LayoutDashboard, ShoppingBag } from 'lucide-react';
+
 import { useAuth, ADMIN_EMAILS } from '@/context/auth-context';
+import { getOrdersByUserId, type Order } from '@/lib/orders-data';
+import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, Mail, LogOut, LayoutDashboard, ShoppingBag } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { getOrdersByUserId, type Order } from '@/lib/orders-data';
-import { useToast } from '@/hooks/use-toast';
-import { format } from 'date-fns';
-import Link from 'next/link';
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
@@ -37,6 +38,8 @@ const OrderHistory = ({ userId }: { userId: string }) => {
     const { toast } = useToast();
 
     useEffect(() => {
+        if (!userId) return;
+        
         const fetchOrders = async () => {
             setIsLoading(true);
             try {
@@ -58,8 +61,9 @@ const OrderHistory = ({ userId }: { userId: string }) => {
     
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center p-8">
+            <div className="flex flex-col items-center justify-center p-8 text-center">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <p className="mt-4 text-muted-foreground">Loading your order history...</p>
             </div>
         )
     }
@@ -109,19 +113,14 @@ const OrderHistory = ({ userId }: { userId: string }) => {
 const ProfilePage = () => {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
-  const [isClient, setIsClient] = useState(false);
   
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
   useEffect(() => {
     if (!loading && !user) {
       router.replace('/login'); 
     }
   }, [user, loading, router]);
 
-  if (loading || !isClient || !user) {
+  if (loading || !user) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
@@ -129,10 +128,10 @@ const ProfilePage = () => {
     );
   }
 
-  const isUserAdmin = user && user.email && ADMIN_EMAILS.includes(user.email);
+  const isUserAdmin = user.email && ADMIN_EMAILS.includes(user.email);
 
   return (
-    <div className="bg-secondary/50">
+    <div className="bg-secondary/50 min-h-screen">
       <div className="container mx-auto px-4 py-12 md:py-16">
         <div className="max-w-4xl mx-auto">
           <Card className="shadow-xl bg-background">
