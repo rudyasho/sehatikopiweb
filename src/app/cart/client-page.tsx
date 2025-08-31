@@ -49,6 +49,7 @@ export function CartClientPage() {
     const orderId = `SK-${Date.now()}`;
     const orderDetails = {
       orderId: orderId,
+      userId: user?.uid || null, // Add userId if user is logged in, otherwise null
       items: cart,
       subtotal,
       shipping,
@@ -57,18 +58,19 @@ export function CartClientPage() {
       status: 'Pending' as OrderStatus,
     };
 
-    if (user) {
-        try {
-            await addOrder({ ...orderDetails, userId: user.uid });
-        } catch (error) {
-            console.error("Failed to save order to Firestore:", error);
-            toast({
-                variant: 'destructive',
-                title: 'Order Error',
-                description: 'Could not save your order history. Please try again.',
-            });
-        }
+    try {
+        await addOrder(orderDetails);
+    } catch (error) {
+        console.error("Failed to save order to Firestore:", error);
+        toast({
+            variant: 'destructive',
+            title: 'Order Error',
+            description: 'Could not save your order. Please try again.',
+        });
+        // Stop the process if saving the order fails
+        return;
     }
+
 
     const phoneNumber = "6285796123218"; // Replace with your WhatsApp number
     const message = `Halo Sehati Kopi, saya ingin memesan (Order ID: ${orderId}):\n\n${cart

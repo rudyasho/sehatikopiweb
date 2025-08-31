@@ -9,7 +9,7 @@ import type { AppUser } from '@/context/auth-context';
 export type OrderStatus = 'Pending' | 'Shipped' | 'Delivered' | 'Cancelled';
 
 export type Order = {
-    userId: string;
+    userId: string | null; // Allow null for guest users
     orderId: string;
     orderDate: string; // ISO 8601 string
     items: CartItem[];
@@ -22,7 +22,7 @@ export type Order = {
 
 const ordersCollection = dbAdmin?.collection('orders');
 
-export async function addOrder(orderData: Omit<Order, 'id'>) {
+export async function addOrder(orderData: Omit<Order, 'customerInfo'>) {
     if (!dbAdmin || !ordersCollection) throw new Error("Firestore Admin not initialized.");
     
     // The document ID will be the unique orderId
@@ -54,8 +54,12 @@ export async function getAllOrders(): Promise<Order[]> {
     const ordersSnapshot = await ordersCollection.orderBy('orderDate', 'desc').get();
     const orders = ordersSnapshot.docs.map(doc => doc.data() as Order);
 
-    // Fetch user info for each order
-    const userIds = [...new Set(orders.map(o => o.userId))];
+    // Fetch user info for each order that has a userId
+    const userIds = [...new Set(orders.map(o => o.userId).filter((id): id is string => !!id))];
+    
+    if (userIds.length === 0) {
+        return orders; // Return orders without customer info if no users are associated
+    }
     
     const userRecords = await Promise.all(userIds.map(uid => dbAdmin.auth().getUser(uid).catch(() => null)));
     
@@ -74,7 +78,7 @@ export async function getAllOrders(): Promise<Order[]> {
 
     return orders.map(order => ({
         ...order,
-        customerInfo: usersMap[order.userId],
+        customerInfo: order.userId ? usersMap[order.userId] : undefined,
     }));
 }
 
