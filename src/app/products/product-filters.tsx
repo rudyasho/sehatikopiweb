@@ -62,10 +62,11 @@ export function ProductFilters({ onFilterChange, allProducts }: ProductFiltersPr
             <div className="flex flex-wrap gap-2">
             {allRoasts.map(roast => (
                 <Button
-                key={roast}
-                variant={selectedRoasts.includes(roast) ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => toggleRoast(roast)}
+                  key={roast}
+                  variant={selectedRoasts.includes(roast) ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => toggleRoast(roast)}
+                  aria-label={`Filter by ${roast} roast`}
                 >
                 {roast}
                 </Button>
@@ -78,7 +79,7 @@ export function ProductFilters({ onFilterChange, allProducts }: ProductFiltersPr
             <div className="flex items-center gap-2 flex-1">
                  <h3 className="font-semibold text-sm">Origin:</h3>
                 <Select value={selectedOrigin} onValueChange={setSelectedOrigin}>
-                    <SelectTrigger className="w-full sm:w-[180px]">
+                    <SelectTrigger className="w-full sm:w-[180px]" aria-label="Filter by origin">
                         <SelectValue placeholder="All Origins" />
                     </SelectTrigger>
                     <SelectContent>
@@ -92,7 +93,7 @@ export function ProductFilters({ onFilterChange, allProducts }: ProductFiltersPr
             <div className="flex items-center gap-2 flex-1">
                  <h3 className="font-semibold text-sm">Sort by:</h3>
                 <Select value={sortOrder} onValueChange={setSortOrder}>
-                    <SelectTrigger className="w-full sm:w-[180px]">
+                    <SelectTrigger className="w-full sm:w-[180px]" aria-label="Sort products">
                         <SelectValue placeholder="Sort by" />
                     </SelectTrigger>
                     <SelectContent>
@@ -104,7 +105,7 @@ export function ProductFilters({ onFilterChange, allProducts }: ProductFiltersPr
                 </Select>
             </div>
              {hasActiveFilters && (
-                <Button variant="ghost" size="sm" onClick={resetFilters}>
+                <Button variant="ghost" size="sm" onClick={resetFilters} aria-label="Reset filters">
                     <X className="mr-2 h-4 w-4" /> Reset
                 </Button>
             )}

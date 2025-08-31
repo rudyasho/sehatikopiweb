@@ -192,6 +192,7 @@ export function ProductsClientPage() {
                           onClick={() => handleAddToCart(product)}
                           disabled={addedProducts[product.slug]}
                           className="flex-1"
+                          aria-label={`Add ${product.name} to cart`}
                         >
                           {addedProducts[product.slug] ? (
                             <Check />
