@@ -36,7 +36,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose, DialogDescription } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { BlogEditor } from './blog-editor';
 import { Label } from '@/components/ui/label';
@@ -393,6 +393,7 @@ const ManageProductsView = ({ onProductsChanged }: { onProductsChanged: () => vo
     const [isLoading, setIsLoading] = useState(true);
     const { toast } = useToast();
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+    const [isProductDialogOpen, setIsProductDialogOpen] = useState(false);
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -430,25 +431,20 @@ const ManageProductsView = ({ onProductsChanged }: { onProductsChanged: () => vo
         )
     }
 
-    if (editingProduct) {
-        return (
-             <Card className="shadow-lg bg-background">
-                <CardHeader>
-                    <CardTitle className="font-headline text-2xl text-primary flex items-center gap-2"><Edit /> Edit Product</CardTitle>
-                    <CardDescription>Editing product: "{editingProduct.name}"</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <ProductForm 
-                        product={editingProduct} 
-                        onFormSubmit={() => {
-                            setEditingProduct(null);
-                            onProductsChanged();
-                        }}
-                        onFormCancel={() => setEditingProduct(null)}
-                    />
-                </CardContent>
-            </Card>
-        )
+    const handleEditClick = (product: Product) => {
+        setEditingProduct(product);
+        setIsProductDialogOpen(true);
+    }
+    
+    const handleProductFormSubmit = () => {
+        setIsProductDialogOpen(false);
+        setEditingProduct(null);
+        onProductsChanged();
+    };
+
+    const handleProductFormCancel = () => {
+        setIsProductDialogOpen(false);
+        setEditingProduct(null);
     }
 
     return (
@@ -460,6 +456,20 @@ const ManageProductsView = ({ onProductsChanged }: { onProductsChanged: () => vo
                 <CardDescription>Edit or delete existing products from your catalog.</CardDescription>
             </CardHeader>
             <CardContent>
+                <Dialog open={isProductDialogOpen} onOpenChange={setIsProductDialogOpen}>
+                    <DialogContent>
+                         <DialogHeader>
+                            <DialogTitle className="font-headline text-2xl text-primary">Edit Product</DialogTitle>
+                         </DialogHeader>
+                         {editingProduct && (
+                             <ProductForm 
+                                product={editingProduct} 
+                                onFormSubmit={handleProductFormSubmit}
+                                onFormCancel={handleProductFormCancel}
+                            />
+                         )}
+                    </DialogContent>
+                </Dialog>
                 <div className="border rounded-lg">
                     <Table>
                         <TableHeader>
@@ -477,7 +487,7 @@ const ManageProductsView = ({ onProductsChanged }: { onProductsChanged: () => vo
                                     <TableCell className="text-muted-foreground">{product.origin}</TableCell>
                                     <TableCell className="text-right">{formatCurrency(product.price)}</TableCell>
                                     <TableCell className="text-center space-x-2">
-                                         <Button variant="outline" size="icon" aria-label={`Edit ${product.name}`} onClick={() => setEditingProduct(product)}>
+                                         <Button variant="outline" size="icon" aria-label={`Edit ${product.name}`} onClick={() => handleEditClick(product)}>
                                             <Edit />
                                         </Button>
 
@@ -669,7 +679,7 @@ const ManageBlogPostsView = ({ onPostsChanged, initialPostToEdit }: { onPostsCha
     const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
     const { user } = useAuth();
     const router = useRouter();
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [isPostDialogOpen, setIsPostDialogOpen] = useState(false);
 
     useEffect(() => {
         const fetchPosts = async () => {
@@ -681,7 +691,7 @@ const ManageBlogPostsView = ({ onPostsChanged, initialPostToEdit }: { onPostsCha
                     const postToEdit = postsData.find(p => p.id === initialPostToEdit);
                     if (postToEdit) {
                         setEditingPost(postToEdit);
-                        setIsDialogOpen(true);
+                        setIsPostDialogOpen(true);
                         router.replace('/dashboard?view=manageBlog', { scroll: false });
                     }
                 }
@@ -717,17 +727,17 @@ const ManageBlogPostsView = ({ onPostsChanged, initialPostToEdit }: { onPostsCha
 
     const handleEditClick = (post: BlogPost) => {
         setEditingPost(post);
-        setIsDialogOpen(true);
+        setIsPostDialogOpen(true);
     };
 
-    const handleFormSubmit = () => {
-        setIsDialogOpen(false);
+    const handlePostFormSubmit = () => {
+        setIsPostDialogOpen(false);
         setEditingPost(null);
         onPostsChanged();
     };
 
-    const handleFormCancel = () => {
-        setIsDialogOpen(false);
+    const handlePostFormCancel = () => {
+        setIsPostDialogOpen(false);
         setEditingPost(null);
     }
 
@@ -740,7 +750,7 @@ const ManageBlogPostsView = ({ onPostsChanged, initialPostToEdit }: { onPostsCha
                 <CardDescription>Edit or delete existing articles from your blog.</CardDescription>
             </CardHeader>
             <CardContent>
-                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <Dialog open={isPostDialogOpen} onOpenChange={setIsPostDialogOpen}>
                     <DialogContent className="max-w-4xl">
                          <DialogHeader>
                             <DialogTitle className="font-headline text-2xl text-primary">Edit Blog Post</DialogTitle>
@@ -750,8 +760,8 @@ const ManageBlogPostsView = ({ onPostsChanged, initialPostToEdit }: { onPostsCha
                             <BlogPostForm 
                                 post={editingPost}
                                 currentUser={user}
-                                onFormSubmit={handleFormSubmit}
-                                onFormCancel={handleFormCancel}
+                                onFormSubmit={handlePostFormSubmit}
+                                onFormCancel={handlePostFormCancel}
                             />
                          )}
                     </DialogContent>
@@ -1001,28 +1011,29 @@ const ManageUsersView = ({ currentUser }: { currentUser: User }) => {
     const [isLoading, setIsLoading] = useState(true);
     const { toast } = useToast();
 
+    const refreshUsers = async () => {
+        setIsLoading(true);
+        try {
+            const usersData = await listAllUsers();
+            // Filter out the current admin and the super admin
+            setUsers(usersData.filter(user => user.email !== currentUser.email && user.email !== SUPER_ADMIN_EMAIL));
+        } catch (error) {
+            console.error("Failed to fetch users:", error);
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch users.' });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    
     useEffect(() => {
-        const fetchUsers = async () => {
-            setIsLoading(true);
-            try {
-                const usersData = await listAllUsers();
-                // Filter out the current admin and the super admin
-                setUsers(usersData.filter(user => user.email !== currentUser.email && user.email !== SUPER_ADMIN_EMAIL));
-            } catch (error) {
-                console.error("Failed to fetch users:", error);
-                toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch users.' });
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchUsers();
-    }, [toast, currentUser.email]);
+        refreshUsers();
+    }, [currentUser.email, toast]);
 
     const handleToggleDisabled = async (uid: string, disabled: boolean) => {
         try {
             await updateUserDisabledStatus(uid, !disabled);
             toast({ title: 'User Updated', description: `User has been ${!disabled ? 'disabled' : 'enabled'}.` });
-            setUsers(prevUsers => prevUsers.map(u => u.uid === uid ? { ...u, disabled: !disabled } : u));
+            refreshUsers();
         } catch (error: any) {
             console.error("Failed to update user status:", error);
             toast({ variant: 'destructive', title: 'Error', description: error.message || 'Could not update user status.' });
@@ -1033,7 +1044,7 @@ const ManageUsersView = ({ currentUser }: { currentUser: User }) => {
         try {
             await deleteUserAccount(uid);
             toast({ title: 'User Deleted', description: 'User account has been permanently deleted.' });
-            setUsers(prev => prev.filter(u => u.uid !== uid));
+            refreshUsers();
         } catch (error: any) {
             console.error("Failed to delete user:", error);
             toast({ variant: 'destructive', title: 'Error', description: error.message || 'Could not delete user account.' });
@@ -1743,3 +1754,4 @@ export default function DashboardPageWithSuspense() {
         <DashboardPage />
     );
 }
+
