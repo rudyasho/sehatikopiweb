@@ -1,3 +1,4 @@
+
 // src/context/auth-context.tsx
 'use client';
 
@@ -112,6 +113,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       handleAuthSuccess(userCredential.user);
     } catch (error) {
       console.error("Error during Google sign-in:", error);
+      throw error;
     } finally {
         setLoading(false);
     }

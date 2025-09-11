@@ -154,12 +154,12 @@ const ProfilePage = () => {
                         {isUserAdmin && (
                             <Button asChild variant="outline">
                                <Link href="/dashboard">
-                                <LayoutDashboard /> Dashboard
+                                <LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard
                                </Link>
                             </Button>
                         )}
                         <Button variant="outline" onClick={logout}>
-                            <LogOut/> Logout
+                            <LogOut className="mr-2 h-4 w-4" /> Logout
                         </Button>
                     </div>
                 </div>
