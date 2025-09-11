@@ -26,22 +26,24 @@ export type Order = {
 };
 
 // -----------------------------
-// Firestore Collection Ref
-// -----------------------------
-
-const ordersCollection = dbAdmin?.collection('orders');
-
-// -----------------------------
 // Add New Order
 // -----------------------------
 
 export async function addOrder(orderData: Omit<Order, 'customerInfo'>) {
-  if (!dbAdmin || !ordersCollection) {
+  if (!dbAdmin) {
     throw new Error('Firestore Admin not initialized.');
   }
 
+  const ordersCollection = dbAdmin.collection('orders');
   const orderRef = ordersCollection.doc(orderData.orderId);
-  await orderRef.set(orderData);
+
+  try {
+    await orderRef.set(orderData);
+    console.log(`Order ${orderData.orderId} successfully added.`);
+  } catch (error) {
+    console.error(`Error adding order ${orderData.orderId}: `, error);
+    throw new Error('Failed to add new order.');
+  }
 }
 
 // -----------------------------
@@ -51,17 +53,23 @@ export async function addOrder(orderData: Omit<Order, 'customerInfo'>) {
 export async function getOrdersByUserId(userId: string): Promise<Order[]> {
   noStore();
 
-  if (!dbAdmin || !ordersCollection) {
+  if (!dbAdmin) {
     console.error('Firestore Admin is not initialized. Cannot get orders.');
     return [];
   }
 
-  const ordersSnapshot = await ordersCollection
-    .where('userId', '==', userId)
-    .orderBy('orderDate', 'desc')
-    .get();
+  try {
+    const ordersCollection = dbAdmin.collection('orders');
+    const ordersSnapshot = await ordersCollection
+      .where('userId', '==', userId)
+      .orderBy('orderDate', 'desc')
+      .get();
 
-  return ordersSnapshot.docs.map((doc) => doc.data() as Order);
+    return ordersSnapshot.docs.map((doc) => doc.data() as Order);
+  } catch (error) {
+    console.error('Error fetching orders by user ID:', error);
+    return [];
+  }
 }
 
 // -----------------------------
@@ -72,41 +80,60 @@ export async function getAllOrders(): Promise<Order[]> {
   noStore();
 
   if (!dbAdmin) {
-    throw new Error("Database admin instance is not initialized.");
+    throw new Error('Database admin instance is not initialized.');
   }
-  
+
   const ordersCollection = dbAdmin.collection('orders');
-  const ordersSnapshot = await ordersCollection.orderBy('orderDate', 'desc').get();
-  const orders = ordersSnapshot.docs.map((doc) => doc.data() as Order);
 
-  // Collect unique userIds (exclude null)
-  const userIds = [...new Set(orders.map((o) => o.userId).filter((id): id is string => !!id))];
+  try {
+    const ordersSnapshot = await ordersCollection
+      .orderBy('orderDate', 'desc')
+      .get();
+      
+    const orders = ordersSnapshot.docs.map((doc) => ({
+      ...doc.data(),
+      orderId: doc.id, // Pastikan ID dokumen disertakan
+    })) as Order[];
 
-  if (userIds.length === 0) return orders;
+    // Collect unique userIds (exclude null)
+    const userIds = [
+      ...new Set(orders.map((o) => o.userId).filter((id): id is string => !!id)),
+    ];
 
-  const userRecords = await Promise.all(
-    userIds.map((uid) =>
-      dbAdmin.auth().getUser(uid).catch(() => null)
-    )
-  );
+    // Jika tidak ada user ID, langsung kembalikan orders tanpa info user
+    if (userIds.length === 0) return orders;
 
-  const usersMap = userRecords.reduce((acc, user) => {
-    if (user) {
-      acc[user.uid] = {
-        uid: user.uid,
-        email: user.email,
-        displayName: user.displayName,
-        creationTime: user.metadata.creationTime,
-        disabled: user.disabled,
-      };
-    }
-    return acc;
-  }, {} as Record<string, AppUser>);
+    // Ambil semua user secara paralel dan tangani error jika ada user yang tidak ditemukan
+    const userRecords = await Promise.all(
+      userIds.map((uid) => dbAdmin.auth().getUser(uid).catch(() => null))
+    );
 
-  return orders.map((order) => ({
-    ...order,
-    customerInfo: order.userId ? usersMap[order.userId] : undefined,
-  }));
+    // Buat map user untuk akses cepat
+    const usersMap = userRecords.reduce(
+      (acc, user) => {
+        if (user) {
+          acc[user.uid] = {
+            uid: user.uid,
+            email: user.email || 'N/A', // Tangani kasus email kosong
+            displayName: user.displayName || 'Guest', // Tangani nama display kosong
+            creationTime: user.metadata.creationTime,
+            disabled: user.disabled,
+          };
+        }
+        return acc;
+      },
+      {} as Record<string, AppUser>
+    );
+
+    // Gabungkan info user ke setiap order
+    return orders.map((order) => ({
+      ...order,
+      customerInfo: order.userId ? usersMap[order.userId] : undefined,
+    }));
+  } catch (error) {
+    console.error('Error fetching all orders:', error);
+    return [];
+  }
 }
 
 // -----------------------------
@@ -114,10 +141,18 @@ export async function getAllOrders(): Promise<Order[]> {
 // -----------------------------
 
 export async function updateOrderStatus(orderId: string, status: OrderStatus): Promise<void> {
-  if (!dbAdmin || !ordersCollection) {
+  if (!dbAdmin) {
     throw new Error('Firestore Admin not initialized.');
   }
 
-  const orderRef = ordersCollection.doc(orderId);
-  await orderRef.update({ status });
+  const ordersCollection = dbAdmin.collection('orders');
+
+  try {
+    const orderRef = ordersCollection.doc(orderId);
+    await orderRef.update({ status });
+    console.log(`Order ${orderId} status updated to ${status}.`);
+  } catch (error) {
+    console.error(`Error updating order status for ${orderId}:`, error);
+    throw new Error('Failed to update order status.');
+  }
 }
