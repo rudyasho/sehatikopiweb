@@ -1,7 +1,7 @@
 
-# Prompt Rekayasa Aplikasi: Sehati Kopi Digital
+# Prompt Rekayasa Aplikasi Final: Sehati Kopi Digital
 
-Berikut adalah serangkaian prompt terperinci yang dirancang untuk memandu AI coding partner dalam membangun aplikasi web e-commerce dan portal konten "Sehati Kopi Digital" dari awal.
+Berikut adalah serangkaian prompt terperinci yang dirancang untuk memandu AI coding partner dalam membangun aplikasi web e-commerce dan portal konten "Sehati Kopi Digital" dari awal hingga selesai.
 
 ## Informasi Proyek
 
@@ -21,77 +21,80 @@ Berikut adalah serangkaian prompt terperinci yang dirancang untuk memandu AI cod
 "Buat komponen tata letak utama (`Header`, `Footer`, dan `RootLayout`). Header harus responsif, berisi logo, tautan navigasi utama, tombol mode terang/gelap, ikon keranjang belanja, dan menu profil pengguna/tombol login. Footer harus berisi tautan cepat, informasi kontak, dan formulir langganan newsletter. Terapkan ini dalam `src/app/layout.tsx` menggunakan ThemeProvider, AuthProvider, dan CartProvider."
 
 **Prompt 3: Halaman Beranda Awal**
-"Buat halaman beranda (`src/app/page.tsx`) yang menampilkan beberapa bagian utama:
-1.  **Hero Section**: Gambar latar belakang besar dengan judul utama dan subjudul yang menarik.
-2.  **About Us Snippet**: Sedikit teks pengantar tentang perusahaan dengan gambar pendukung.
-3.  **Featured Products**: Placeholder untuk menampilkan 3 produk unggulan.
-4.  **Testimonials**: Tiga kartu testimoni dari pelanggan.
-5.  **CTA Section**: Ajakan bertindak untuk menelusuri blog."
+"Buat halaman beranda (`src/app/page.tsx`) yang menampilkan beberapa bagian utama: Hero Section yang dinamis, cuplikan 'Tentang Kami', Produk Unggulan, Testimoni, dan CTA untuk blog."
 
 ---
 
 ### **Fase 2: Fungsionalitas E-Commerce Inti**
 
 **Prompt 4: Manajemen Produk & Firestore**
-"Kita perlu mengelola data produk. Buat skrip di `src/lib/products-data.ts` yang dapat melakukan operasi CRUD (Create, Read, Update, Delete) untuk produk di Firestore. Produk harus memiliki atribut seperti `name`, `slug`, `origin`, `description`, `price`, `image`, `roast`, `tags`, `rating`, dan `reviews`. Implementasikan fungsi `seed` untuk mengisi database dengan beberapa produk awal jika koleksi kosong."
+"Kita perlu mengelola data produk. Buat skrip di `src/lib/products-data.ts` yang dapat melakukan operasi CRUD untuk produk di Firestore. Implementasikan fungsi `seed` untuk mengisi database dengan beberapa produk awal jika koleksi kosong."
 
 **Prompt 5: Halaman Katalog & Detail Produk**
-"Buat dua halaman terkait produk:
-1.  **Halaman Katalog (`/products`)**: Tampilkan semua produk dalam format grid. Implementasikan fungsionalitas filter di sisi klien untuk menyaring berdasarkan *roast level* dan *origin*, serta pengurutan berdasarkan nama, harga, dan rating.
-2.  **Halaman Detail Produk (`/products/[slug]`)**: Tampilkan semua detail untuk satu produk, termasuk gambar, deskripsi, harga, dan tombol 'Add to Cart' dengan input kuantitas."
+"Buat halaman katalog (`/products`) dengan fungsionalitas filter dan pengurutan di sisi klien. Buat juga halaman detail produk (`/products/[slug]`) yang menampilkan semua informasi produk dan tombol 'Tambah ke Keranjang'."
 
 **Prompt 6: Keranjang Belanja & Konteks**
-"Implementasikan fungsionalitas keranjang belanja menggunakan React Context (`src/context/cart-context.tsx`). Konteks ini harus mengelola state keranjang (menambah, menghapus, memperbarui kuantitas item) dan menyimpannya di `localStorage` untuk persistensi. Ikon keranjang di header harus menampilkan jumlah item saat ini."
+"Implementasikan fungsionalitas keranjang belanja menggunakan React Context (`src/context/cart-context.tsx`). Konteks ini harus mengelola state keranjang dan menyimpannya di `localStorage` untuk persistensi."
 
 **Prompt 7: Halaman Keranjang Belanja & Proses Checkout**
-"Buat halaman keranjang belanja (`/cart`) yang menampilkan ringkasan item, memungkinkan pengguna untuk mengubah kuantitas atau menghapus item, dan menunjukkan subtotal, biaya pengiriman, dan total. Implementasikan tombol 'Checkout via WhatsApp' yang menghasilkan pesan pre-filled dengan detail pesanan dan mengarahkannya ke WhatsApp Web/API. Setelah checkout, data pesanan juga harus disimpan ke koleksi 'orders' di Firestore yang ditautkan dengan UID pengguna (jika login)."
+"Buat halaman keranjang (`/cart`) yang fungsional. Implementasikan tombol 'Checkout via WhatsApp' yang menghasilkan pesan pre-filled. Setelah checkout, data pesanan juga harus disimpan ke koleksi 'orders' di Firestore yang ditautkan dengan UID pengguna (jika login)."
 
 **Prompt 8: Halaman Konfirmasi Pesanan**
-"Buat halaman konfirmasi (`/checkout/success`) yang ditampilkan setelah pengguna menyelesaikan proses checkout. Halaman ini harus menampilkan ringkasan pesanan terakhir dari `sessionStorage` (sebagai fallback jika pengguna tidak login) dan mengucapkan terima kasih kepada pelanggan."
+"Buat halaman konfirmasi (`/checkout/success`) yang menampilkan ringkasan pesanan terakhir dari `sessionStorage`."
 
 ---
 
 ### **Fase 3: Konten & Fitur Komunitas**
 
 **Prompt 9: Sistem Blog dengan Firestore**
-"Sama seperti produk, buat sistem CRUD untuk postingan blog di `src/lib/blog-data.ts`. Postingan harus memiliki `title`, `slug`, `content` (dalam Markdown), `excerpt`, `category`, `image`, `author`, dan `date`. Buat halaman daftar blog (`/blog`) yang menampilkan postingan unggulan dan daftar postingan lainnya. Buat juga halaman detail (`/blog/[slug]`) yang merender konten Markdown menjadi HTML dan menampilkan informasi postingan."
+"Buat sistem CRUD untuk postingan blog di `src/lib/blog-data.ts`. Buat halaman daftar blog (`/blog`) dan halaman detail (`/blog/[slug]`) yang merender konten Markdown menjadi HTML."
 
 **Prompt 10: Halaman Statis & Menu**
-"Buat halaman-halaman berikut:
-1.  **About Us (`/about`)**: Halaman informatif tentang perusahaan, nilai-nilai, dan tim.
-2.  **Contact (`/contact`)**: Halaman dengan informasi kontak, peta lokasi (embedded Google Maps), dan formulir kontak fungsional yang menggunakan Resend untuk mengirim email.
-3.  **In-Store Menu (`/menu`)**: Halaman yang menampilkan menu digital untuk pelanggan di toko, dikategorikan ke dalam tab (misalnya, Hot, Cold, Signature)."
+"Buat halaman-halaman statis berikut: 'About Us' (`/about`), 'Contact' (`/contact`) dengan formulir fungsional, dan 'In-Store Menu' (`/menu`) dengan tampilan tab."
 
 **Prompt 11: Jadwal Acara**
-"Buat halaman (`/events`) yang menampilkan daftar acara mendatang seperti workshop atau sesi cupping. Setiap acara harus ditampilkan dalam kartu dengan gambar, judul, tanggal, lokasi, deskripsi, dan tombol 'Register'. Fungsi 'Register' hanya akan menampilkan notifikasi toast sebagai konfirmasi."
+"Buat halaman (`/events`) yang menampilkan daftar acara mendatang. Fungsi 'Register' hanya akan menampilkan notifikasi toast sebagai konfirmasi."
 
 ---
 
 ### **Fase 4: Otentikasi & Dasbor Pengguna**
 
 **Prompt 12: Otentikasi Pengguna**
-"Implementasikan sistem otentikasi lengkap menggunakan Firebase Authentication. Buat halaman `/login` dan `/signup` dengan dukungan untuk Email/Password dan Google Sign-In. Gunakan React Context (`src/context/auth-context.tsx`) untuk mengelola status otentikasi di seluruh aplikasi. Pengguna yang berhasil login harus dialihkan ke halaman profil mereka."
+"Implementasikan sistem otentikasi lengkap menggunakan Firebase Authentication (Email/Password & Google Sign-In). Buat halaman `/login` dan `/signup`."
 
 **Prompt 13: Halaman Profil Pengguna**
-"Buat halaman profil (`/profile`) yang hanya dapat diakses oleh pengguna yang sudah login. Halaman ini harus menampilkan informasi pengguna (nama, email, foto profil) dan riwayat pesanan mereka dengan mengambil data dari koleksi 'orders' di Firestore berdasarkan UID mereka."
+"Buat halaman profil (`/profile`) yang dilindungi dan menampilkan informasi pengguna serta riwayat pesanan mereka dari Firestore."
 
 **Prompt 14: Dasbor Admin Dasar**
-"Buat halaman dasbor admin (`/dashboard`) yang dilindungi dan hanya dapat diakses oleh pengguna dengan email yang telah ditentukan sebagai admin. Buat navigasi samping untuk beralih antara berbagai tampilan manajemen. Tampilan awal harus berupa 'Overview' yang menampilkan metrik bisnis kunci (misalnya, total produk, total ulasan) dalam bentuk kartu dan beberapa bagan (misalnya, distribusi asal, popularitas produk)."
+"Buat halaman dasbor admin (`/dashboard`) yang dilindungi. Tampilan awal harus berupa 'Overview' yang menampilkan metrik bisnis kunci dan beberapa bagan analisis."
 
 **Prompt 15: Manajemen CRUD di Dasbor**
-"Implementasikan tampilan CRUD lengkap di dalam dasbor untuk:
-1.  **Products**: Tambah, lihat, edit, dan hapus produk.
-2.  **Blog Posts**: Tambah, lihat, edit, dan hapus postingan blog. Gunakan editor Markdown kustom dengan pratinjau langsung.
-3.  **Events**: Tambah, lihat, edit, dan hapus acara.
-4.  **Users**: Tampilkan daftar semua pengguna terdaftar, dengan kemampuan untuk menonaktifkan atau menghapus akun mereka.
-5.  **Settings**: Buat formulir untuk mengelola pengaturan di seluruh situs seperti info kontak dan tautan media sosial, yang datanya diambil dari Firestore."
+"Implementasikan tampilan CRUD lengkap di dalam dasbor untuk Produk, Postingan Blog, Acara, dan Pengguna. Buat juga halaman untuk mengelola Pengaturan Situs dan Konten Hero."
 
 ---
 
-### **Fase 5: Finalisasi & Optimasi**
+### **Fase 5: Finalisasi, Optimasi & Perbaikan**
 
 **Prompt 16: SEO & Metadata**
-"Lakukan optimasi SEO. Hasilkan metadata dinamis untuk halaman produk dan blog. Buat `sitemap.ts` untuk menghasilkan sitemap.xml secara dinamis dan `robots.txt` untuk mengontrol perayapan mesin pencari."
+"Lakukan optimasi SEO. Hasilkan metadata dinamis untuk halaman produk dan blog. Buat `sitemap.ts` dan `robots.txt`."
 
-**Prompt 17: Pembersihan & Dokumentasi**
-"Terakhir, tinjau seluruh basis kode. Rapikan kode, hapus impor yang tidak digunakan, pastikan konsistensi gaya, dan tambahkan komentar jika diperlukan. Perbarui file `README.md` untuk mencerminkan semua fitur yang telah diimplementasikan dan berikan instruksi yang jelas tentang cara menjalankan proyek secara lokal."
+**Prompt 17: Peningkatan UI/UX dan Optimasi Dasbor**
+"Tingkatkan pengalaman pengguna dengan mengoptimalkan tampilan UI dan UX di seluruh aplikasi, serta merombak dasbor admin agar lebih intuitif, fungsional, dan modern. Tambahkan fitur manajemen pesanan dan perbaiki navigasi seluler."
+
+**Prompt 18 (Siklus Perbaikan): Penanganan Build & Runtime Error**
+"Selama proses pengembangan, terjadi beberapa error build dan runtime. Lakukan analisis pada log error, identifikasi akar masalah (seperti impor yang hilang, konflik komponen klien/server, dan type safety), dan terapkan perbaikan yang diperlukan untuk memastikan aplikasi stabil dan dapat di-build dengan sukses."
+
+**Prompt 19: Pembersihan & Dokumentasi Final**
+"Terakhir, tinjau seluruh basis kode. Rapikan kode, hapus impor yang tidak digunakan, pastikan konsistensi gaya. Perbarui file `README.md` dan `PROMPT.md` ini untuk mencerminkan semua fitur yang telah diimplementasikan dan berikan instruksi yang jelas tentang cara menjalankan proyek secara lokal."
+
+---
+
+### **Tantangan & Solusi Selama Pengembangan**
+
+- **Konflik Komponen Klien/Server**: Terjadi *build error* karena `generateStaticParams` digunakan dalam file yang sama dengan `'use client'`. **Solusi**: Memisahkan halaman menjadi dua file, satu untuk logika server (`page.tsx`) dan satu untuk logika klien (`client-page.tsx`), sesuai dengan praktik terbaik Next.js.
+- **Error Tipe `null`**: Pemeriksa tipe TypeScript mengidentifikasi bahwa objek `dbAdmin` bisa `null` dalam beberapa kasus. **Solusi**: Menambahkan pemeriksaan `if (!dbAdmin) { throw new Error(...) }` di awal fungsi terkait untuk menjamin *type safety* dan membuat aplikasi lebih kuat.
+- **Impor yang Hilang**: Beberapa *runtime error* disebabkan oleh komponen (`Separator`, `DialogClose`) yang digunakan tanpa diimpor. **Solusi**: Melakukan audit pada komponen dan menambahkan pernyataan impor yang hilang.
+
+### **Hasil Akhir**
+
+Aplikasi "Sehati Kopi Digital" kini menjadi platform web yang lengkap, fungsional, dan andal. Proyek ini mencakup fungsionalitas e-commerce penuh, sistem manajemen konten, dan dasbor analitik yang komprehensif. Arsitekturnya kokoh, UI/UX-nya telah disempurnakan, dan semua error yang diketahui telah diperbaiki. Dokumentasi telah diperbarui untuk mencerminkan status akhir proyek.
