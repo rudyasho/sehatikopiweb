@@ -72,7 +72,7 @@ export async function getAllOrders(): Promise<Order[]> {
   noStore();
 
   if (!dbAdmin) {
-    throw new Error('Firestore Admin not initialized.');
+    throw new Error("Firestore Admin not initialized.");
   }
   
   const ordersCollection = dbAdmin.collection('orders');
