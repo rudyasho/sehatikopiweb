@@ -3,58 +3,70 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-  
-    // Helper function to check if a user is an admin
-    function isAdmin(userId) {
-      // These emails are hardcoded in the auth context as well.
-      let adminEmails = ['dev@sidepe.com', 'rd.lapawawoi@gmail.com'];
-      return request.auth.token.email in adminEmails;
-    }
-    
-    // Helper function to check if a request is from a signed-in user
-    function isSignedIn() {
-      return request.auth != null;
+
+    // Aturan umum untuk koleksi:
+    // Secara default, tolak semua akses baca/tulis kecuali diizinkan secara eksplisit.
+    match /{document=**} {
+      allow read, write: if false;
     }
 
-    // Products can be read by anyone, but only managed by admins.
+    // --- KOLEKSI PUBLIK (BACA SAJA) ---
+
+    // Produk, Blog, Acara, Testimoni, Menu dapat dibaca oleh siapa saja
     match /products/{productId} {
       allow read: if true;
-      allow write: if isAdmin(request.auth.uid);
     }
-    
-    // Blog posts can be read by anyone, but only managed by admins.
     match /blog/{postId} {
       allow read: if true;
-      allow write: if isAdmin(request.auth.uid);
     }
-    
-    // Events can be read by anyone, but only managed by admins.
     match /events/{eventId} {
       allow read: if true;
-      allow write: if isAdmin(request.auth.uid);
     }
-
-    // Site content (hero, settings) can be read by anyone, but only managed by admins.
+    match /testimonials/{testimonialId} {
+      allow read: if true;
+    }
+    match /menu/{menuId} {
+      allow read: if true;
+    }
+    
+    // Pengaturan situs (hero, contact info) juga dapat dibaca oleh siapa saja
     match /siteContent/{docId} {
         allow read: if true;
-        allow write: if isAdmin(request.auth.uid);
     }
-    
-     match /settings/{docId} {
+    match /settings/{docId} {
         allow read: if true;
-        allow write: if isAdmin(request.auth.uid);
     }
 
-    // Orders can only be created by signed-in users, and a user can only read/manage their own orders. Admins can read all orders.
+
+    // --- KOLEKSI PESANAN (ORDERS) ---
+    // Aturan yang lebih ketat untuk data sensitif pengguna
     match /orders/{orderId} {
-      allow read: if (isSignedIn() && resource.data.userId == request.auth.uid) || isAdmin(request.auth.uid);
-      allow create: if isSignedIn(); // Any signed-in user can create an order.
-      allow update, delete: if isAdmin(request.auth.uid); // Only admins can modify orders after creation.
-    }
-    
-    // Deny all other writes by default
-    match /{document=**} {
-      allow write: if false;
+      
+      // Siapa saja boleh menambahkan order sebagai guest (userId == null).
+      // Aturan ini penting untuk checkout tanpa login.
+      allow create: if request.resource.data.userId == null;
+
+      // Pengguna yang login dapat membuat pesanan untuk dirinya sendiri.
+      // `request.auth.uid` harus cocok dengan `userId` di dokumen baru.
+      allow create: if request.auth != null
+                    && request.resource.data.userId == request.auth.uid;
+
+      // Pengguna yang login hanya dapat membaca pesanan miliknya.
+      // Ini melindungi riwayat pesanan dari pengguna lain.
+      allow read: if request.auth != null
+                  && resource.data.userId == request.auth.uid;
+      
+      // Admin dapat membaca semua pesanan.
+      // Ganti 'admin-email@example.com' dengan email admin Anda yang sebenarnya.
+      allow read, write: if request.auth != null && request.auth.token.email in ['dev@sidepe.com', 'rd.lapawawoi@gmail.com'];
+
+
+      // Memperbarui pesanan tidak diizinkan di sisi klien untuk menjaga integritas data.
+      // Status pesanan harus diperbarui oleh backend/admin.
+      allow update: if false;
+
+      // Menghapus pesanan tidak diizinkan dari sisi klien.
+      allow delete: if false;
     }
   }
 }
