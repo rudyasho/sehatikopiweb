@@ -71,11 +71,11 @@ export async function getOrdersByUserId(userId: string): Promise<Order[]> {
 export async function getAllOrders(): Promise<Order[]> {
   noStore();
 
-  if (!dbAdmin || !ordersCollection) {
-    console.error('Firestore Admin is not initialized. Cannot get all orders.');
-    return [];
+  if (!dbAdmin) {
+    throw new Error('Firestore Admin not initialized.');
   }
-
+  
+  const ordersCollection = dbAdmin.collection('orders');
   const ordersSnapshot = await ordersCollection.orderBy('orderDate', 'desc').get();
   const orders = ordersSnapshot.docs.map((doc) => doc.data() as Order);
 
