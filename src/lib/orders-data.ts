@@ -85,7 +85,9 @@ export async function getAllOrders(): Promise<Order[]> {
   if (userIds.length === 0) return orders;
 
   const userRecords = await Promise.all(
-    userIds.map((uid) => dbAdmin.auth().getUser(uid).catch(() => null))
+    userIds.map((uid) =>
+      dbAdmin.auth().getUser(uid).catch(() => null)
+    )
   );
 
   const usersMap = userRecords.reduce((acc, user) => {
