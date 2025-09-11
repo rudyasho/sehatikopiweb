@@ -14,7 +14,7 @@ import type { AppUser } from '@/context/auth-context';
 export type OrderStatus = 'Pending' | 'Shipped' | 'Delivered' | 'Cancelled';
 
 export type Order = {
-  userId: string | null; // Allow null for guest users
+  userId: string | null; // Null jika guest user
   orderId: string;
   orderDate: string; // ISO 8601 string
   items: CartItem[];
@@ -22,7 +22,7 @@ export type Order = {
   shipping: number;
   total: number;
   status: OrderStatus;
-  customerInfo?: AppUser; // Populated after fetching
+  customerInfo?: AppUser; // Opsional
 };
 
 // -----------------------------
@@ -47,10 +47,10 @@ export async function addOrder(orderData: Omit<Order, 'customerInfo'>) {
 }
 
 // -----------------------------
-// Get Orders by User ID
+// Get Orders by User ID (login / guest)
 // -----------------------------
 
-export async function getOrdersByUserId(userId: string): Promise<Order[]> {
+export async function getOrdersByUserId(userId: string | null): Promise<Order[]> {
   noStore();
 
   if (!dbAdmin) {
@@ -60,10 +60,16 @@ export async function getOrdersByUserId(userId: string): Promise<Order[]> {
 
   try {
     const ordersCollection = dbAdmin.collection('orders');
-    const ordersSnapshot = await ordersCollection
-      .where('userId', '==', userId)
-      .orderBy('orderDate', 'desc')
-      .get();
+
+    // Jika guest (null), ambil order tanpa userId
+    let query;
+    if (userId) {
+      query = ordersCollection.where('userId', '==', userId);
+    } else {
+      query = ordersCollection.where('userId', '==', null);
+    }
+
+    const ordersSnapshot = await query.orderBy('orderDate', 'desc').get();
 
     return ordersSnapshot.docs.map((doc) => doc.data() as Order);
   } catch (error) {
@@ -73,7 +79,7 @@ export async function getOrdersByUserId(userId: string): Promise<Order[]> {
 }
 
 // -----------------------------
-// Get All Orders (with User Info)
+// Get All Orders (with User Info if available)
 // -----------------------------
 
 export async function getAllOrders(): Promise<Order[]> {
@@ -89,43 +95,42 @@ export async function getAllOrders(): Promise<Order[]> {
     const ordersSnapshot = await ordersCollection
       .orderBy('orderDate', 'desc')
       .get();
-      
+
     const orders = ordersSnapshot.docs.map((doc) => ({
       ...doc.data(),
-      orderId: doc.id, // Pastikan ID dokumen disertakan
+      orderId: doc.id,
     })) as Order[];
 
-    // Collect unique userIds (exclude null)
+    // Ambil hanya userId valid (bukan null)
     const userIds = [
       ...new Set(orders.map((o) => o.userId).filter((id): id is string => !!id)),
     ];
 
-    // Jika tidak ada user ID, langsung kembalikan orders tanpa info user
     if (userIds.length === 0) return orders;
 
-    // Ambil semua user secara paralel dan tangani error jika ada user yang tidak ditemukan
+    // Ambil info user
     const userRecords = await Promise.all(
-      userIds.map((uid) => dbAdmin.auth().getUser(uid).catch(() => null))
+      userIds.map((uid) =>
+        dbAdmin
+          .auth()
+          .getUser(uid)
+          .catch(() => null) // kalau error (misal user sudah dihapus), abaikan
+      )
     );
 
-    // Buat map user untuk akses cepat
-    const usersMap = userRecords.reduce(
-      (acc, user) => {
-        if (user) {
-          acc[user.uid] = {
-            uid: user.uid,
-            email: user.email || 'N/A', // Tangani kasus email kosong
-            displayName: user.displayName || 'Guest', // Tangani nama display kosong
-            creationTime: user.metadata.creationTime,
-            disabled: user.disabled,
-          };
-        }
-        return acc;
-      },
-      {} as Record<string, AppUser>
-    );
+    const usersMap = userRecords.reduce((acc, user) => {
+      if (user) {
+        acc[user.uid] = {
+          uid: user.uid,
+          email: user.email || 'N/A',
+          displayName: user.displayName || 'Guest',
+          creationTime: user.metadata.creationTime,
+          disabled: user.disabled,
+        };
+      }
+      return acc;
+    }, {} as Record<string, AppUser>);
 
-    // Gabungkan info user ke setiap order
     return orders.map((order) => ({
       ...order,
       customerInfo: order.userId ? usersMap[order.userId] : undefined,
