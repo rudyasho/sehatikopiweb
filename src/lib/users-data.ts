@@ -1,9 +1,10 @@
 // src/lib/users-data.ts
 'use server';
 
-import { admin, dbAdmin } from './firebase-admin';
-import { SUPER_ADMIN_EMAIL, AppUser } from '@/context/auth-context';
+import { admin } from './firebase-admin';
+import { SUPER_ADMIN_EMAIL, type AppUser } from '@/context/auth-context';
 
+export type { AppUser };
 
 export async function listAllUsers(): Promise<AppUser[]> {
   if (!admin) {

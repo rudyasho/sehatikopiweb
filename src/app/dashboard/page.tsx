@@ -11,15 +11,15 @@ import { format } from 'date-fns';
 import { 
     Coffee, Star, Calendar, Newspaper, Loader2, PlusCircle, Edit, BarChart3, LayoutGrid, 
     Save, ListOrdered, Trash2, BookText, Image as ImageIcon, CalendarCheck,
-    CalendarPlus, FilePlus2, Users, Settings, ImageUp, ShoppingBag, Menu, WandSparkles
+    CalendarPlus, FilePlus2, Users, Settings, ImageUp, ShoppingBag, Menu
 } from 'lucide-react';
 
-import { useAuth, SUPER_ADMIN_EMAIL } from '@/context/auth-context';
+import { useAuth, SUPER_ADMIN_EMAIL, type AppUser } from '@/context/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { getProducts, updateProduct, deleteProduct, addProduct, type Product } from '@/lib/products-data';
 import { getBlogPosts, updateBlogPost, deleteBlogPost, addBlogPost, type BlogPost } from '@/lib/blog-data';
 import { getEvents, updateEvent, deleteEvent, addEvent, type Event } from '@/lib/events-data';
-import { listAllUsers, updateUserDisabledStatus, deleteUserAccount, AppUser } from '@/lib/users-data';
+import { listAllUsers, updateUserDisabledStatus, deleteUserAccount } from '@/lib/users-data';
 import { getSettings, updateSettings, type SettingsFormData } from '@/lib/settings-data';
 import { getHeroData, updateHeroData, type HeroFormData } from '@/lib/hero-data';
 import { getAllOrders, updateOrderStatus, type Order, type OrderStatus } from '@/lib/orders-data';
@@ -161,13 +161,13 @@ const ProductForm = ({ product, onFormSubmit, onFormCancel }: { product?: Produc
 
         try {
             if (product) {
-                await updateProduct(product.id, data);
+                await updateProduct(product.id, data, user);
                  toast({
                     title: "Product Updated!",
                     description: `${data.name} has been updated.`,
                 });
             } else {
-                await addProduct(data);
+                await addProduct(data, user);
                 toast({
                     title: "Product Added!",
                     description: `${data.name} has been added to the product list.`,
@@ -310,10 +310,10 @@ const EventForm = ({ event, onFormSubmit, onFormCancel }: { event?: Event | null
 
         try {
             if (event) {
-                await updateEvent(event.id, data);
+                await updateEvent(event.id, data, user);
                 toast({ title: "Event Updated!", description: `"${data.title}" has been updated.` });
             } else {
-                await addEvent(data);
+                await addEvent(data, user);
                 toast({ title: "Event Added!", description: `"${data.title}" has been added.` });
             }
             onFormSubmit();
