@@ -1,7 +1,7 @@
 // src/app/dashboard/page.tsx
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { useForm } from 'react-hook-form';
@@ -11,10 +11,10 @@ import { format } from 'date-fns';
 import { 
     Coffee, Star, Calendar, Newspaper, Loader2, PlusCircle, Edit, BarChart3, LayoutGrid, 
     Save, ListOrdered, Trash2, BookText, Image as ImageIcon, CalendarCheck,
-    CalendarPlus, FilePlus2, Users, Settings, ImageUp, ShoppingBag, Menu
+    CalendarPlus, FilePlus2, Users, Settings, ImageUp, ShoppingBag, Menu, WandSparkles
 } from 'lucide-react';
 
-import { useAuth, type User, type AppUser, SUPER_ADMIN_EMAIL } from '@/context/auth-context';
+import { useAuth, SUPER_ADMIN_EMAIL } from '@/context/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { getProducts, updateProduct, deleteProduct, addProduct, type Product } from '@/lib/products-data';
 import { getBlogPosts, updateBlogPost, deleteBlogPost, addBlogPost, type BlogPost } from '@/lib/blog-data';
@@ -23,6 +23,7 @@ import { listAllUsers, updateUserDisabledStatus, deleteUserAccount } from '@/lib
 import { getSettings, updateSettings, type SettingsFormData } from '@/lib/settings-data';
 import { getHeroData, updateHeroData, type HeroFormData } from '@/lib/hero-data';
 import { getAllOrders, updateOrderStatus, type Order, type OrderStatus } from '@/lib/orders-data';
+import { generateProductDescription, generateBlogIdeas, type ProductDescriptionInput } from '@/ai/flows/content-generation-flow';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ProductPopularityChart } from './product-popularity-chart';
 import { RoastDistributionChart } from './roast-distribution-chart';
@@ -46,7 +47,7 @@ import { Separator } from '@/components/ui/separator';
 
 const formatCurrency = (amount: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
 
-type DashboardView = 'overview' | 'manageProducts' | 'manageBlog' | 'manageEvents' | 'manageUsers' | 'settings' | 'heroSettings' | 'manageOrders';
+type DashboardView = 'overview' | 'manageProducts' | 'manageBlog' | 'manageEvents' | 'manageUsers' | 'settings' | 'heroSettings' | 'manageOrders' | 'aiAssistant';
 
 
 const productFormSchema = z.object({
@@ -1542,6 +1543,139 @@ const ManageOrdersView = ({ onDataChange }: { onDataChange: () => void }) => {
     );
 };
 
+const productDescriptionSchema = z.object({
+  productName: z.string().min(1, 'Product name is required'),
+  origin: z.string().min(1, 'Origin is required'),
+  tags: z.string().min(1, 'Please provide at least one tag'),
+});
+type ProductDescriptionForm = z.infer<typeof productDescriptionSchema>;
+
+const blogIdeaSchema = z.object({
+    topic: z.string().min(1, 'Topic is required'),
+});
+type BlogIdeaForm = z.infer<typeof blogIdeaSchema>;
+
+
+const AiAssistantView = () => {
+    const { toast } = useToast();
+    const [isPending, startTransition] = useTransition();
+
+    const [generatedDescription, setGeneratedDescription] = useState('');
+    const [generatedBlogIdeas, setGeneratedBlogIdeas] = useState<string[]>([]);
+    
+    const productForm = useForm<ProductDescriptionForm>({
+        resolver: zodResolver(productDescriptionSchema),
+        defaultValues: { productName: '', origin: '', tags: '' },
+    });
+
+    const blogForm = useForm<BlogIdeaForm>({
+        resolver: zodResolver(blogIdeaSchema),
+        defaultValues: { topic: '' },
+    });
+
+    const onProductSubmit = (data: ProductDescriptionForm) => {
+        startTransition(async () => {
+            setGeneratedDescription('');
+            try {
+                const result = await generateProductDescription(data);
+                setGeneratedDescription(result.description);
+                 toast({ title: 'Description Generated!', description: 'Your new product description is ready.' });
+            } catch (error) {
+                console.error('AI description generation failed:', error);
+                toast({ variant: 'destructive', title: 'Generation Failed', description: 'Could not generate a description. Please try again.' });
+            }
+        });
+    };
+
+    const onBlogSubmit = (data: BlogIdeaForm) => {
+        startTransition(async () => {
+            setGeneratedBlogIdeas([]);
+            try {
+                const result = await generateBlogIdeas(data.topic);
+                setGeneratedBlogIdeas(result.ideas);
+                toast({ title: 'Blog Ideas Generated!', description: 'Fresh new ideas are ready for you.' });
+            } catch (error) {
+                console.error('AI blog idea generation failed:', error);
+                toast({ variant: 'destructive', title: 'Generation Failed', description: 'Could not generate blog ideas. Please try again.' });
+            }
+        });
+    };
+
+    return (
+        <div className="space-y-8">
+            <Card className="shadow-lg bg-background">
+                <CardHeader>
+                    <CardTitle className="font-headline text-2xl text-primary flex items-center gap-2">
+                        <WandSparkles/> AI Content Assistant
+                    </CardTitle>
+                    <CardDescription>Generate compelling content for your products and blog using AI.</CardDescription>
+                </CardHeader>
+            </Card>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="font-headline text-xl text-primary">Product Description Generator</CardTitle>
+                        <CardDescription>Create rich product descriptions from a few keywords.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Form {...productForm}>
+                            <form onSubmit={productForm.handleSubmit(onProductSubmit)} className="space-y-4">
+                                <FormField control={productForm.control} name="productName" render={({ field }) => (
+                                    <FormItem><FormLabel>Product Name</FormLabel><FormControl><Input placeholder="e.g., Flores Bajawa" {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
+                                <FormField control={productForm.control} name="origin" render={({ field }) => (
+                                    <FormItem><FormLabel>Origin</FormLabel><FormControl><Input placeholder="e.g., Bajawa, Flores" {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
+                                <FormField control={productForm.control} name="tags" render={({ field }) => (
+                                    <FormItem><FormLabel>Key Features / Tags</FormLabel><FormControl><Input placeholder="e.g., Floral, Chocolate, Syrupy" {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
+                                <Button type="submit" disabled={isPending}>
+                                    {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                                    Generate Description
+                                </Button>
+                            </form>
+                        </Form>
+                        {generatedDescription && (
+                            <div className="mt-6 border-t pt-6">
+                                <h4 className="font-semibold mb-2">Generated Description:</h4>
+                                <Textarea readOnly value={generatedDescription} rows={8} className="bg-secondary/50"/>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader>
+                        <CardTitle className="font-headline text-xl text-primary">Blog Idea Generator</CardTitle>
+                        <CardDescription>Get a list of creative blog post ideas based on a topic.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                         <Form {...blogForm}>
+                            <form onSubmit={blogForm.handleSubmit(onBlogSubmit)} className="space-y-4">
+                                <FormField control={blogForm.control} name="topic" render={({ field }) => (
+                                    <FormItem><FormLabel>Topic</FormLabel><FormControl><Input placeholder="e.g., Cold brew techniques" {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
+                                <Button type="submit" disabled={isPending}>
+                                    {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                                    Generate Ideas
+                                </Button>
+                            </form>
+                        </Form>
+                         {generatedBlogIdeas.length > 0 && (
+                            <div className="mt-6 border-t pt-6">
+                                <h4 className="font-semibold mb-2">Generated Ideas:</h4>
+                                <ul className="list-disc pl-5 space-y-2 bg-secondary/50 p-4 rounded-md">
+                                    {generatedBlogIdeas.map((idea, index) => <li key={index}>{idea}</li>)}
+                                </ul>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            </div>
+        </div>
+    );
+};
+
 
 const DashboardPage = () => {
   const { user, loading } = useAuth();
@@ -1641,6 +1775,8 @@ const DashboardPage = () => {
             return <SettingsView />;
         case 'heroSettings':
             return <HeroSettingsView />;
+        case 'aiAssistant':
+            return <AiAssistantView />;
         default:
             return <AnalyticsOverview stats={stats} products={products} isLoading={isDataLoading} />;
     }
@@ -1648,6 +1784,7 @@ const DashboardPage = () => {
   
   const sidebarNavItems = [
       { id: 'overview', label: 'Overview', icon: LayoutGrid },
+      { id: 'aiAssistant', label: 'AI Assistant', icon: WandSparkles },
       { id: 'manageOrders', label: 'Manage Orders', icon: ShoppingBag },
       { id: 'manageProducts', label: 'Manage Products', icon: ListOrdered },
       { id: 'manageBlog', label: 'Manage Posts', icon: BookText },
