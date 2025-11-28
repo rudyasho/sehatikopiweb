@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   title: 'Pencarian',
   description: 'Cari produk kopi dan artikel blog favorit Anda dari Sehati Kopi.',
   robots: {
-    index: false, // Jangan indeks halaman pencarian itu sendiri
+    index: true,
     follow: true,
   }
 };
@@ -48,5 +48,3 @@ export default async function SearchPage({
     />
   );
 }
-
-    

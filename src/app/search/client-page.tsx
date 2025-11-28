@@ -140,5 +140,3 @@ export function SearchClientPage({ initialSearchTerm = '', products, blogPosts }
         </div>
     );
 }
-
-    
