@@ -3,9 +3,6 @@
 
 import { dbAdmin } from './firebase-admin';
 import { unstable_noStore as noStore } from 'next/cache';
-import type { User } from 'firebase/auth';
-import { SUPER_ADMIN_EMAIL } from '@/context/auth-context';
-
 
 export type Event = {
     id: string;
@@ -48,21 +45,12 @@ const initialEvents: Omit<Event, 'id'>[] = [
 ];
 
 
-let isSeeding = false;
-let seedingCompleted = false;
-
 async function seedDatabaseIfNeeded() {
-  if (seedingCompleted || isSeeding) {
-    return;
-  }
-  
   if (!dbAdmin) {
     console.warn("Firestore Admin is not initialized. Skipping seed operation.");
-    seedingCompleted = true; 
     return;
   }
 
-  isSeeding = true;
   const eventsCollection = dbAdmin.collection('events');
 
   try {
@@ -79,9 +67,6 @@ async function seedDatabaseIfNeeded() {
     }
   } catch (error) {
     console.error("Error seeding events database:", error);
-  } finally {
-    isSeeding = false;
-    seedingCompleted = true;
   }
 }
 
@@ -106,12 +91,9 @@ export async function getEvents(): Promise<Event[]> {
     return eventsList;
 }
 
-export async function addEvent(eventData: EventFormData, user: User): Promise<Event> {
+export async function addEvent(eventData: EventFormData): Promise<Event> {
     if (!dbAdmin) {
         throw new Error("Firestore Admin not initialized.");
-    }
-    if (user.email !== SUPER_ADMIN_EMAIL) {
-        throw new Error("Unauthorized: Only admins can add events.");
     }
 
     const eventsCollection = dbAdmin.collection('events');
@@ -122,12 +104,9 @@ export async function addEvent(eventData: EventFormData, user: User): Promise<Ev
     };
 }
 
-export async function updateEvent(id: string, data: Partial<EventFormData>, user: User): Promise<void> {
+export async function updateEvent(id: string, data: Partial<EventFormData>): Promise<void> {
     if (!dbAdmin) {
         throw new Error("Firestore Admin not initialized.");
-    }
-    if (user.email !== SUPER_ADMIN_EMAIL) {
-        throw new Error("Unauthorized: Only admins can update events.");
     }
 
     const eventsCollection = dbAdmin.collection('events');
@@ -135,12 +114,9 @@ export async function updateEvent(id: string, data: Partial<EventFormData>, user
     await eventRef.update(data);
 }
 
-export async function deleteEvent(id: string, user: User): Promise<void> {
+export async function deleteEvent(id: string): Promise<void> {
     if (!dbAdmin) {
         throw new Error("Firestore Admin not initialized.");
-    }
-     if (user.email !== SUPER_ADMIN_EMAIL) {
-        throw new Error("Unauthorized: Only admins can delete events.");
     }
 
     const eventsCollection = dbAdmin.collection('events');

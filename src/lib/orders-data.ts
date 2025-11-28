@@ -2,11 +2,9 @@
 'use server';
 
 import { unstable_noStore as noStore } from 'next/cache';
-import { dbAdmin } from './firebase-admin';
-
+import { dbAdmin, authAdmin } from './firebase-admin';
 import type { CartItem } from '@/context/cart-context';
 import type { AppUser } from '@/context/auth-context';
-
 
 export type OrderStatus = 'Pending' | 'Shipped' | 'Delivered' | 'Cancelled';
 
@@ -19,7 +17,7 @@ export type Order = {
   shipping: number;
   total: number;
   status: OrderStatus;
-  customerInfo?: AppUser; // Populated server-side for the admin view
+  customerInfo?: Partial<AppUser>; // Populated server-side for the admin view
 };
 
 
@@ -63,8 +61,8 @@ export async function getOrdersByUserId(userId: string): Promise<Order[]> {
 
 export async function getAllOrders(): Promise<Order[]> {
   noStore();
-  if (!dbAdmin) {
-    throw new Error('Database admin instance is not initialized.');
+  if (!dbAdmin || !authAdmin) {
+    throw new Error('Database or Auth admin instance is not initialized.');
   }
 
   try {
@@ -76,8 +74,10 @@ export async function getAllOrders(): Promise<Order[]> {
         return orders.map(order => ({ ...order, customerInfo: undefined }));
     }
 
+    // Note: listUsers is more efficient for larger sets of UIDs if available/needed.
+    // For smaller batches, individual lookups are fine.
     const userRecords = await Promise.all(
-      userIds.map(uid => dbAdmin.auth().getUser(uid).catch(() => null))
+      userIds.map(uid => authAdmin.getUser(uid).catch(() => null))
     );
 
     const usersMap = userRecords.reduce((acc, user) => {
@@ -86,12 +86,10 @@ export async function getAllOrders(): Promise<Order[]> {
           uid: user.uid,
           email: user.email,
           displayName: user.displayName,
-          creationTime: user.metadata.creationTime,
-          disabled: user.disabled,
         };
       }
       return acc;
-    }, {} as Record<string, AppUser>);
+    }, {} as Record<string, Partial<AppUser>>);
 
     return orders.map(order => ({
       ...order,

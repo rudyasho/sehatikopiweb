@@ -166,7 +166,7 @@ const HeroSection = ({ heroData }: { heroData: HeroData }) => {
 function Testimonials({ testimonials }: { testimonials: Testimonial[] }) {
   return (
     <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-      {testimonials && testimonials.map((testimonial) => (
+      {testimonials.map((testimonial) => (
          <motion.div
             key={testimonial.id}
             variants={cardVariants}
@@ -207,7 +207,7 @@ interface HomeClientProps {
 export function HomeClient({ featuredProducts, testimonials, heroData }: HomeClientProps) {
   return (
     <div className="flex flex-col">
-      {heroData && <HeroSection heroData={heroData} />}
+      <HeroSection heroData={heroData} />
 
       <section className="py-16 md:py-24 bg-background">
         <div className="container mx-auto px-4 grid md:grid-cols-2 gap-12 items-center">

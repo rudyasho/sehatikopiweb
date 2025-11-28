@@ -3,8 +3,6 @@
 
 import { unstable_noStore as noStore } from 'next/cache';
 import { dbAdmin } from './firebase-admin';
-import type { User } from 'firebase/auth';
-import { SUPER_ADMIN_EMAIL } from '@/context/auth-context';
 
 export type BlogPost = {
     id: string;
@@ -56,21 +54,12 @@ const initialBlogPosts: Omit<BlogPost, 'id' | 'slug' | 'date' | 'excerpt'>[] = [
     }
 ];
 
-let isSeeding = false;
-let seedingCompleted = false;
-
 async function seedDatabaseIfNeeded() {
-  if (seedingCompleted || isSeeding) {
-    return;
-  }
-  
   if (!dbAdmin) {
     console.warn("Firestore Admin is not initialized. Skipping seed operation.");
-    seedingCompleted = true; 
     return;
   }
 
-  isSeeding = true;
   const blogCollection = dbAdmin.collection('blog');
 
   try {
@@ -89,9 +78,6 @@ async function seedDatabaseIfNeeded() {
     }
   } catch (error) {
     console.error("Error seeding blog database:", error);
-  } finally {
-    isSeeding = false;
-    seedingCompleted = true;
   }
 }
 
@@ -128,12 +114,9 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
     return { id: doc.id, ...doc.data() } as BlogPost;
 }
 
-export async function addBlogPost(post: NewBlogPostData, user: User): Promise<BlogPost> {
+export async function addBlogPost(post: NewBlogPostData): Promise<BlogPost> {
     if (!dbAdmin) {
         throw new Error("Firestore Admin not initialized.");
-    }
-    if (user.email !== SUPER_ADMIN_EMAIL) {
-        throw new Error("Unauthorized: Only admins can add blog posts.");
     }
 
     const slug = post.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
@@ -153,12 +136,9 @@ export async function addBlogPost(post: NewBlogPostData, user: User): Promise<Bl
     } as BlogPost;
 }
 
-export async function updateBlogPost(id: string, data: Partial<NewBlogPostData>, user: User): Promise<void> {
+export async function updateBlogPost(id: string, data: Partial<NewBlogPostData>): Promise<void> {
     if (!dbAdmin) {
         throw new Error("Firestore Admin not initialized.");
-    }
-    if (user.email !== SUPER_ADMIN_EMAIL) {
-        throw new Error("Unauthorized: Only admins can update blog posts.");
     }
     
     const postRef = dbAdmin.collection('blog').doc(id);
@@ -175,12 +155,9 @@ export async function updateBlogPost(id: string, data: Partial<NewBlogPostData>,
     await postRef.update(updateData);
 }
 
-export async function deleteBlogPost(id: string, user: User): Promise<void> {
+export async function deleteBlogPost(id: string): Promise<void> {
     if (!dbAdmin) {
         throw new Error("Firestore Admin not initialized.");
-    }
-     if (user.email !== SUPER_ADMIN_EMAIL) {
-        throw new Error("Unauthorized: Only admins can delete blog posts.");
     }
 
     const postRef = dbAdmin.collection('blog').doc(id);

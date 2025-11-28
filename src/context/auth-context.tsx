@@ -8,7 +8,14 @@ import { useRouter } from 'next/navigation';
 
 export const SUPER_ADMIN_EMAIL = 'rd.lapawawoi@gmail.com';
 
-export interface AppUser extends FirebaseUser {
+// This is the shape of the user object available throughout the app
+export interface AppUser {
+  uid: string;
+  email?: string | null;
+  displayName?: string | null;
+  photoURL?: string | null;
+  emailVerified: boolean;
+  disabled: boolean;
   role?: 'Super Admin' | 'Admin' | 'User';
 }
 
@@ -38,7 +45,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const userRole = claims.role ? (claims.role as 'Admin' | 'User') : 'User';
           
           const appUser: AppUser = {
-            ...firebaseUser,
+            uid: firebaseUser.uid,
+            email: firebaseUser.email,
+            displayName: firebaseUser.displayName,
+            photoURL: firebaseUser.photoURL,
+            emailVerified: firebaseUser.emailVerified,
+            disabled: firebaseUser.metadata.creationTime === firebaseUser.metadata.lastSignInTime, // Heuristic for disabled, not reliable
             role: firebaseUser.email === SUPER_ADMIN_EMAIL ? 'Super Admin' : userRole,
           };
           setUser(appUser);
@@ -74,7 +86,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Force token refresh to get custom claims if any are set on creation
         await userCredential.user.getIdToken(true);
 
-        const appUser: AppUser = { ...userCredential.user, displayName, role: 'User' };
+        const appUser: AppUser = {
+            uid: userCredential.user.uid,
+            email: userCredential.user.email,
+            displayName: userCredential.user.displayName,
+            photoURL: userCredential.user.photoURL,
+            emailVerified: userCredential.user.emailVerified,
+            disabled: false,
+            role: 'User',
+        };
         setUser(appUser);
         handleAuthSuccess(userCredential.user);
       } catch (error: any) {

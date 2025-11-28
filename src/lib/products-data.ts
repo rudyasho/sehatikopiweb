@@ -3,8 +3,6 @@
 
 import { unstable_noStore as noStore } from 'next/cache';
 import { dbAdmin } from './firebase-admin';
-import { SUPER_ADMIN_EMAIL } from '@/context/auth-context';
-import type { User } from 'firebase/auth';
 
 export interface Product {
   id: string;
@@ -23,7 +21,6 @@ export interface Product {
 
 export type ProductFormData = Omit<Product, 'id' | 'slug' | 'rating' | 'reviews'>;
 
-
 const initialProducts: Omit<Product, 'id' | 'slug'>[] = [
   {
     name: 'Aceh Gayo',
@@ -31,7 +28,7 @@ const initialProducts: Omit<Product, 'id' | 'slug'>[] = [
     description: 'A rich, full-bodied coffee with earthy notes of dark chocolate, cedar, and a hint of spice. Known for its smooth finish and low acidity, making it a classic Indonesian favorite.',
     price: 120000,
     stock: 50,
-    image: 'https://images.unsplash.com/photo-1607681034540-2c46cc71896d?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    image: 'https://images.unsplash.com/photo-1607681034540-2c46cc71896d?q=80&w=1170&auto=format&fit=crop&ixlib-rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     rating: 4.8,
     reviews: 125,
     tags: ['Earthy', 'Spicy', 'Full Body'],
@@ -111,21 +108,12 @@ const initialProducts: Omit<Product, 'id' | 'slug'>[] = [
   },
 ];
 
-let isSeeding = false;
-let seedingCompleted = false;
-
 async function seedDatabaseIfNeeded() {
-  if (seedingCompleted || isSeeding) {
-    return;
-  }
-  
   if (!dbAdmin) {
     console.warn("Firestore Admin is not initialized. Skipping seed operation.");
-    seedingCompleted = true; 
     return;
   }
   
-  isSeeding = true;
   const productsCollection = dbAdmin.collection('products');
 
   try {
@@ -143,9 +131,6 @@ async function seedDatabaseIfNeeded() {
     }
   } catch (error) {
     console.error("Error seeding products database:", error);
-  } finally {
-    isSeeding = false;
-    seedingCompleted = true;
   }
 }
 
@@ -183,12 +168,9 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
     return { id: doc.id, ...doc.data() } as Product;
 }
 
-export async function addProduct(productData: Omit<ProductFormData, 'tags'> & { tags: string }, user: User): Promise<Product> {
+export async function addProduct(productData: Omit<ProductFormData, 'tags'> & { tags: string }): Promise<Product> {
   if (!dbAdmin) {
     throw new Error("Firestore Admin not initialized.");
-  }
-  if (user.email !== SUPER_ADMIN_EMAIL) {
-    throw new Error("Unauthorized: Only admins can add products.");
   }
 
   const productsCollection = dbAdmin.collection('products');
@@ -204,20 +186,15 @@ export async function addProduct(productData: Omit<ProductFormData, 'tags'> & { 
 
   const docRef = await productsCollection.add(newProductData);
   
-  const createdProduct: Product = {
+  return {
     id: docRef.id,
     ...newProductData
   };
-
-  return createdProduct;
 }
 
-export async function updateProduct(id: string, productData: Omit<ProductFormData, 'tags'> & { tags: string }, user: User): Promise<void> {
+export async function updateProduct(id: string, productData: Omit<ProductFormData, 'tags'> & { tags: string }): Promise<void> {
     if (!dbAdmin) {
         throw new Error("Firestore Admin not initialized.");
-    }
-    if (user.email !== SUPER_ADMIN_EMAIL) {
-      throw new Error("Unauthorized: Only admins can update products.");
     }
     
     const productsCollection = dbAdmin.collection('products');
@@ -230,12 +207,9 @@ export async function updateProduct(id: string, productData: Omit<ProductFormDat
     await productRef.update(updatedData);
 }
 
-export async function deleteProduct(id: string, user: User): Promise<void> {
+export async function deleteProduct(id: string): Promise<void> {
     if (!dbAdmin) {
         throw new Error("Firestore Admin not initialized.");
-    }
-    if (user.email !== SUPER_ADMIN_EMAIL) {
-      throw new Error("Unauthorized: Only admins can delete products.");
     }
     
     const productsCollection = dbAdmin.collection('products');
