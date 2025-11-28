@@ -55,21 +55,21 @@ const AnalyticsOverview = async () => {
                      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
                         <div>
                             <h3 className="font-headline text-lg text-primary mb-2">Top 5 Products</h3>
-                            <TopProductsTable products={productsData} />
+                            <TopProductsTable products={productsData} isLoading={false} />
                         </div>
                         <div className="h-[300px] md:h-[400px]">
                              <h3 className="font-headline text-lg text-primary mb-2">Roast Distribution</h3>
-                            <RoastDistributionChart products={productsData} />
+                            <RoastDistributionChart products={productsData} isLoading={false} />
                         </div>
                      </div>
                      <div className="grid grid-cols-1 xl:grid-cols-5 gap-8 pt-4">
                         <div className="xl:col-span-3 h-[400px]">
                             <h3 className="font-headline text-lg text-primary mb-2">Product Popularity (by Reviews)</h3>
-                            <ProductPopularityChart products={productsData} />
+                            <ProductPopularityChart products={productsData} isLoading={false} />
                         </div>
                         <div className="xl:col-span-2 h-full flex flex-col justify-center items-center">
                             <h3 className="font-headline text-lg text-primary mb-2 text-center">Origin Distribution</h3>
-                            <OriginDistributionChart products={productsData} />
+                            <OriginDistributionChart products={productsData} isLoading={false} />
                         </div>
                      </div>
                 </CardContent>
