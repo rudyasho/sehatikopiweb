@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { getProducts, type Product } from '@/lib/products-data';
+import { type Product } from '@/lib/products-data';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useCart } from '@/context/cart-context';
@@ -21,9 +21,9 @@ import { ShoppingCart, Check, ListFilter } from 'lucide-react';
 import { ProductFilters, type Filters } from './product-filters';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export function ProductsClientPage() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+export function ProductsClientPage({ initialProducts }: { initialProducts: Product[]}) {
+  const [products] = useState<Product[]>(initialProducts);
+  const [isLoading] = useState(false); // Data is now pre-loaded
   const { addToCart } = useCart();
   const { toast } = useToast();
   const [addedProducts, setAddedProducts] = useState<Record<string, boolean>>(
@@ -34,21 +34,6 @@ export function ProductsClientPage() {
     origins: [],
     sort: 'name-asc',
   });
-
-  useEffect(() => {
-    async function fetchProducts() {
-        setIsLoading(true);
-        try {
-            const fetchedProducts = await getProducts();
-            setProducts(fetchedProducts);
-        } catch (error) {
-            console.error("Failed to fetch products:", error);
-        } finally {
-            setIsLoading(false);
-        }
-    }
-    fetchProducts();
-  }, []);
 
   const handleAddToCart = (product: Product) => {
     addToCart(product, 1);
