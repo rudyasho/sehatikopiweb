@@ -1,4 +1,3 @@
-
 # Sehati Kopi Digital
 
 This is a Next.js application for "Sehati Kopi Digital", a fictional Indonesian coffee house and roastery. The project was built entirely with an AI coding partner in Firebase Studio, demonstrating a modern, AI-assisted development workflow.
@@ -90,7 +89,7 @@ The dashboard supports using Google Drive shareable links for product and blog p
 ## Admin Access
 
 To access the dashboard and other admin features, sign up with the following email:
-- **Super Admin Email**: `dev@sidepe.com`
+- **Super Admin Email**: `rd.lapawawoi@gmail.com`
 
 You can sign up with this email and any password to gain full admin access.
 

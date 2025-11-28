@@ -1141,7 +1141,7 @@ const ManageUsersView = ({ currentUser }: { currentUser: AppUser }) => {
     useEffect(() => {
         refreshUsers();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentUser.uid]);
+    }, []);
 
     const handleToggleDisabled = async (uid: string, disabled: boolean) => {
         try {
