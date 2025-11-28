@@ -10,10 +10,11 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Minus, Plus, Trash2, ArrowLeft, ShoppingCart, Loader2 } from 'lucide-react';
 import { useCart } from '@/context/cart-context';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/auth-context';
 import { addOrder, OrderStatus } from '@/lib/orders-data';
 import { useToast } from '@/hooks/use-toast';
+import { getSettings, WebsiteSettings } from '@/lib/settings-data';
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
@@ -43,9 +44,40 @@ export function CartClientPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const router = useRouter();
+  const [settings, setSettings] = useState<WebsiteSettings | null>(null);
+  const [isLoadingSettings, setIsLoadingSettings] = useState(true);
   
 
+  useEffect(() => {
+    async function fetchSettings() {
+        try {
+            const settingsData = await getSettings();
+            setSettings(settingsData);
+        } catch (error) {
+            console.error("Failed to fetch settings for checkout:", error);
+            toast({
+                variant: 'destructive',
+                title: 'Configuration Error',
+                description: 'Could not load contact information for checkout.',
+            });
+        } finally {
+            setIsLoadingSettings(false);
+        }
+    }
+    fetchSettings();
+  }, [toast]);
+
+
   const handleCheckout = async () => {
+    if (!settings?.contactPhone) {
+        toast({
+            variant: 'destructive',
+            title: 'Checkout Error',
+            description: 'Could not find a valid WhatsApp number. Please contact support.',
+        });
+        return;
+    }
+
     const orderId = `SK-${Date.now()}`;
     const orderDetails = {
       orderId: orderId,
@@ -70,8 +102,7 @@ export function CartClientPage() {
         return;
     }
 
-
-    const phoneNumber = "6285796123218"; // Ganti dengan nomor WhatsApp Anda
+    const phoneNumber = settings.contactPhone.replace(/[^0-9]/g, '');
     const message = `Halo Sehati Kopi, saya ingin memesan (Order ID: ${orderId}):\n\n${cart
       .map(item => `${item.quantity}x ${item.name} (${formatCurrency(item.price * item.quantity)})`)
       .join('\n')}\n\nSubtotal: ${formatCurrency(subtotal)}\nShipping: ${formatCurrency(shipping)}\n*Total: ${formatCurrency(total)}*\n\nTerima kasih!`;
@@ -184,7 +215,13 @@ export function CartClientPage() {
                     </div>
                 </CardContent>
                 <CardFooter>
-                    <Button size="lg" className="w-full" onClick={handleCheckout}>Checkout via WhatsApp</Button>
+                    <Button size="lg" className="w-full" onClick={handleCheckout} disabled={isLoadingSettings}>
+                        {isLoadingSettings ? (
+                            <><Loader2 className="mr-2 h-4 w-4 animate-spin"/> Loading...</>
+                        ) : (
+                            'Checkout via WhatsApp'
+                        )}
+                    </Button>
                 </CardFooter>
              </Card>
           </div>
