@@ -27,7 +27,7 @@ const defaultSettings: SettingsFormData = {
 
 async function initializeSettingsIfNeeded() {
   if (!dbAdmin) {
-    console.error("Firestore Admin is not initialized. Skipping settings initialization.");
+    console.warn("Firestore Admin is not initialized. Skipping settings initialization.");
     return;
   }
   
@@ -53,15 +53,14 @@ export async function getSettings(): Promise<WebsiteSettings> {
     await initializeSettingsIfNeeded();
     
     if (!dbAdmin) {
-      console.error("Firestore Admin is not initialized. Returning default settings.");
-      return { id: 'main-settings', ...defaultSettings };
+      throw new Error("Firestore Admin is not initialized. Returning default settings.");
     }
     
     const docRef = dbAdmin.collection('settings').doc('main-settings');
     const doc = await docRef.get();
 
     if (!doc.exists) {
-        return { id: 'main-settings', ...defaultSettings };
+        throw new Error("Settings document not found.");
     }
     
     const data = doc.data() as SettingsFormData;

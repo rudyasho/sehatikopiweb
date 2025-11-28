@@ -105,7 +105,13 @@ let isSeeding = false;
 let seedingCompleted = false;
 
 async function seedDatabaseIfNeeded() {
-  if (!dbAdmin || seedingCompleted || isSeeding) {
+  if (seedingCompleted || isSeeding) {
+    return;
+  }
+  
+  if (!dbAdmin) {
+    console.warn("Firestore Admin is not initialized. Skipping seed operation.");
+    seedingCompleted = true; // Prevent multiple attempts if not initialized
     return;
   }
   
@@ -125,11 +131,11 @@ async function seedDatabaseIfNeeded() {
       await batch.commit();
       console.log('Products database seeded successfully.');
     }
-    seedingCompleted = true;
   } catch (error) {
     console.error("Error seeding products database:", error);
   } finally {
     isSeeding = false;
+    seedingCompleted = true;
   }
 }
 
@@ -139,8 +145,7 @@ export async function getProducts(): Promise<Product[]> {
   await seedDatabaseIfNeeded();
 
   if (!dbAdmin) {
-    console.error("Firestore Admin is not initialized. Cannot get products.");
-    return [];
+    throw new Error("Firestore Admin is not initialized. Cannot get products.");
   }
 
   const productsCollection = dbAdmin.collection('products');
@@ -158,8 +163,7 @@ export async function getProducts(): Promise<Product[]> {
 export async function getProductBySlug(slug: string): Promise<Product | null> {
     noStore();
     if (!dbAdmin) {
-        console.error("Firestore Admin is not initialized. Cannot get product by slug.");
-        return null;
+        throw new Error("Firestore Admin is not initialized. Cannot get product by slug.");
     }
     const productsCollection = dbAdmin.collection('products');
     const snapshot = await productsCollection.where('slug', '==', slug).limit(1).get();

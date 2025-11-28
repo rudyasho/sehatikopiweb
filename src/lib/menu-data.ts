@@ -46,7 +46,13 @@ let isSeeding = false;
 let seedingCompleted = false;
 
 async function seedDatabaseIfNeeded() {
-  if (!dbAdmin || seedingCompleted || isSeeding) {
+  if (seedingCompleted || isSeeding) {
+    return;
+  }
+
+  if (!dbAdmin) {
+    console.warn("Firestore Admin is not initialized. Skipping seed operation.");
+    seedingCompleted = true; // Prevent multiple attempts if not initialized
     return;
   }
   
@@ -65,11 +71,11 @@ async function seedDatabaseIfNeeded() {
       await batch.commit();
       console.log('Menu database seeded successfully.');
     }
-    seedingCompleted = true;
   } catch (error) {
     console.error("Error seeding menu database:", error);
   } finally {
     isSeeding = false;
+    seedingCompleted = true;
   }
 }
 
@@ -79,8 +85,7 @@ export async function getMenuItems(): Promise<MenuItems> {
     await seedDatabaseIfNeeded();
 
     if (!dbAdmin) {
-      console.error("Firestore Admin is not initialized. Cannot get menu items.");
-      return { hot: [], cold: [], manual: [], signature: [] };
+      throw new Error("Firestore Admin is not initialized. Cannot get menu items.");
     }
 
     const menuCollection = dbAdmin.collection('menu');

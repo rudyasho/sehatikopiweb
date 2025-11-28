@@ -21,7 +21,7 @@ const defaultHeroData: HeroFormData = {
 
 async function initializeHeroDataIfNeeded() {
   if (!dbAdmin) {
-    console.error("Firestore Admin is not initialized. Skipping hero data initialization.");
+    console.warn("Firestore Admin is not initialized. Skipping hero data initialization.");
     return;
   }
   

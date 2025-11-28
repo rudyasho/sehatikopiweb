@@ -57,8 +57,7 @@ export async function addOrder(orderData: Omit<Order, 'customerInfo'>) {
 export async function getOrdersByUserId(userId: string): Promise<Order[]> {
   noStore();
   if (!dbAdmin) {
-    console.error('Firestore Admin is not initialized. Cannot get orders.');
-    return [];
+    throw new Error('Firestore Admin is not initialized. Cannot get orders.');
   }
   
   try {

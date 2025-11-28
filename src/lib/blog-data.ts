@@ -58,10 +58,16 @@ let isSeeding = false;
 let seedingCompleted = false;
 
 async function seedDatabaseIfNeeded() {
-  if (!dbAdmin || seedingCompleted || isSeeding) {
+  if (seedingCompleted || isSeeding) {
     return;
   }
   
+  if (!dbAdmin) {
+    console.warn("Firestore Admin is not initialized. Skipping seed operation.");
+    seedingCompleted = true; // Prevent multiple attempts if not initialized
+    return;
+  }
+
   isSeeding = true;
   const blogCollection = dbAdmin.collection('blog');
 
@@ -79,11 +85,11 @@ async function seedDatabaseIfNeeded() {
       await batch.commit();
       console.log('Blog database seeded successfully.');
     }
-    seedingCompleted = true;
   } catch (error) {
     console.error("Error seeding blog database:", error);
   } finally {
     isSeeding = false;
+    seedingCompleted = true;
   }
 }
 
@@ -91,10 +97,9 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
     noStore();
 
     await seedDatabaseIfNeeded();
-
+    
     if (!dbAdmin) {
-      console.error("Firestore Admin is not initialized. Cannot get blog posts.");
-      return [];
+        throw new Error("Firestore Admin is not initialized. Cannot get blog posts.");
     }
 
     const blogSnapshot = await dbAdmin.collection('blog').orderBy('date', 'desc').get();
@@ -112,8 +117,7 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
 export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
     noStore();
     if (!dbAdmin) {
-        console.error("Firestore Admin is not initialized. Cannot get post by slug.");
-        return null;
+        throw new Error("Firestore Admin is not initialized. Cannot get post by slug.");
     }
     const snapshot = await dbAdmin.collection('blog').where('slug', '==', slug).limit(1).get();
     if (snapshot.empty) {
