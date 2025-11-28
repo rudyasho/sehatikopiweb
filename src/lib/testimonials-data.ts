@@ -27,10 +27,22 @@ const initialTestimonials: Omit<Testimonial, 'id'>[] = [
   },
   {
     name: 'Budi S.',
-    avatar: 'https://images.unsplash.com/photo-1574091983337-b78650545f93?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxNXx8cG90cmV0JTIwbGVsYWtpfGVufDB8fHx8MTc1NjYyMzE3NXww&ixlib-rb-4.1.0&q=80&w=1080',
+    avatar: 'https://images.unsplash.com/photo-1574091983337-b78650545f93?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxNXx8cG90cmV0JTIwbGVsYWtpfGVufDB8fHx8MTc1NjYyMzE3NXww&ixlib=rb-4.1.0&q=80&w=1080',
     review: 'Saya suka cerita di balik kopi dan semangat timnya. Anda bisa merasakan kualitasnya di setiap cangkir.',
     rating: 5,
   },
+  {
+    name: 'Rina M.',
+    avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=1361&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    review: 'Bali Kintamani mereka mengubah cara saya memandang kopi. Nota buahnya sangat cerah dan menyegarkan. Luar biasa!',
+    rating: 5,
+  },
+  {
+    name: 'Eko W.',
+    avatar: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=1470&auto=format&fit=crop&ixlib-rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    review: 'Pengalaman pelanggan yang luar biasa. Timnya sangat berpengetahuan dan membantu saya memilih biji yang sempurna untuk selera saya.',
+    rating: 4,
+  }
 ];
 
 
@@ -71,7 +83,7 @@ async function seedDatabaseIfNeeded() {
   }
 }
 
-export async function getTestimonials(): Promise<Testimonial[]> {
+export async function getTestimonials(limit: number = 3): Promise<Testimonial[]> {
     noStore();
     await seedDatabaseIfNeeded();
 
@@ -80,7 +92,7 @@ export async function getTestimonials(): Promise<Testimonial[]> {
     }
     
     const testimonialsCollection = dbAdmin.collection('testimonials');
-    const snapshot = await testimonialsCollection.limit(3).get();
+    const snapshot = await testimonialsCollection.limit(limit).get();
     const list = snapshot.docs.map(doc => {
       const data = doc.data();
       return {

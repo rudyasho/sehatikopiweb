@@ -4,6 +4,8 @@ import { getProductBySlug, getProducts, Product } from '@/lib/products-data';
 import { Metadata, ResolvingMetadata } from 'next';
 import { ProductClientPage } from './client-page';
 import { getSettings } from '@/lib/settings-data';
+import { getTestimonials } from '@/lib/testimonials-data';
+import { ReviewsSection } from './reviews-section';
 
 export async function generateStaticParams() {
   const products = await getProducts();
@@ -59,5 +61,12 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
     notFound();
   }
 
-  return <ProductClientPage product={product} />;
+  const reviews = await getTestimonials(10); // Fetch more for reviews section
+
+  return (
+      <>
+        <ProductClientPage product={product} />
+        <ReviewsSection initialReviews={reviews} productName={product.name} />
+      </>
+  );
 }
