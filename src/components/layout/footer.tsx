@@ -1,7 +1,8 @@
+// src/components/layout/footer.tsx
 "use client";
 
 import Link from 'next/link';
-import { Coffee, Instagram, Facebook, Twitter, Loader2 } from 'lucide-react';
+import { Coffee, Instagram, Facebook, Twitter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';

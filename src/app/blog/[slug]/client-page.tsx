@@ -62,11 +62,12 @@ const ShareButtons = ({ title, slug }: { title: string, slug: string }) => {
 
 export const PostFooter = ({ post }: { post: BlogPost }) => {
     const { user } = useAuth();
+    const isAdmin = user?.role === 'Admin' || user?.role === 'Super Admin';
     return (
         <div className="mt-8 pt-8 border-t">
             <div className="flex justify-between items-center">
                 <ShareButtons title={post.title} slug={post.slug} />
-                {user && user.email === 'rd.lapawawoi@gmail.com' && (
+                {isAdmin && (
                     <Button asChild variant="outline" size="sm">
                         <Link href={`/dashboard?view=manageBlog&edit=${post.id}`}>
                         <Edit className="mr-2 h-4 w-4" />

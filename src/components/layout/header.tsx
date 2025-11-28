@@ -1,3 +1,4 @@
+// src/components/layout/header.tsx
 "use client";
 
 import Link from 'next/link';
@@ -266,5 +267,3 @@ export function Header({ siteName }: { siteName: string }) {
     </motion.header>
   );
 }
-
-    
