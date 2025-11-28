@@ -66,7 +66,7 @@ export const PostFooter = ({ post }: { post: BlogPost }) => {
         <div className="mt-8 pt-8 border-t">
             <div className="flex justify-between items-center">
                 <ShareButtons title={post.title} slug={post.slug} />
-                {user && (
+                {user && user.email === 'rd.lapawawoi@gmail.com' && (
                     <Button asChild variant="outline" size="sm">
                         <Link href={`/dashboard?view=manageBlog&edit=${post.id}`}>
                         <Edit className="mr-2 h-4 w-4" />

@@ -39,4 +39,10 @@ if (!admin.apps.length) {
     }
 }
 
+// Ensure dbAdmin is not null when accessed elsewhere
+if (!dbAdmin) {
+    console.error("Firestore Admin is not available. Please check your Firebase configuration.");
+}
+
+
 export { admin, dbAdmin };

@@ -1852,24 +1852,32 @@ const DashboardPage = () => {
 
   return (
     <div className="bg-secondary/50 min-h-screen">
-        <div className="container mx-auto px-4 py-8 md:py-12">
-            <header className="mb-8 flex items-center justify-between">
-                <div>
-                    <h1 className="font-headline text-4xl md:text-5xl font-bold text-primary">Dashboard</h1>
-                    <p className="mt-1 text-lg text-foreground/80">Welcome back, {user.displayName}!</p>
-                </div>
+        <header className="sticky top-0 z-40 bg-secondary/50 backdrop-blur-sm border-b md:hidden">
+            <div className="container mx-auto px-4 flex items-center justify-between h-16">
+                 <h1 className="font-headline text-2xl font-bold text-primary">Dashboard</h1>
                  <Sheet open={isMobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-                    <SheetTrigger asChild className="md:hidden">
+                    <SheetTrigger asChild>
                       <Button variant="outline" size="icon">
                         <Menu className="h-6 w-6"/>
                         <span className="sr-only">Open Menu</span>
                       </Button>
                     </SheetTrigger>
-                    <SheetContent side="left" className="w-full max-w-sm p-4">
-                        <h2 className="font-headline text-2xl font-bold text-primary mb-4 border-b pb-4">Menu</h2>
-                        <SidebarNav />
+                    <SheetContent side="left" className="w-full max-w-sm p-0 flex flex-col">
+                         <div className="p-4 border-b">
+                            <h2 className="font-headline text-2xl font-bold text-primary">Menu</h2>
+                         </div>
+                        <SidebarNav className="p-4 flex-grow"/>
                     </SheetContent>
                 </Sheet>
+            </div>
+        </header>
+
+        <div className="container mx-auto px-4 py-8 md:py-12">
+            <header className="mb-8 hidden md:block">
+                <div>
+                    <h1 className="font-headline text-4xl md:text-5xl font-bold text-primary">Dashboard</h1>
+                    <p className="mt-1 text-lg text-foreground/80">Welcome back, {user.displayName}!</p>
+                </div>
             </header>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8 items-start">
