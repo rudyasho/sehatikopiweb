@@ -19,12 +19,14 @@ const defaultHeroData: HeroFormData = {
   imageUrl: 'https://images.unsplash.com/photo-1511537190424-bbbab87ac5eb?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
 };
 
-const contentCollection = dbAdmin?.collection('siteContent');
-const HERO_DOC_ID = 'homepage-hero';
-
-
 async function initializeHeroDataIfNeeded() {
-  if (!dbAdmin || !contentCollection) return;
+  if (!dbAdmin) {
+    console.error("Firestore Admin is not initialized. Skipping hero data initialization.");
+    return;
+  }
+  
+  const contentCollection = dbAdmin.collection('siteContent');
+  const HERO_DOC_ID = 'homepage-hero';
 
   try {
     const docRef = contentCollection.doc(HERO_DOC_ID);
@@ -42,18 +44,18 @@ async function initializeHeroDataIfNeeded() {
 export async function getHeroData(): Promise<HeroData> {
     noStore();
     
-    if (!dbAdmin || !contentCollection) {
-      console.error("Firestore Admin is not initialized. Returning default hero data.");
-      return { id: HERO_DOC_ID, ...defaultHeroData };
-    }
-    
     await initializeHeroDataIfNeeded();
     
-    const docRef = contentCollection.doc(HERO_DOC_ID);
+    if (!dbAdmin) {
+      console.error("Firestore Admin is not initialized. Returning default hero data.");
+      return { id: 'homepage-hero', ...defaultHeroData };
+    }
+    
+    const docRef = dbAdmin.collection('siteContent').doc('homepage-hero');
     const doc = await docRef.get();
 
     if (!doc.exists) {
-        return { id: HERO_DOC_ID, ...defaultHeroData };
+        return { id: 'homepage-hero', ...defaultHeroData };
     }
     
     const data = doc.data() as HeroFormData;
@@ -61,8 +63,8 @@ export async function getHeroData(): Promise<HeroData> {
 }
 
 export async function updateHeroData(data: HeroFormData): Promise<void> {
-    if (!dbAdmin || !contentCollection) throw new Error("Firestore Admin not initialized.");
+    if (!dbAdmin) throw new Error("Firestore Admin not initialized.");
 
-    const docRef = contentCollection.doc(HERO_DOC_ID);
+    const docRef = dbAdmin.collection('siteContent').doc('homepage-hero');
     await docRef.update(data);
 }

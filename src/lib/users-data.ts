@@ -1,7 +1,7 @@
 // src/lib/users-data.ts
 'use server';
 
-import { admin, dbAdmin } from './firebase-admin';
+import { admin } from './firebase-admin';
 import { SUPER_ADMIN_EMAIL, AppUser } from '@/context/auth-context';
 
 

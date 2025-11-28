@@ -25,12 +25,14 @@ const defaultSettings: SettingsFormData = {
   socialTwitter: 'https://twitter.com/sehatikopi',
 };
 
-const settingsCollection = dbAdmin?.collection('settings');
-const SETTINGS_DOC_ID = 'main-settings'; 
-
-
 async function initializeSettingsIfNeeded() {
-  if (!dbAdmin || !settingsCollection) return;
+  if (!dbAdmin) {
+    console.error("Firestore Admin is not initialized. Skipping settings initialization.");
+    return;
+  }
+  
+  const settingsCollection = dbAdmin.collection('settings');
+  const SETTINGS_DOC_ID = 'main-settings'; 
 
   try {
     const docRef = settingsCollection.doc(SETTINGS_DOC_ID);
@@ -48,18 +50,18 @@ async function initializeSettingsIfNeeded() {
 export async function getSettings(): Promise<WebsiteSettings> {
     noStore();
     
-    if (!dbAdmin || !settingsCollection) {
-      console.error("Firestore Admin is not initialized. Returning default settings.");
-      return { id: SETTINGS_DOC_ID, ...defaultSettings };
-    }
-    
     await initializeSettingsIfNeeded();
     
-    const docRef = settingsCollection.doc(SETTINGS_DOC_ID);
+    if (!dbAdmin) {
+      console.error("Firestore Admin is not initialized. Returning default settings.");
+      return { id: 'main-settings', ...defaultSettings };
+    }
+    
+    const docRef = dbAdmin.collection('settings').doc('main-settings');
     const doc = await docRef.get();
 
     if (!doc.exists) {
-        return { id: SETTINGS_DOC_ID, ...defaultSettings };
+        return { id: 'main-settings', ...defaultSettings };
     }
     
     const data = doc.data() as SettingsFormData;
@@ -67,8 +69,8 @@ export async function getSettings(): Promise<WebsiteSettings> {
 }
 
 export async function updateSettings(data: SettingsFormData): Promise<void> {
-    if (!dbAdmin || !settingsCollection) throw new Error("Firestore Admin not initialized.");
+    if (!dbAdmin) throw new Error("Firestore Admin not initialized.");
 
-    const docRef = settingsCollection.doc(SETTINGS_DOC_ID);
+    const docRef = dbAdmin.collection('settings').doc('main-settings');
     await docRef.update(data);
 }
