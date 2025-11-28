@@ -1,13 +1,10 @@
 // src/lib/users-data.ts
 'use server';
 
-import { admin } from './firebase-admin';
+import { admin, dbAdmin } from './firebase-admin';
 import { SUPER_ADMIN_EMAIL, AppUser } from '@/context/auth-context';
 
 
-/**
- * Lists all users from Firebase Authentication.
- */
 export async function listAllUsers(): Promise<AppUser[]> {
   if (!admin) {
     throw new Error("Firebase Admin SDK is not initialized.");
@@ -24,11 +21,7 @@ export async function listAllUsers(): Promise<AppUser[]> {
   }));
 }
 
-/**
- * Updates the disabled status of a user account.
- * @param uid - The UID of the user to update.
- * @param disabled - The new disabled status.
- */
+
 export async function updateUserDisabledStatus(uid: string, disabled: boolean) {
     if (!admin) {
         throw new Error("Firebase Admin SDK is not initialized.");
@@ -41,10 +34,7 @@ export async function updateUserDisabledStatus(uid: string, disabled: boolean) {
 }
 
 
-/**
- * Deletes a user account permanently.
- * @param uid - The UID of the user to delete.
- */
+
 export async function deleteUserAccount(uid: string) {
     if (!admin) {
         throw new Error("Firebase Admin SDK is not initialized.");

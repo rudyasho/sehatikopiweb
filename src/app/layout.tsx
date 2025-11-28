@@ -1,4 +1,3 @@
-
 'use client';
 
 import { PT_Sans, Playfair_Display, Roboto } from 'next/font/google';
@@ -39,7 +38,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id">
+    <html lang="id" suppressHydrationWarning>
       <body className={cn('min-h-screen bg-background font-body antialiased', ptSans.variable, playfairDisplay.variable, roboto.variable)}>
         <ThemeProvider
             attribute="class"

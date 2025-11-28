@@ -28,13 +28,11 @@ if (!admin.apps.length) {
 
         } catch (error: any) {
             console.error("Firebase Admin SDK initialization error:", error.message);
-            // We don't throw here to allow the app to run, but server-side operations will fail.
         }
     } else {
         console.warn("Firebase Admin environment variables are not set. Skipping Admin SDK initialization. Server-side Firebase operations will fail.");
     }
 } else {
-    // If already initialized, get the firestore instance
     adminApp = admin.apps[0];
     if (adminApp) {
         dbAdmin = getFirestore(adminApp);

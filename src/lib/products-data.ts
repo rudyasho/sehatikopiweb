@@ -1,9 +1,10 @@
-
 // src/lib/products-data.ts
 'use server';
 
 import { unstable_noStore as noStore } from 'next/cache';
 import { dbAdmin } from './firebase-admin';
+import { SUPER_ADMIN_EMAIL } from '@/context/auth-context';
+import type { User } from 'firebase/auth';
 
 export interface Product {
   id: string;
@@ -174,9 +175,12 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
     return { id: doc.id, ...doc.data() } as Product;
 }
 
-export async function addProduct(productData: Omit<ProductFormData, 'tags'> & { tags: string }): Promise<Product> {
+export async function addProduct(productData: Omit<ProductFormData, 'tags'> & { tags: string }, user: User): Promise<Product> {
   if (!dbAdmin) {
-      throw new Error("Firestore Admin not initialized.");
+    throw new Error("Firestore Admin not initialized.");
+  }
+  if (user.email !== SUPER_ADMIN_EMAIL) {
+    throw new Error("Unauthorized: Only admins can add products.");
   }
 
   const productsCollection = dbAdmin.collection('products');
@@ -200,9 +204,12 @@ export async function addProduct(productData: Omit<ProductFormData, 'tags'> & { 
   return createdProduct;
 }
 
-export async function updateProduct(id: string, productData: Omit<ProductFormData, 'tags'> & { tags: string }): Promise<void> {
+export async function updateProduct(id: string, productData: Omit<ProductFormData, 'tags'> & { tags: string }, user: User): Promise<void> {
     if (!dbAdmin) {
         throw new Error("Firestore Admin not initialized.");
+    }
+    if (user.email !== SUPER_ADMIN_EMAIL) {
+      throw new Error("Unauthorized: Only admins can update products.");
     }
     
     const productsCollection = dbAdmin.collection('products');
@@ -215,9 +222,12 @@ export async function updateProduct(id: string, productData: Omit<ProductFormDat
     await productRef.update(updatedData);
 }
 
-export async function deleteProduct(id: string): Promise<void> {
+export async function deleteProduct(id: string, user: User): Promise<void> {
     if (!dbAdmin) {
         throw new Error("Firestore Admin not initialized.");
+    }
+    if (user.email !== SUPER_ADMIN_EMAIL) {
+      throw new Error("Unauthorized: Only admins can delete products.");
     }
     
     const productsCollection = dbAdmin.collection('products');

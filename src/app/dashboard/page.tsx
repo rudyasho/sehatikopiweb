@@ -418,7 +418,7 @@ const ManageProductsView = ({ onDataChange }: { onDataChange: () => void }) => {
             return;
         }
         try {
-            await deleteProduct(productId);
+            await deleteProduct(productId, user);
             toast({ title: "Product Deleted", description: `"${productName}" has been removed.` });
             onDataChange();
         } catch (error) {
@@ -579,10 +579,10 @@ const BlogPostForm = ({ post, onFormSubmit, onFormCancel, currentUser }: { post?
 
         try {
             if (post) {
-                await updateBlogPost(post.id, data);
+                await updateBlogPost(post.id, data, user);
                 toast({ title: "Post Updated!", description: `"${data.title}" has been updated.` });
             } else {
-                await addBlogPost(data);
+                await addBlogPost(data, user);
                 toast({ title: "Post Created!", description: `"${data.title}" has been created.` });
             }
             onFormSubmit();
@@ -699,7 +699,6 @@ const ManageBlogPostsView = ({ onDataChange, initialPostToEdit }: { onDataChange
                     if (postToEdit) {
                         setEditingPost(postToEdit);
                         setIsPostDialogOpen(true);
-                        // Clean up URL parameter
                         router.replace('/dashboard?view=manageBlog', { scroll: false });
                     }
                 }
@@ -719,7 +718,7 @@ const ManageBlogPostsView = ({ onDataChange, initialPostToEdit }: { onDataChange
             return;
         }
         try {
-            await deleteBlogPost(postId);
+            await deleteBlogPost(postId, user);
             toast({ title: "Post Deleted", description: `"${postTitle}" has been removed.` });
             onDataChange();
         } catch (error) {
@@ -867,7 +866,7 @@ const ManageEventsView = ({ onDataChange }: { onDataChange: () => void }) => {
             return;
         }
         try {
-            await deleteEvent(eventId);
+            await deleteEvent(eventId, user);
             toast({ title: "Event Deleted", description: `"${eventTitle}" has been removed.` });
             onDataChange();
         } catch (error) {
@@ -1040,7 +1039,6 @@ const ManageUsersView = ({ currentUser }: { currentUser: AppUser }) => {
         setIsLoading(true);
         try {
             const usersData = await listAllUsers();
-            // Filter out the current admin and the super admin
             setUsers(usersData.filter(user => user.email !== currentUser.email && user.email !== SUPER_ADMIN_EMAIL));
         } catch (error) {
             console.error("Failed to fetch users:", error);
@@ -1052,7 +1050,6 @@ const ManageUsersView = ({ currentUser }: { currentUser: AppUser }) => {
     
     useEffect(() => {
         refreshUsers();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentUser.email, toast]);
 
     const handleToggleDisabled = async (uid: string, disabled: boolean) => {
@@ -1456,7 +1453,6 @@ const ManageOrdersView = ({ onDataChange }: { onDataChange: () => void }) => {
             await updateOrderStatus(orderId, newStatus);
             toast({ title: 'Status Updated', description: `Order ${orderId} is now "${newStatus}".` });
             onDataChange();
-            // Optimistically update the selected order in the dialog
             setSelectedOrder(prev => prev ? {...prev, status: newStatus} : null);
         } catch (error) {
             console.error("Failed to update order status:", error);
@@ -1706,9 +1702,9 @@ const DashboardPage = () => {
 
   const handleViewChange = (view: DashboardView) => {
     setActiveView(view);
-    setInitialPostToEdit(null); // Reset post-to-edit when explicitly changing views
+    setInitialPostToEdit(null);
     router.push('/dashboard?view=' + view, { scroll: false });
-    setMobileMenuOpen(false); // Close mobile menu on selection
+    setMobileMenuOpen(false);
   }
   
   const SidebarNav = ({ className }: { className?: string }) => (

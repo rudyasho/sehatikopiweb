@@ -1,4 +1,3 @@
-
 // src/lib/orders-data.ts
 'use server';
 
@@ -8,9 +7,6 @@ import { dbAdmin } from './firebase-admin';
 import type { CartItem } from '@/context/cart-context';
 import type { AppUser } from '@/context/auth-context';
 
-// -----------------------------
-// Types
-// -----------------------------
 
 export type OrderStatus = 'Pending' | 'Shipped' | 'Delivered' | 'Cancelled';
 
@@ -26,9 +22,6 @@ export type Order = {
   customerInfo?: AppUser; // Populated server-side for the admin view
 };
 
-// -----------------------------
-// Add New Order
-// -----------------------------
 
 export async function addOrder(orderData: Omit<Order, 'customerInfo'>) {
   if (!dbAdmin) {
@@ -47,14 +40,7 @@ export async function addOrder(orderData: Omit<Order, 'customerInfo'>) {
   }
 }
 
-// -----------------------------
-// Get Orders by User ID
-// -----------------------------
-/**
- * Fetches all orders belonging to a specific user.
- * @param userId - The UID of the user whose orders are to be fetched.
- * @returns A promise that resolves to an array of orders.
- */
+
 export async function getOrdersByUserId(userId: string): Promise<Order[]> {
   noStore();
   if (!dbAdmin) {
@@ -74,9 +60,6 @@ export async function getOrdersByUserId(userId: string): Promise<Order[]> {
   }
 }
 
-// -----------------------------
-// Get All Orders (for Admin Dashboard)
-// -----------------------------
 
 export async function getAllOrders(): Promise<Order[]> {
   noStore();
@@ -120,9 +103,6 @@ export async function getAllOrders(): Promise<Order[]> {
   }
 }
 
-// -----------------------------
-// Update Order Status
-// -----------------------------
 
 export async function updateOrderStatus(orderId: string, status: OrderStatus): Promise<void> {
   if (!dbAdmin) {
@@ -132,7 +112,6 @@ export async function updateOrderStatus(orderId: string, status: OrderStatus): P
   
   try {
     await orderRef.update({ status });
-    console.log(`Order ${orderId} status updated to ${status}.`);
   } catch (error) {
     console.error(`Error updating order status for ${orderId}:`, error);
     throw new Error('Failed to update order status.');
