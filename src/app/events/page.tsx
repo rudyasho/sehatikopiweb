@@ -8,8 +8,8 @@ import { EventCardClient } from './event-card-client';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Events & Workshops',
-  description: 'Join our coffee community. Sign up for cupping sessions, latte art workshops, and other exclusive events at Sehati Kopi.',
+  title: 'Acara & Workshop Kopi',
+  description: 'Bergabunglah dengan komunitas kopi kami. Daftar untuk sesi cupping, workshop latte art, dan acara eksklusif lainnya di Sehati Kopi.',
 };
 
 
@@ -36,8 +36,8 @@ const EventsPage = async () => {
     <div className="bg-secondary/50">
       <div className="container mx-auto px-4 py-12">
         <div className="text-center mb-12">
-          <h1 className="font-headline text-4xl md:text-5xl font-bold text-primary">Events & Workshops</h1>
-          <p className="mt-2 text-lg text-foreground/80">Join our community and deepen your coffee knowledge.</p>
+          <h1 className="font-headline text-4xl md:text-5xl font-bold text-primary">Acara & Workshop</h1>
+          <p className="mt-2 text-lg text-foreground/80">Bergabunglah dengan komunitas kami dan perdalam pengetahuan kopi Anda.</p>
         </div>
         <div className="space-y-12">
           {!events ? (
@@ -81,8 +81,8 @@ const EventsPage = async () => {
           ) : (
              <div className="text-center py-16">
                 <Calendar className="mx-auto h-24 w-24 text-foreground/30" />
-                <h2 className="mt-6 text-2xl font-semibold">No Upcoming Events</h2>
-                <p className="mt-2 text-foreground/60">Check back soon for new events and workshops!</p>
+                <h2 className="mt-6 text-2xl font-semibold">Tidak Ada Acara Mendatang</h2>
+                <p className="mt-2 text-foreground/60">Periksa kembali segera untuk acara dan lokakarya baru!</p>
             </div>
           )}
         </div>

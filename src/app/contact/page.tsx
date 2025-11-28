@@ -4,8 +4,8 @@ import { ContactClientPage } from './contact-client';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'Contact Us',
-    description: 'Get in touch with Sehati Kopi. Visit our store, send us a message, or find us on social media. We love to hear from you!',
+    title: 'Kontak Kami - Sehati Kopi',
+    description: 'Hubungi Sehati Kopi. Kunjungi kedai kami, kirim pesan, atau temukan kami di media sosial. Kami senang mendengar dari Anda!',
 };
 
 const ContactPage = async () => {

@@ -5,10 +5,10 @@ import { getProducts } from '@/lib/products-data';
 import { getBlogPosts } from '@/lib/blog-data';
 
 export const metadata: Metadata = {
-  title: 'Search',
-  description: 'Search for your favorite coffee products and insightful blog posts from Sehati Kopi.',
+  title: 'Pencarian',
+  description: 'Cari produk kopi dan artikel blog favorit Anda dari Sehati Kopi.',
   robots: {
-    index: false, // Don't index the search page itself, but follow links
+    index: false, // Jangan indeks halaman pencarian itu sendiri
     follow: true,
   }
 };

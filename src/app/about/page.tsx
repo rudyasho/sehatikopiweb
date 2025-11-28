@@ -5,8 +5,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'About Us',
-  description: 'Learn about the story, values, and passionate team behind Sehati Kopi. Discover our commitment to authenticity, sustainability, and community in the world of Indonesian coffee.',
+  title: 'Tentang Kami - Sejarah Sehati Kopi',
+  description: 'Pelajari tentang cerita, nilai, dan tim di balik Sehati Kopi. Temukan komitmen kami terhadap keaslian, keberlanjutan, dan komunitas dalam dunia kopi specialty Indonesia.',
 };
 
 const teamMembers = [
@@ -22,16 +22,16 @@ const AboutPage = () => {
       <section className="relative h-[50vh] flex items-center justify-center text-center text-white">
         <Image
           src="https://images.unsplash.com/photo-1541167760496-1628856ab772?q=80&w=1337&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-          alt="Coffee shop interior"
+          alt="Interior kedai kopi yang hangat dan nyaman"
           fill
           priority
           className="absolute z-0 object-cover"
         />
         <div className="absolute inset-0 bg-black/60 z-10" />
         <div className="relative z-20 container mx-auto px-4">
-          <h1 className="font-headline text-4xl md:text-6xl font-bold">About Sehati Kopi</h1>
+          <h1 className="font-headline text-4xl md:text-6xl font-bold">Tentang Sehati Kopi</h1>
           <p className="mt-4 text-lg md:text-xl max-w-3xl mx-auto">
-            Connecting hearts through the authentic taste of Indonesian coffee, from our farmers to your cup.
+            Menghubungkan hati melalui cita rasa otentik kopi Indonesia, dari petani kami hingga ke cangkir Anda.
           </p>
         </div>
       </section>
@@ -42,19 +42,19 @@ const AboutPage = () => {
           <div className="relative h-96 rounded-lg overflow-hidden shadow-xl order-last md:order-first">
              <Image
               src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?q=80&w=987&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-              alt="Old photo of coffee farmers"
+              alt="Foto lama petani kopi sedang memanen"
               fill
               className="object-cover"
               sizes="(max-width: 768px) 100vw, 50vw"
             />
           </div>
           <div>
-            <h2 className="font-headline text-3xl md:text-4xl text-primary font-semibold">Our Story</h2>
+            <h2 className="font-headline text-3xl md:text-4xl text-primary font-semibold">Cerita Kami</h2>
             <p className="mt-4 text-lg text-foreground/80">
-              Sehati Kopi Indonesia began with a simple dream: to share the diverse and extraordinary flavors of Indonesian coffee with the world. Founded in 2020, we embarked on a journey across the archipelago, from the highlands of Gayo to the volcanic soils of Flores. We sought not just the best beans, but the stories and the people behind them.
+              Sehati Kopi Indonesia dimulai dari mimpi sederhana: untuk berbagi cita rasa kopi Indonesia yang beragam dan luar biasa kepada dunia. Didirikan pada tahun 2020, kami memulai perjalanan melintasi nusantara, dari dataran tinggi Gayo hingga tanah vulkanik Flores. Kami tidak hanya mencari biji terbaik, tetapi juga cerita dan orang-orang di baliknya.
             </p>
             <p className="mt-4 text-lg text-foreground/80">
-              Our name, 'Sehati', means 'one heart'. It represents our core belief in a shared passion that connects everyone in the coffee chain—the dedicated farmers, our passionate roasters, and you, the discerning coffee lover. We are more than just a coffee brand; we are a community built on respect, quality, and a love for our craft.
+              Nama kami, 'Sehati', melambangkan keyakinan inti kami pada semangat bersama yang menghubungkan semua orang dalam rantai kopi—petani yang berdedikasi, penyangrai kami yang penuh semangat, dan Anda, para pencinta kopi. Kami lebih dari sekadar merek kopi; kami adalah komunitas yang dibangun di atas rasa hormat, kualitas, dan kecintaan pada keahlian kami.
             </p>
           </div>
         </div>
@@ -63,9 +63,9 @@ const AboutPage = () => {
       {/* Our Values */}
       <section className="py-16 md:py-24 bg-secondary/50">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="font-headline text-3xl md:text-4xl text-primary font-semibold">Our Values</h2>
+          <h2 className="font-headline text-3xl md:text-4xl text-primary font-semibold">Nilai-Nilai Kami</h2>
           <p className="mt-2 text-lg max-w-2xl mx-auto text-foreground/80">
-            The principles that guide every bean we roast and every cup we serve.
+            Prinsip-prinsip yang memandu setiap biji yang kami sangrai dan setiap cangkir yang kami sajikan.
           </p>
           <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
             <Card className="text-center shadow-lg bg-background transform hover:-translate-y-2 transition-transform duration-300">
@@ -73,10 +73,10 @@ const AboutPage = () => {
                 <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit">
                   <Heart className="h-8 w-8 text-primary" />
                 </div>
-                <CardTitle className="font-headline text-2xl pt-4">Authenticity</CardTitle>
+                <CardTitle className="font-headline text-2xl pt-4">Keaslian</CardTitle>
               </CardHeader>
               <CardContent className="p-6 pt-0">
-                <p>We honor the unique character of each coffee's origin, telling its true story through meticulous roasting and transparent sourcing.</p>
+                <p>Kami menghormati karakter unik dari setiap asal kopi, menceritakan kisah sejatinya melalui penyangraian yang teliti dan sumber yang transparan.</p>
               </CardContent>
             </Card>
             <Card className="text-center shadow-lg bg-background transform hover:-translate-y-2 transition-transform duration-300">
@@ -84,10 +84,10 @@ const AboutPage = () => {
                 <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit">
                   <Leaf className="h-8 w-8 text-primary" />
                 </div>
-                <CardTitle className="font-headline text-2xl pt-4">Sustainability</CardTitle>
+                <CardTitle className="font-headline text-2xl pt-4">Keberlanjutan</CardTitle>
               </CardHeader>
               <CardContent className="p-6 pt-0">
-                <p>We are committed to environmentally-friendly practices and ensuring fair compensation for our partner farmers, sustaining both land and livelihood.</p>
+                <p>Kami berkomitmen pada praktik ramah lingkungan dan memastikan kompensasi yang adil bagi para petani mitra kami, menopang tanah dan mata pencaharian.</p>
               </CardContent>
             </Card>
             <Card className="text-center shadow-lg bg-background transform hover:-translate-y-2 transition-transform duration-300">
@@ -95,10 +95,10 @@ const AboutPage = () => {
                 <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit">
                   <Users className="h-8 w-8 text-primary" />
                 </div>
-                <CardTitle className="font-headline text-2xl pt-4">Community</CardTitle>
+                <CardTitle className="font-headline text-2xl pt-4">Komunitas</CardTitle>
               </CardHeader>
               <CardContent className="p-6 pt-0">
-                <p>We believe in building a strong community, from our farmers to our customers, united by a shared love for exceptional coffee.</p>
+                <p>Kami percaya dalam membangun komunitas yang kuat, dari petani hingga pelanggan, disatukan oleh kecintaan bersama terhadap kopi yang luar biasa.</p>
               </CardContent>
             </Card>
           </div>
@@ -108,9 +108,9 @@ const AboutPage = () => {
       {/* Meet The Team */}
       <section className="py-16 md:py-24">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="font-headline text-3xl md:text-4xl font-semibold text-primary">Meet The Team</h2>
+          <h2 className="font-headline text-3xl md:text-4xl font-semibold text-primary">Tim Kami</h2>
           <p className="mt-2 text-lg max-w-2xl mx-auto text-foreground/80">
-            The passionate individuals behind Sehati Kopi.
+            Individu-individu penuh semangat di balik Sehati Kopi.
           </p>
           <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
             {teamMembers.map((member) => (

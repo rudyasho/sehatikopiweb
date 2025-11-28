@@ -50,13 +50,14 @@ export function ProductClientPage({ product }: { product: Product }) {
       '@type': 'Offer',
       url: `https://sehatikopi.id/products/${product.slug}`,
       priceCurrency: 'IDR',
-      price: product.price,
+      price: product.price.toString(),
       availability: product.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+      priceValidUntil: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString(),
     },
     aggregateRating: {
         '@type': 'AggregateRating',
-        ratingValue: product.rating,
-        reviewCount: product.reviews
+        ratingValue: product.rating.toString(),
+        reviewCount: product.reviews.toString()
     }
   };
   
@@ -90,7 +91,7 @@ export function ProductClientPage({ product }: { product: Product }) {
             <div className="relative aspect-square rounded-lg overflow-hidden shadow-xl">
               <Image 
                   src={product.image} 
-                  alt={`Kopi Arabika ${product.name}`} 
+                  alt={`Biji kopi specialty ${product.name} dari Indonesia`} 
                   fill 
                   className="object-cover" 
                   sizes="(max-width: 768px) 100vw, 50vw"

@@ -1,8 +1,9 @@
 // src/app/products/[slug]/page.tsx
 import { notFound } from 'next/navigation';
 import { getProductBySlug, getProducts, Product } from '@/lib/products-data';
-import { Metadata } from 'next';
+import { Metadata, ResolvingMetadata } from 'next';
 import { ProductClientPage } from './client-page';
+import { getSettings } from '@/lib/settings-data';
 
 export async function generateStaticParams() {
   const products = await getProducts();
@@ -13,6 +14,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const product = await getProductBySlug(params.slug);
+  const settings = await getSettings();
 
   if (!product) {
     return {
@@ -20,12 +22,16 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     }
   }
 
+  const title = `Jual ${product.name} - Biji Kopi Arabika Specialty`;
+  const description = `Beli biji kopi ${product.name} dari ${product.origin}. ${product.description.substring(0, 120)}... disangrai oleh ${settings.siteName}.`;
+
   return {
-    title: product.name,
-    description: product.description,
+    title: title,
+    description: description,
     openGraph: {
-        title: `${product.name} - Sehati Kopi`,
-        description: product.description,
+        title: title,
+        description: description,
+        url: `https://sehatikopi.id/products/${product.slug}`,
         images: [
             {
                 url: product.image,
@@ -34,6 +40,14 @@ export async function generateMetadata({ params }: { params: { slug: string } })
                 alt: product.name,
             }
         ],
+        type: 'product',
+        siteName: settings.siteName,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: title,
+      description: description,
+      images: [product.image],
     }
   }
 }

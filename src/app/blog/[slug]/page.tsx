@@ -46,22 +46,24 @@ export async function generateMetadata(
   }
   
   const previousImages = (await parent).openGraph?.images || [];
+  const description = post.excerpt || `Baca artikel tentang ${post.title} di blog Sehati Kopi.`;
 
   return {
     title: post.title,
-    description: post.excerpt,
+    description: description,
     openGraph: {
       title: post.title,
-      description: post.excerpt,
+      description: description,
       images: [post.image, ...previousImages],
       type: 'article',
       publishedTime: post.date,
       authors: [post.author],
+      url: `https://sehatikopi.id/blog/${post.slug}`,
     },
     twitter: {
         card: 'summary_large_image',
         title: post.title,
-        description: post.excerpt,
+        description: description,
         images: [post.image],
     }
   };
@@ -175,7 +177,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
             </div>
             <Card className="shadow-xl overflow-hidden">
                 <div className="relative aspect-video w-full">
-                    <Image src={post.image} alt={post.title} fill className="object-cover" />
+                    <Image src={post.image} alt={post.title} fill className="object-cover" priority />
                 </div>
                 <article className="p-6 md:p-12">
                     <header className="mb-6 md:mb-8 border-b pb-6 md:pb-8">

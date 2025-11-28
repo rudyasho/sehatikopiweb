@@ -13,8 +13,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'Blog',
-    description: 'Stories, guides, and insights from the world of Indonesian coffee. Explore our articles on brewing, origins, and coffee culture.',
+    title: 'Blog Kopi Specialty Indonesia',
+    description: 'Cerita, panduan, dan wawasan dari dunia kopi specialty Indonesia. Jelajahi artikel kami tentang cara menyeduh, asal-usul biji kopi, dan budaya kopi nusantara.',
 }
 
 const StaticShare = ({ slug, title }: { slug: string, title: string }) => (
@@ -60,7 +60,7 @@ export default async function BlogPage() {
       <div className="container mx-auto px-4 py-12">
         <div className="text-center mb-12">
           <h1 className="font-headline text-4xl md:text-5xl font-bold text-primary">From the Journal</h1>
-          <p className="mt-2 text-lg text-foreground/80">Stories, guides, and insights from the world of coffee.</p>
+          <p className="mt-2 text-lg text-foreground/80">Stories, guides, and insights from the world of specialty coffee.</p>
         </div>
 
         <section className="mb-16">

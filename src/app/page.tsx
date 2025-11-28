@@ -9,17 +9,20 @@ import { getSettings } from '@/lib/settings-data';
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSettings();
+  const title = `${settings.siteName} - Jual Kopi Arabika & Robusta Indonesia`;
+  const description = `Jelajahi & beli biji kopi arabika dan robusta single-origin terbaik dari seluruh Indonesia. ${settings.siteName} adalah roastery & kedai kopi Anda untuk rasa otentik yang dipanggang dengan penuh semangat.`;
+
   return {
       title: {
           template: `%s | ${settings.siteName}`,
-          default: `${settings.siteName} - Jual Kopi Arabika & Robusta Indonesia`,
+          default: title,
       },
-      description: `Jelajahi & beli biji kopi arabika dan robusta single-origin terbaik dari seluruh Indonesia. ${settings.siteName} adalah roastery & kedai kopi Anda untuk rasa otentik yang dipanggang dengan penuh semangat.`,
-      keywords: ['kopi arabika', 'jual kopi arabika', 'biji kopi arabika', 'kopi indonesia', 'single origin coffee', 'roastery jakarta', 'kedai kopi', 'kopi robusta', 'beli kopi arabika online'],
+      description: description,
+      keywords: ['kopi arabika', 'jual kopi arabika', 'biji kopi arabika', 'kopi indonesia', 'single origin coffee', 'roastery jakarta', 'kedai kopi', 'kopi robusta', 'beli kopi arabika online', 'specialty coffee indonesia'],
       authors: [{ name: settings.siteName }],
       openGraph: {
-          title: `${settings.siteName} - Kopi Arabika & Robusta Terbaik Indonesia`,
-          description: 'Temukan kekayaan rasa kopi arabika dan robusta dari seluruh nusantara. Kami menjual biji kopi arabika single-origin yang disangrai dengan sempurna.',
+          title: title,
+          description: description,
           url: 'https://sehatikopi.id',
           siteName: settings.siteName,
           images: [
@@ -35,7 +38,7 @@ export async function generateMetadata(): Promise<Metadata> {
       },
       twitter: {
           card: 'summary_large_image',
-          title: `${settings.siteName} - Jual Kopi Arabika Pilihan`,
+          title: `${settings.siteName} - Jual Kopi Specialty Pilihan`,
           description: 'Temukan warisan kopi Indonesia yang kaya dan cita rasa yang istimewa, dari biji kopi arabika hingga robusta.',
           images: ['https://images.unsplash.com/photo-1511537190424-bbbab87ac5eb?q=80&w=1170&auto=format&fit=crop&ixlib-rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
       },
