@@ -2,10 +2,38 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Development mode: Allow all reads and writes
-    // WARNING: This is insecure and should NOT be used in production.
+
+    // Koleksi orders
+    match /orders/{orderId} {
+      
+      // User (login atau guest) bisa membuat order
+      allow create: if request.resource.data.userId == request.auth.uid || request.resource.data.userId == null;
+
+      // User login hanya bisa membaca order miliknya
+      // Admin (akan diimplementasikan nanti) bisa membaca semua order
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      
+      // Update hanya boleh oleh pemilik order (bukan guest) untuk status tertentu
+      allow update: if request.auth != null
+                    && resource.data.userId == request.auth.uid
+                    && request.resource.data.status != 'Shipped'; // User bisa cancel jika belum dikirim
+
+      // Delete tidak diizinkan (opsional, bisa dibuka untuk admin)
+      allow delete: if false;
+    }
+
+    // Aturan untuk koleksi lain (produk, blog, dll)
+    // Sebaiknya diatur 'allow read: if true;' dan 'allow write: if is_admin();'
+    
+    function is_admin() {
+      // Implementasi logika admin, contoh:
+      // return request.auth.token.email == "admin@example.com";
+      return true; // Untuk development
+    }
+    
+    // Default: Tolak semua akses lain untuk keamanan
     match /{document=**} {
-      allow read, write: if true;
+      allow read, write: if false;
     }
   }
 }

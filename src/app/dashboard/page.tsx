@@ -1,9 +1,7 @@
-
-
 // src/app/dashboard/page.tsx
 'use client';
 
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { useForm } from 'react-hook-form';
@@ -13,14 +11,14 @@ import { format } from 'date-fns';
 import { 
     Coffee, Star, Calendar, Newspaper, Loader2, PlusCircle, Edit, BarChart3, LayoutGrid, 
     Save, ListOrdered, Trash2, BookText, Image as ImageIcon, CalendarCheck,
-    CalendarPlus, FilePlus2, Users, Settings, ImageUp, ShoppingBag, X, Menu
+    CalendarPlus, FilePlus2, Users, Settings, ImageUp, ShoppingBag, Menu
 } from 'lucide-react';
 
 import { useAuth, type User, type AppUser, SUPER_ADMIN_EMAIL, ADMIN_EMAILS } from '@/context/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { getProducts, updateProduct, deleteProduct, addProduct, type Product } from '@/lib/products-data';
 import { getBlogPosts, updateBlogPost, deleteBlogPost, addBlogPost, type BlogPost } from '@/lib/blog-data';
-import { getEvents, updateEvent, deleteEvent, addEvent, type Event, type EventFormData } from '@/lib/events-data';
+import { getEvents, updateEvent, deleteEvent, addEvent, type Event } from '@/lib/events-data';
 import { listAllUsers, updateUserDisabledStatus, deleteUserAccount } from '@/lib/users-data';
 import { getSettings, updateSettings, type SettingsFormData } from '@/lib/settings-data';
 import { getHeroData, updateHeroData, type HeroFormData } from '@/lib/hero-data';
@@ -48,7 +46,7 @@ import { Separator } from '@/components/ui/separator';
 
 const formatCurrency = (amount: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
 
-type DashboardView = 'overview' | 'addProduct' | 'addBlog' | 'manageProducts' | 'manageBlog' | 'manageEvents' | 'manageUsers' | 'settings' | 'heroSettings' | 'manageOrders';
+type DashboardView = 'overview' | 'manageProducts' | 'manageBlog' | 'manageEvents' | 'manageUsers' | 'settings' | 'heroSettings' | 'manageOrders';
 
 
 const productFormSchema = z.object({
@@ -116,7 +114,6 @@ const MetricCard = ({ title, value, icon: Icon, isLoading }: { title: string, va
 
 const ProductForm = ({ product, onFormSubmit, onFormCancel }: { product?: Product | null, onFormSubmit: () => void, onFormCancel: () => void }) => {
     const { toast } = useToast();
-    const router = useRouter();
     const [imageUrl, setImageUrl] = useState(product?.image || '');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -159,18 +156,11 @@ const ProductForm = ({ product, onFormSubmit, onFormCancel }: { product?: Produc
                     description: `${data.name} has been updated.`,
                 });
             } else {
-                const newProduct = await addProduct(data);
+                await addProduct(data);
                 toast({
                     title: "Product Added!",
                     description: `${data.name} has been added to the product list.`,
-                    action: (
-                        <Button variant="outline" size="sm" onClick={() => router.push(`/products/${newProduct.slug}`)}>
-                            View Product
-                        </Button>
-                    )
                 });
-                form.reset();
-                setImageUrl('');
             }
             onFormSubmit();
         } catch (error) {
@@ -266,12 +256,12 @@ const ProductForm = ({ product, onFormSubmit, onFormCancel }: { product?: Produc
                     </div>
                 </div>
 
-                 <div className="flex gap-2 !mt-8">
-                    <Button type="submit" size="lg" className="w-full md:w-auto" disabled={isSubmitting}>
+                 <div className="flex justify-end gap-2 !mt-8">
+                    <Button type="button" variant="outline" onClick={onFormCancel}>Cancel</Button>
+                    <Button type="submit" disabled={isSubmitting}>
                         {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         {product ? 'Update Product' : 'Add Product'}
                     </Button>
-                    {product && <Button type="button" variant="outline" onClick={onFormCancel}>Cancel</Button>}
                 </div>
             </form>
         </Form>
@@ -364,32 +354,17 @@ const EventForm = ({ event, onFormSubmit, onFormCancel }: { event?: Event | null
                         <FormMessage />
                     </FormItem>
                 )} />
-                 <div className="flex gap-2 !mt-6">
-                    <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
+                 <div className="flex justify-end gap-2 !mt-6">
+                    <Button type="button" variant="outline" onClick={onFormCancel}>Cancel</Button>
+                    <Button type="submit" disabled={isSubmitting}>
                         {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         {event ? 'Update Event' : 'Add Event'}
                     </Button>
-                    <Button type="button" variant="outline" onClick={onFormCancel}>Cancel</Button>
                 </div>
             </form>
         </Form>
     );
 };
-
-
-const AddProductView = ({ onDataChange }: { onDataChange: () => void }) => (
-  <Card className="shadow-lg bg-background">
-    <CardHeader>
-      <CardTitle className="font-headline text-2xl text-primary flex items-center gap-2">
-        <PlusCircle /> Add New Product
-      </CardTitle>
-      <CardDescription>Fill in the details to add a new coffee to the collection.</CardDescription>
-    </CardHeader>
-    <CardContent>
-        <ProductForm onFormSubmit={onDataChange} onFormCancel={() => {}} />
-    </CardContent>
-  </Card>
-);
 
 const ManageProductsView = ({ onDataChange }: { onDataChange: () => void }) => {
     const [products, setProducts] = useState<Product[]>([]);
@@ -425,52 +400,59 @@ const ManageProductsView = ({ onDataChange }: { onDataChange: () => void }) => {
         }
     };
     
+    const openDialog = (product: Product | null) => {
+        setEditingProduct(product);
+        setIsProductDialogOpen(true);
+    };
+
+    const closeDialog = () => {
+        setEditingProduct(null);
+        setIsProductDialogOpen(false);
+    }
+    
+    const handleFormSubmit = () => {
+        closeDialog();
+        onDataChange();
+    };
+
     if (isLoading) {
         return (
             <Card className="shadow-lg bg-background p-6">
-                <Skeleton className="h-8 w-1/4 mb-4" />
+                <div className="flex justify-between items-center mb-4">
+                    <Skeleton className="h-8 w-1/4" />
+                    <Skeleton className="h-10 w-32" />
+                </div>
                 <Skeleton className="h-64 w-full" />
             </Card>
         )
     }
 
-    const handleEditClick = (product: Product) => {
-        setEditingProduct(product);
-        setIsProductDialogOpen(true);
-    }
-    
-    const handleProductFormSubmit = () => {
-        setIsProductDialogOpen(false);
-        setEditingProduct(null);
-        onDataChange();
-    };
-
-    const handleProductFormCancel = () => {
-        setIsProductDialogOpen(false);
-        setEditingProduct(null);
-    }
-
     return (
         <Card className="shadow-lg bg-background">
-            <CardHeader>
-                <CardTitle className="font-headline text-2xl text-primary flex items-center gap-2">
-                    <ListOrdered /> Manage Products
-                </CardTitle>
-                <CardDescription>Edit or delete existing products from your catalog.</CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                    <CardTitle className="font-headline text-2xl text-primary flex items-center gap-2">
+                        <ListOrdered /> Manage Products
+                    </CardTitle>
+                    <CardDescription>Add, edit, or delete products from your catalog.</CardDescription>
+                </div>
+                <Button onClick={() => openDialog(null)}>
+                    <PlusCircle className="mr-2 h-4 w-4" /> Add New Product
+                </Button>
             </CardHeader>
             <CardContent>
                 <Dialog open={isProductDialogOpen} onOpenChange={setIsProductDialogOpen}>
-                    <DialogContent>
+                    <DialogContent className="max-w-4xl">
                          <DialogHeader>
-                            <DialogTitle className="font-headline text-2xl text-primary">Edit Product</DialogTitle>
+                            <DialogTitle className="font-headline text-2xl text-primary">
+                                {editingProduct ? 'Edit Product' : 'Add New Product'}
+                            </DialogTitle>
                          </DialogHeader>
-                         {editingProduct && (
-                             <ProductForm 
-                                product={editingProduct} 
-                                onFormSubmit={handleProductFormSubmit}
-                                onFormCancel={handleProductFormCancel}
-                            />
-                         )}
+                         <ProductForm 
+                            product={editingProduct} 
+                            onFormSubmit={handleFormSubmit}
+                            onFormCancel={closeDialog}
+                        />
                     </DialogContent>
                 </Dialog>
                 <div className="border rounded-lg">
@@ -490,10 +472,9 @@ const ManageProductsView = ({ onDataChange }: { onDataChange: () => void }) => {
                                     <TableCell className="text-muted-foreground">{product.origin}</TableCell>
                                     <TableCell className="text-right">{formatCurrency(product.price)}</TableCell>
                                     <TableCell className="text-center space-x-2">
-                                         <Button variant="outline" size="icon" aria-label={`Edit ${product.name}`} onClick={() => handleEditClick(product)}>
+                                         <Button variant="outline" size="icon" aria-label={`Edit ${product.name}`} onClick={() => openDialog(product)}>
                                             <Edit className="h-4 w-4" />
                                         </Button>
-
                                         <AlertDialog>
                                             <AlertDialogTrigger asChild>
                                                 <Button variant="destructive" size="icon" aria-label={`Delete ${product.name}`}>
@@ -526,7 +507,7 @@ const ManageProductsView = ({ onDataChange }: { onDataChange: () => void }) => {
     );
 }
 
-const BlogPostForm = ({ post, onFormSubmit, onFormCancel, isCreatingNew, currentUser }: { post?: BlogPost | null, onFormSubmit: () => void, onFormCancel: () => void, isCreatingNew?: boolean, currentUser?: User | null }) => {
+const BlogPostForm = ({ post, onFormSubmit, onFormCancel, currentUser }: { post?: BlogPost | null, onFormSubmit: () => void, onFormCancel: () => void, currentUser?: User | null }) => {
     const { toast } = useToast();
     const [isSubmitting, setIsSubmitting] = useState(false);
     
@@ -559,18 +540,17 @@ const BlogPostForm = ({ post, onFormSubmit, onFormCancel, isCreatingNew, current
     const onSubmit = async (data: BlogPostFormValues) => {
         setIsSubmitting(true);
         try {
-            if (isCreatingNew) {
-                await addBlogPost(data);
-                toast({ title: "Post Created!", description: `"${data.title}" has been created.` });
-                form.reset({ category: 'Coffee Education', title: '', content: '', image: '', author: currentUser?.displayName || '' });
-            } else if (post) {
+            if (post) {
                 await updateBlogPost(post.id, data);
                 toast({ title: "Post Updated!", description: `"${data.title}" has been updated.` });
+            } else {
+                await addBlogPost(data);
+                toast({ title: "Post Created!", description: `"${data.title}" has been created.` });
             }
             onFormSubmit();
         } catch (error) {
             console.error("Failed to submit blog post:", error);
-            const errorMessage = error instanceof Error ? error.message : `Could not ${isCreatingNew ? 'create' : 'update'} the post.`;
+            const errorMessage = error instanceof Error ? error.message : `Could not ${post ? 'update' : 'create'} the post.`;
             toast({
                 variant: 'destructive',
                 title: "Error!",
@@ -649,31 +629,17 @@ const BlogPostForm = ({ post, onFormSubmit, onFormCancel, isCreatingNew, current
                         )}
                         />
                 </div>
-                <div className="flex gap-2 !mt-8">
-                    <Button type="submit" size="lg" className="w-full md:w-auto" disabled={isSubmitting}>
+                <div className="flex justify-end gap-2 !mt-8">
+                    <Button type="button" variant="outline" onClick={onFormCancel}>Cancel</Button>
+                    <Button type="submit" disabled={isSubmitting}>
                         {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        {isCreatingNew ? 'Create Post' : 'Update Post'}
+                        {post ? 'Update Post' : 'Create Post'}
                     </Button>
-                    {!isCreatingNew && <Button type="button" variant="outline" onClick={onFormCancel}>Cancel</Button>}
                 </div>
             </form>
         </Form>
     );
 };
-
-const AddBlogPostView = ({ currentUser, onDataChange }: { currentUser: User, onDataChange: () => void }) => (
-    <Card className="shadow-lg bg-background">
-        <CardHeader>
-            <CardTitle className="font-headline text-2xl text-primary flex items-center gap-2">
-                <FilePlus2 /> Create New Blog Post
-            </CardTitle>
-            <CardDescription>Manually craft a new article for your blog.</CardDescription>
-        </CardHeader>
-        <CardContent>
-            <BlogPostForm isCreatingNew currentUser={currentUser} onFormSubmit={onDataChange} onFormCancel={() => {}} />
-        </CardContent>
-    </Card>
-);
 
 const ManageBlogPostsView = ({ onDataChange, initialPostToEdit }: { onDataChange: () => void, initialPostToEdit?: string | null }) => {
     const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -695,6 +661,7 @@ const ManageBlogPostsView = ({ onDataChange, initialPostToEdit }: { onDataChange
                     if (postToEdit) {
                         setEditingPost(postToEdit);
                         setIsPostDialogOpen(true);
+                        // Clean up URL parameter
                         router.replace('/dashboard?view=manageBlog', { scroll: false });
                     }
                 }
@@ -719,54 +686,59 @@ const ManageBlogPostsView = ({ onDataChange, initialPostToEdit }: { onDataChange
         }
     };
     
+    const openDialog = (post: BlogPost | null) => {
+        setEditingPost(post);
+        setIsPostDialogOpen(true);
+    };
+
+    const closeDialog = () => {
+        setEditingPost(null);
+        setIsPostDialogOpen(false);
+    }
+    
+    const handleFormSubmit = () => {
+        closeDialog();
+        onDataChange();
+    };
+    
     if (isLoading) {
         return (
             <Card className="shadow-lg bg-background p-6">
-                <Skeleton className="h-8 w-1/4 mb-4" />
+                <div className="flex justify-between items-center mb-4">
+                    <Skeleton className="h-8 w-1/4" />
+                    <Skeleton className="h-10 w-32" />
+                </div>
                 <Skeleton className="h-64 w-full" />
             </Card>
         )
     }
 
-    const handleEditClick = (post: BlogPost) => {
-        setEditingPost(post);
-        setIsPostDialogOpen(true);
-    };
-
-    const handlePostFormSubmit = () => {
-        setIsPostDialogOpen(false);
-        setEditingPost(null);
-        onDataChange();
-    };
-
-    const handlePostFormCancel = () => {
-        setIsPostDialogOpen(false);
-        setEditingPost(null);
-    }
-
     return (
         <Card className="shadow-lg bg-background">
-            <CardHeader>
-                <CardTitle className="font-headline text-2xl text-primary flex items-center gap-2">
-                    <BookText /> Manage Blog Posts
-                </CardTitle>
-                <CardDescription>Edit or delete existing articles from your blog.</CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+                 <div>
+                    <CardTitle className="font-headline text-2xl text-primary flex items-center gap-2">
+                        <BookText /> Manage Blog Posts
+                    </CardTitle>
+                    <CardDescription>Create, edit, or delete articles from your blog.</CardDescription>
+                </div>
+                <Button onClick={() => openDialog(null)}>
+                    <FilePlus2 className="mr-2 h-4 w-4" /> Create New Post
+                </Button>
             </CardHeader>
             <CardContent>
                 <Dialog open={isPostDialogOpen} onOpenChange={setIsPostDialogOpen}>
                     <DialogContent className="max-w-4xl">
                          <DialogHeader>
-                            <DialogTitle className="font-headline text-2xl text-primary">Edit Blog Post</DialogTitle>
-                            <CardDescription>Editing post: "{editingPost?.title}"</CardDescription>
+                            <DialogTitle className="font-headline text-2xl text-primary">{editingPost ? 'Edit Blog Post' : 'Create New Post'}</DialogTitle>
+                            {editingPost && <CardDescription>Editing post: "{editingPost?.title}"</CardDescription>}
                          </DialogHeader>
-                         {editingPost && (
-                            <BlogPostForm 
-                                post={editingPost}
-                                currentUser={user}
-                                onFormSubmit={handlePostFormSubmit}
-                                onFormCancel={handlePostFormCancel}
-                            />
-                         )}
+                         <BlogPostForm 
+                            post={editingPost}
+                            currentUser={user}
+                            onFormSubmit={handleFormSubmit}
+                            onFormCancel={closeDialog}
+                        />
                     </DialogContent>
                 </Dialog>
 
@@ -787,7 +759,7 @@ const ManageBlogPostsView = ({ onDataChange, initialPostToEdit }: { onDataChange
                                     <TableCell className="text-muted-foreground">{post.author}</TableCell>
                                     <TableCell>{post.date ? format(new Date(post.date), "MMM d, yyyy") : 'N/A'}</TableCell>
                                     <TableCell className="text-center space-x-2">
-                                         <Button variant="outline" size="icon" onClick={() => handleEditClick(post)} aria-label={`Edit ${post.title}`}>
+                                         <Button variant="outline" size="icon" onClick={() => openDialog(post)} aria-label={`Edit ${post.title}`}>
                                             <Edit className="h-4 w-4" />
                                         </Button>
 
@@ -875,7 +847,10 @@ const ManageEventsView = ({ onDataChange }: { onDataChange: () => void }) => {
     if (isLoading) {
         return (
             <Card className="shadow-lg bg-background p-6">
-                <Skeleton className="h-8 w-1/4 mb-4" />
+                <div className="flex justify-between items-center mb-4">
+                    <Skeleton className="h-8 w-1/4" />
+                    <Skeleton className="h-10 w-32" />
+                </div>
                 <Skeleton className="h-64 w-full" />
             </Card>
         );
@@ -1627,11 +1602,8 @@ const DashboardPage = () => {
         setActiveView('overview');
       }
 
-      if (editPostId) {
+      if (view === 'manageBlog' && editPostId) {
           setInitialPostToEdit(editPostId);
-          if (view !== 'manageBlog') {
-            setActiveView('manageBlog');
-          }
       } else {
         setInitialPostToEdit(null);
       }
@@ -1654,10 +1626,6 @@ const DashboardPage = () => {
     switch (activeView) {
         case 'overview':
             return <AnalyticsOverview stats={stats} products={products} isLoading={isDataLoading} />;
-        case 'addProduct':
-            return <AddProductView onDataChange={handleDataChange} />;
-        case 'addBlog':
-            return <AddBlogPostView currentUser={user} onDataChange={handleDataChange} />;
         case 'manageProducts':
             return <ManageProductsView onDataChange={handleDataChange} />;
         case 'manageBlog':
@@ -1681,9 +1649,7 @@ const DashboardPage = () => {
       { id: 'overview', label: 'Overview', icon: LayoutGrid },
       { id: 'manageOrders', label: 'Manage Orders', icon: ShoppingBag },
       { id: 'manageProducts', label: 'Manage Products', icon: ListOrdered },
-      { id: 'addProduct', label: 'Add Product', icon: PlusCircle },
       { id: 'manageBlog', label: 'Manage Posts', icon: BookText },
-      { id: 'addBlog', label: 'Create Post', icon: FilePlus2 },
       { id: 'manageEvents', label: 'Manage Events', icon: CalendarCheck },
       { id: 'manageUsers', label: 'Manage Users', icon: Users },
       { id: 'heroSettings', label: 'Hero Settings', icon: ImageUp },
