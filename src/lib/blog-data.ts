@@ -13,7 +13,9 @@ export type BlogPost = {
     slug: string;
     content: string;
     author: string;
+    authorId: string;
     date: string;
+    status: 'draft' | 'pending' | 'published';
 };
 
 export type NewBlogPostData = {
@@ -22,6 +24,8 @@ export type NewBlogPostData = {
     content: string;
     image: string;
     author: string;
+    authorId: string;
+    status?: 'draft' | 'pending' | 'published';
 }
 
 const createExcerpt = (content: string, length = 150): string => {
@@ -37,13 +41,14 @@ const createExcerpt = (content: string, length = 150): string => {
     return `${trimmed.substring(0, Math.min(trimmed.length, trimmed.lastIndexOf(" ")))}...`;
 };
 
-const initialBlogPosts: Omit<BlogPost, 'id' | 'slug' | 'date' | 'excerpt'>[] = [
+const initialBlogPosts: Omit<BlogPost, 'id' | 'slug' | 'date' | 'excerpt' | 'authorId'>[] = [
     {
         title: 'The Ultimate Guide to Brewing with a V60',
         content: 'The V60 is a fantastic brewer, but it can be tricky to master. In this guide, we break down the variables to help you brew the perfect cup, every time. We\'ll cover grind size, water temperature, pouring technique, and more.\n\n## What You\'ll Need\n- Hario V60 Dripper\n- V60 paper filters\n- Gooseneck kettle\n- Digital scale\n- Your favorite Sehati Kopi beans (we recommend Bali Kintamani!)\n\n## Step-by-Step\n1.  **Rinse the filter:** Place the paper filter in the V60 and rinse it thoroughly with hot water. This removes any paper taste and preheats the brewer.\n2.  **Grind your coffee:** Use a medium-fine grind. It should feel something like table salt.\n3.  **Bloom the coffee:** Add your ground coffee, start your timer, and pour in double the amount of water as coffee (e.g., 30g of water for 15g of coffee). Let it sit for 30-45 seconds. You\'ll see bubbles appear as the coffee de-gasses.\n4.  **Continue pouring:** Pour the rest of your water in slow, concentric circles. Aim to finish pouring around the 2:30 mark.\n5.  **Let it drain:** Once you\'ve poured all your water, let it drain completely. Your total brew time should be around 3 to 4 minutes. Enjoy!',
         category: 'Brewing Tips',
         image: 'https://images.unsplash.com/photo-1545665225-b23b99e4d45e?q=80&w=1287&auto=format&fit=crop',
         author: 'Adi Prasetyo',
+        status: 'published',
     },
     {
         title: 'Our Journey to the Highlands of Gayo',
@@ -51,6 +56,7 @@ const initialBlogPosts: Omit<BlogPost, 'id' | 'slug' | 'date' | 'excerpt'>[] = [
         category: 'Storytelling',
         image: 'https://images.unsplash.com/photo-1509223103657-2a29718ea935?q=80&w=1332&auto=format&fit=crop',
         author: 'Siti Aminah',
+        status: 'published',
     }
 ];
 
@@ -71,7 +77,13 @@ async function seedDatabaseIfNeeded() {
           const docRef = blogCollection.doc();
           const slug = postData.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
           const excerpt = createExcerpt(postData.content);
-          batch.set(docRef, { ...postData, slug, excerpt, date: new Date().toISOString() });
+          batch.set(docRef, { 
+              ...postData, 
+              slug, 
+              excerpt, 
+              date: new Date().toISOString(),
+              authorId: 'admin_seeded',
+            });
       });
       await batch.commit();
       console.log('Blog database seeded successfully.');
@@ -81,7 +93,7 @@ async function seedDatabaseIfNeeded() {
   }
 }
 
-export async function getBlogPosts(): Promise<BlogPost[]> {
+export async function getBlogPosts(showPending = false): Promise<BlogPost[]> {
     noStore();
     await seedDatabaseIfNeeded();
     
@@ -89,7 +101,13 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
         throw new Error("Firestore Admin is not initialized. Cannot get blog posts.");
     }
 
-    const blogSnapshot = await dbAdmin.collection('blog').orderBy('date', 'desc').get();
+    let query = dbAdmin.collection('blog').orderBy('date', 'desc');
+
+    if (!showPending) {
+        query = query.where('status', '==', 'published');
+    }
+
+    const blogSnapshot = await query.get();
     const blogList = blogSnapshot.docs.map(doc => {
       const data = doc.data();
       return {
@@ -111,7 +129,14 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
         return null;
     }
     const doc = snapshot.docs[0];
-    return { id: doc.id, ...doc.data() } as BlogPost;
+    const postData = doc.data() as BlogPost;
+
+    // Only return if it's published
+    if (postData.status !== 'published') {
+        return null;
+    }
+
+    return { id: doc.id, ...postData };
 }
 
 export async function addBlogPost(post: NewBlogPostData): Promise<BlogPost> {
@@ -126,6 +151,7 @@ export async function addBlogPost(post: NewBlogPostData): Promise<BlogPost> {
         excerpt: createExcerpt(post.content),
         slug: slug,
         date: new Date().toISOString(),
+        status: post.status || 'pending',
     };
 
     const docRef = await dbAdmin.collection('blog').add(newPostData);

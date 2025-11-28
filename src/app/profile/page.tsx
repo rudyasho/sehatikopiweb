@@ -1,4 +1,3 @@
-
 // src/app/profile/page.tsx
 'use client';
 
@@ -6,10 +5,12 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { format } from 'date-fns';
-import { Loader2, Mail, LogOut, LayoutDashboard, ShoppingBag } from 'lucide-react';
+import { Loader2, Mail, LogOut, LayoutDashboard, ShoppingBag, Edit, FilePlus2, Star } from 'lucide-react';
 
 import { useAuth } from '@/context/auth-context';
 import { getOrdersByUserId, type Order } from '@/lib/orders-data';
+import { getBlogPosts, type BlogPost, addBlogPost, NewBlogPostData } from '@/lib/blog-data';
+import { getTestimonials, type Testimonial } from '@/lib/testimonials-data';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -17,6 +18,9 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { BlogPostForm } from '@/app/dashboard/blog-form';
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
@@ -109,6 +113,138 @@ const OrderHistory = ({ userId }: { userId: string }) => {
     )
 }
 
+const MyPosts = ({ userId }: { userId: string }) => {
+    const [posts, setPosts] = useState<BlogPost[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const { user } = useAuth();
+    const [isFormOpen, setFormOpen] = useState(false);
+
+    const fetchPosts = async () => {
+        setIsLoading(true);
+        try {
+            const allPosts = await getBlogPosts();
+            setPosts(allPosts.filter(p => p.authorId === userId));
+        } catch(e) {
+            console.error(e);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    
+    useEffect(() => {
+        fetchPosts();
+    }, [userId]);
+
+    if (isLoading) {
+        return <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+    }
+
+    return (
+        <div className="space-y-4">
+             <Dialog open={isFormOpen} onOpenChange={setFormOpen}>
+                <DialogTrigger asChild>
+                    <Button><FilePlus2 className="mr-2 h-4 w-4"/> Write New Post</Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-4xl">
+                    <DialogHeader>
+                        <DialogTitle>Submit a New Blog Post</DialogTitle>
+                        <CardDescription>Your post will be reviewed by an admin before publication.</CardDescription>
+                    </DialogHeader>
+                    <BlogPostForm 
+                        currentUser={user}
+                        onFormSubmit={() => {
+                            setFormOpen(false);
+                            fetchPosts();
+                        }}
+                        onFormCancel={() => setFormOpen(false)}
+                    />
+                </DialogContent>
+             </Dialog>
+            {posts.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">You haven't written any posts yet.</p>
+            ) : (
+                <div className="border rounded-lg">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Title</TableHead>
+                                <TableHead>Date</TableHead>
+                                <TableHead>Status</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {posts.map(post => (
+                                <TableRow key={post.id}>
+                                    <TableCell>{post.title}</TableCell>
+                                    <TableCell>{format(new Date(post.date), 'MMM d, yyyy')}</TableCell>
+                                    <TableCell>
+                                        <Badge variant={post.status === 'published' ? 'secondary' : 'outline'}>
+                                            {post.status === 'published' ? 'Published' : 'Pending'}
+                                        </Badge>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
+            )}
+        </div>
+    )
+};
+
+const MyTestimonials = ({ userId }: { userId: string }) => {
+    const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+     useEffect(() => {
+        const fetchTestimonials = async () => {
+            setIsLoading(true);
+            try {
+                const allTestimonials = await getTestimonials(200); // fetch a large number
+                setTestimonials(allTestimonials.filter(t => t.userId === userId));
+            } catch(e) {
+                console.error(e);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchTestimonials();
+    }, [userId]);
+
+    if (isLoading) {
+        return <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+    }
+
+     if (testimonials.length === 0) {
+        return <p className="text-center text-muted-foreground py-8">You haven't written any reviews yet.</p>
+    }
+
+    return (
+        <div className="space-y-4">
+            {testimonials.map(item => (
+                <Card key={item.id} className="bg-secondary/50">
+                    <CardContent className="p-4 flex items-start gap-4">
+                        <div className="flex-grow">
+                            <div className="flex justify-between items-start">
+                                <div className="flex items-center gap-2">
+                                     <Badge variant={item.status === 'published' ? 'secondary' : 'outline'}>
+                                        {item.status === 'published' ? 'Published' : 'Pending'}
+                                    </Badge>
+                                    <div className="flex text-amber-500">
+                                        {[...Array(item.rating)].map((_, i) => <Star key={i} className="w-4 h-4 fill-current" />)}
+                                    </div>
+                                </div>
+                                <p className="text-xs text-muted-foreground">{item.date ? format(new Date(item.date), 'MMM d, yyyy') : ''}</p>
+                            </div>
+                            <p className="text-sm mt-2 italic">"{item.review}"</p>
+                        </div>
+                    </CardContent>
+                </Card>
+            ))}
+        </div>
+    );
+};
+
 
 const ProfilePage = () => {
   const { user, loading, logout } = useAuth();
@@ -166,8 +302,22 @@ const ProfilePage = () => {
             </CardHeader>
             <Separator/>
             <CardContent className="p-6">
-                <h3 className="font-headline text-2xl text-primary mb-4">Order History</h3>
-                <OrderHistory userId={user.uid} />
+                 <Tabs defaultValue="orders">
+                    <TabsList className="grid w-full grid-cols-3">
+                        <TabsTrigger value="orders">Order History</TabsTrigger>
+                        <TabsTrigger value="posts">My Posts</TabsTrigger>
+                        <TabsTrigger value="testimonials">My Reviews</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="orders" className="pt-6">
+                        <OrderHistory userId={user.uid} />
+                    </TabsContent>
+                    <TabsContent value="posts" className="pt-6">
+                        <MyPosts userId={user.uid} />
+                    </TabsContent>
+                    <TabsContent value="testimonials" className="pt-6">
+                        <MyTestimonials userId={user.uid} />
+                    </TabsContent>
+                 </Tabs>
             </CardContent>
           </Card>
         </div>

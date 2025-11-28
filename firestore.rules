@@ -3,56 +3,63 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Function to check if a user is an admin
-    function isAdmin() {
-      return request.auth != null && ('role' in request.auth.token && (request.auth.token.role == 'Admin' || request.auth.token.role == 'Super Admin'));
+    function isAuth() {
+      return request.auth != null;
     }
 
-    // Publicly readable collections, writable only by admins
+    function isAdmin() {
+      return isAuth() && ('role' in request.auth.token && (request.auth.token.role == 'Admin' || request.auth.token.role == 'Super Admin'));
+    }
+
     match /products/{productId} {
       allow read: if true;
       allow write: if isAdmin();
     }
+
     match /blog/{postId} {
-      allow read: if true;
-      allow write: if isAdmin();
+      allow read: if resource.data.status == 'published';
+      allow create: if isAuth() && request.resource.data.authorId == request.auth.uid && request.resource.data.status == 'pending';
+      allow update, delete: if isAdmin() || (isAuth() && resource.data.authorId == request.auth.uid && resource.data.status != 'published');
     }
+    
+    match /testimonials/{testimonialId} {
+      allow read: if resource.data.status == 'published';
+      allow create: if isAuth() && request.resource.data.userId == request.auth.uid && request.resource.data.status == 'pending';
+      allow update, delete: if isAdmin();
+    }
+
     match /events/{eventId} {
       allow read: if true;
       allow write: if isAdmin();
     }
+
     match /menu/{itemId} {
       allow read: if true;
       allow write: if isAdmin();
     }
-    match /testimonials/{testimonialId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
+
     match /siteContent/{docId} {
       allow read: if true;
       allow write: if isAdmin();
     }
-     match /settings/{docId} {
+
+    match /settings/{docId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // Orders can be created by anyone, read by the owner or admin, and updated only by admin.
     match /orders/{orderId} {
-      allow create: if true; // Allow guests and users to create orders
-      allow read: if request.auth != null && (resource.data.userId == request.auth.uid || isAdmin());
-      allow update: if isAdmin(); // Only admins can update order status etc.
+      allow create: if true;
+      allow read: if isAuth() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow update: if isAdmin();
       allow delete: if isAdmin();
     }
 
-    // Users can read/write their own document. Admins can read any user document.
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-      allow list, get: if isAdmin(); // Admins can get or list users
+      allow read, write: if isAuth() && request.auth.uid == userId;
+      allow list, get: if isAdmin();
     }
     
-    // Default rule: Deny all other access for security
     match /{document=**} {
       allow read, write: if false;
     }

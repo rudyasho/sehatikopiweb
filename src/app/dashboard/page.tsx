@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { 
     LayoutGrid, ShoppingBag, ListOrdered, BookText, CalendarCheck, 
-    Users, ImageUp, Settings, Loader2, Menu
+    Users, ImageUp, Settings, Loader2, Menu, Star
 } from 'lucide-react';
 
 import { useAuth } from '@/context/auth-context';
@@ -20,8 +20,9 @@ import ManageEventsView from './manage-events-view';
 import ManageUsersView from './manage-users-view';
 import HeroSettingsView from './hero-settings-view';
 import SettingsView from './settings-view';
+import ManageTestimonialsView from './manage-testimonials-view';
 
-type DashboardView = 'overview' | 'manageOrders' | 'manageProducts' | 'manageBlog' | 'manageEvents' | 'manageUsers' | 'heroSettings' | 'settings';
+type DashboardView = 'overview' | 'manageOrders' | 'manageProducts' | 'manageBlog' | 'manageEvents' | 'manageUsers' | 'heroSettings' | 'settings' | 'manageTestimonials';
 
 const DashboardPage = () => {
   const { user, loading } = useAuth();
@@ -69,6 +70,8 @@ const DashboardPage = () => {
             return <ManageBlogView initialPostToEdit={editId} />;
         case 'manageEvents':
             return <ManageEventsView />;
+        case 'manageTestimonials':
+            return <ManageTestimonialsView />;
         case 'manageUsers':
             return user.role === 'Super Admin' ? <ManageUsersView currentUser={user} /> : null;
         case 'heroSettings':
@@ -86,6 +89,7 @@ const DashboardPage = () => {
       { id: 'manageOrders', label: 'Manage Orders', icon: ShoppingBag },
       { id: 'manageProducts', label: 'Manage Products', icon: ListOrdered },
       { id: 'manageBlog', label: 'Manage Posts', icon: BookText },
+      { id: 'manageTestimonials', label: 'Testimonials', icon: Star },
       { id: 'manageEvents', label: 'Manage Events', icon: CalendarCheck },
       ...(user.role === 'Super Admin' ? [{ id: 'manageUsers' as const, label: 'Manage Users', icon: Users }] : []),
       { id: 'heroSettings', label: 'Hero Settings', icon: ImageUp },

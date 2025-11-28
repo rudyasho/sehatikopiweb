@@ -10,7 +10,13 @@ export type Testimonial = {
     review: string;
     rating: number;
     avatar: string;
+    status: 'pending' | 'published';
+    date: string; // ISO 8601
+    productId?: string;
+    userId?: string;
 };
+
+export type NewTestimonialData = Omit<Testimonial, 'id'>;
 
 const initialTestimonials: Omit<Testimonial, 'id'>[] = [
   {
@@ -18,31 +24,17 @@ const initialTestimonials: Omit<Testimonial, 'id'>[] = [
     avatar: 'https://images.unsplash.com/photo-1593628525442-f94a810619e0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMXx8cG90cmV0JTIwcHJpYSUyMHxlbnwwfHx8fDE3NTY2MjMwNjZ8MA&ixlib=rb-4.1.0&q=80&w=1080',
     review: 'Kopi Arabika dari Sehati Kopi adalah yang terbaik yang pernah saya coba! Aroma dan rasanya benar-benar tiada duanya. Permata sejati.',
     rating: 5,
+    status: 'published',
+    date: new Date().toISOString(),
   },
   {
     name: 'Siti K.',
     avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1287&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     review: 'Sehati Kopi sudah menjadi ritual harian saya. Sangrai mereka konsisten dan pengirimannya selalu cepat. Sangat direkomendasikan!',
     rating: 5,
+    status: 'published',
+    date: new Date().toISOString(),
   },
-  {
-    name: 'Budi S.',
-    avatar: 'https://images.unsplash.com/photo-1574091983337-b78650545f93?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxNXx8cG90cmV0JTIwbGVsYWtpfGVufDB8fHx8MTc1NjYyMzE3NXww&ixlib=rb-4.1.0&q=80&w=1080',
-    review: 'Saya suka cerita di balik kopi dan semangat timnya. Anda bisa merasakan kualitasnya di setiap cangkir.',
-    rating: 5,
-  },
-  {
-    name: 'Rina M.',
-    avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=1361&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    review: 'Bali Kintamani mereka mengubah cara saya memandang kopi. Nota buahnya sangat cerah dan menyegarkan. Luar biasa!',
-    rating: 5,
-  },
-  {
-    name: 'Eko W.',
-    avatar: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=1470&auto=format&fit=crop&ixlib-rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    review: 'Pengalaman pelanggan yang luar biasa. Timnya sangat berpengetahuan dan membantu saya memilih biji yang sempurna untuk selera saya.',
-    rating: 4,
-  }
 ];
 
 
@@ -83,7 +75,7 @@ async function seedDatabaseIfNeeded() {
   }
 }
 
-export async function getTestimonials(limit: number = 3): Promise<Testimonial[]> {
+export async function getTestimonials(limit: number = 3, showPending = false): Promise<Testimonial[]> {
     noStore();
     await seedDatabaseIfNeeded();
 
@@ -91,8 +83,17 @@ export async function getTestimonials(limit: number = 3): Promise<Testimonial[]>
       throw new Error("Firestore Admin is not initialized. Cannot get testimonials.");
     }
     
-    const testimonialsCollection = dbAdmin.collection('testimonials');
-    const snapshot = await testimonialsCollection.limit(limit).get();
+    let query = dbAdmin.collection('testimonials').orderBy('date', 'desc');
+    
+    if (!showPending) {
+        query = query.where('status', '==', 'published');
+    }
+    
+    if (limit) {
+        query = query.limit(limit);
+    }
+    
+    const snapshot = await query.get();
     const list = snapshot.docs.map(doc => {
       const data = doc.data();
       return {
@@ -102,4 +103,25 @@ export async function getTestimonials(limit: number = 3): Promise<Testimonial[]>
     });
     
     return list;
+}
+
+export async function addTestimonial(testimonialData: NewTestimonialData): Promise<void> {
+    if (!dbAdmin) {
+        throw new Error("Firestore Admin not initialized.");
+    }
+    await dbAdmin.collection('testimonials').add(testimonialData);
+}
+
+export async function updateTestimonial(id: string, data: Partial<Testimonial>): Promise<void> {
+     if (!dbAdmin) {
+        throw new Error("Firestore Admin not initialized.");
+    }
+    await dbAdmin.collection('testimonials').doc(id).update(data);
+}
+
+export async function deleteTestimonial(id: string): Promise<void> {
+    if (!dbAdmin) {
+        throw new Error("Firestore Admin not initialized.");
+    }
+    await dbAdmin.collection('testimonials').doc(id).delete();
 }

@@ -61,12 +61,12 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
     notFound();
   }
 
-  const reviews = await getTestimonials(10); // Fetch more for reviews section
+  const reviews = await getTestimonials(100); // Fetch all for reviews section
 
   return (
       <>
         <ProductClientPage product={product} />
-        <ReviewsSection initialReviews={reviews} productName={product.name} />
+        <ReviewsSection initialReviews={reviews} productName={product.name} productId={product.id} />
       </>
   );
 }
