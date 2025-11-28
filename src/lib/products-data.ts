@@ -49,7 +49,7 @@ const initialProducts: Omit<Product, 'id' | 'slug'>[] = [
     origin: 'Bajawa, Flores',
     description: 'A complex coffee with beautiful floral aromas, sweet chocolate notes, and a syrupy, lingering body. The unique terroir of Flores gives this coffee a truly memorable character.',
     price: 150000,
-    image: 'https://plus.unsplash.com/premium_photo-1681324222331-935fd4bc5180?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    image: 'https://plus.unsplash.com/premium_photo-1681324222331-935fd4bc5180?q=80&w=1170&auto=format&fit=crop&ixlib-rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     rating: 4.7,
     reviews: 82,
     tags: ['Floral', 'Chocolate', 'Syrupy'],
@@ -60,7 +60,7 @@ const initialProducts: Omit<Product, 'id' | 'slug'>[] = [
     origin: 'Mandailing, Sumatra',
     description: 'Famously smooth and heavy-bodied, this coffee presents deep, resonant notes of tobacco, dark cocoa, and a whisper of tropical fruit. A truly classic and satisfying cup.',
     price: 125000,
-    image: 'https://images.unsplash.com/photo-1515694590185-73647ba02c10?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    image: 'https://images.unsplash.com/photo-1515694590185-73647ba02c10?q=80&w=1170&auto=format&fit=crop&ixlib-rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     rating: 4.8,
     reviews: 110,
     tags: ['Full Body', 'Earthy', 'Complex'],
@@ -111,7 +111,7 @@ async function seedDatabaseIfNeeded() {
   
   if (!dbAdmin) {
     console.warn("Firestore Admin is not initialized. Skipping seed operation.");
-    seedingCompleted = true; // Prevent multiple attempts if not initialized
+    seedingCompleted = true; 
     return;
   }
   
@@ -141,7 +141,6 @@ async function seedDatabaseIfNeeded() {
 
 export async function getProducts(): Promise<Product[]> {
   noStore();
-  
   await seedDatabaseIfNeeded();
 
   if (!dbAdmin) {
@@ -175,7 +174,9 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
 }
 
 export async function addProduct(productData: Omit<ProductFormData, 'tags'> & { tags: string }): Promise<Product> {
-  if (!dbAdmin) throw new Error("Firestore Admin not initialized.");
+  if (!dbAdmin) {
+      throw new Error("Firestore Admin not initialized.");
+  }
 
   const productsCollection = dbAdmin.collection('products');
   const slug = productData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
@@ -199,7 +200,9 @@ export async function addProduct(productData: Omit<ProductFormData, 'tags'> & { 
 }
 
 export async function updateProduct(id: string, productData: Omit<ProductFormData, 'tags'> & { tags: string }): Promise<void> {
-    if (!dbAdmin) throw new Error("Firestore Admin not initialized.");
+    if (!dbAdmin) {
+        throw new Error("Firestore Admin not initialized.");
+    }
     
     const productsCollection = dbAdmin.collection('products');
     const productRef = productsCollection.doc(id);
@@ -212,7 +215,9 @@ export async function updateProduct(id: string, productData: Omit<ProductFormDat
 }
 
 export async function deleteProduct(id: string): Promise<void> {
-    if (!dbAdmin) throw new Error("Firestore Admin not initialized.");
+    if (!dbAdmin) {
+        throw new Error("Firestore Admin not initialized.");
+    }
     
     const productsCollection = dbAdmin.collection('products');
     const productRef = productsCollection.doc(id);

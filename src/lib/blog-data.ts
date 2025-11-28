@@ -64,7 +64,7 @@ async function seedDatabaseIfNeeded() {
   
   if (!dbAdmin) {
     console.warn("Firestore Admin is not initialized. Skipping seed operation.");
-    seedingCompleted = true; // Prevent multiple attempts if not initialized
+    seedingCompleted = true; 
     return;
   }
 
@@ -95,7 +95,6 @@ async function seedDatabaseIfNeeded() {
 
 export async function getBlogPosts(): Promise<BlogPost[]> {
     noStore();
-
     await seedDatabaseIfNeeded();
     
     if (!dbAdmin) {
@@ -128,7 +127,9 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
 }
 
 export async function addBlogPost(post: NewBlogPostData): Promise<BlogPost> {
-    if (!dbAdmin) throw new Error("Firestore Admin not initialized.");
+    if (!dbAdmin) {
+        throw new Error("Firestore Admin not initialized.");
+    }
 
     const slug = post.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
     
@@ -148,7 +149,9 @@ export async function addBlogPost(post: NewBlogPostData): Promise<BlogPost> {
 }
 
 export async function updateBlogPost(id: string, data: Partial<NewBlogPostData>): Promise<void> {
-    if (!dbAdmin) throw new Error("Firestore Admin not initialized.");
+    if (!dbAdmin) {
+        throw new Error("Firestore Admin not initialized.");
+    }
     
     const postRef = dbAdmin.collection('blog').doc(id);
     const updateData: { [key: string]: any } = { ...data };
@@ -157,7 +160,6 @@ export async function updateBlogPost(id: string, data: Partial<NewBlogPostData>)
         updateData.slug = data.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
     }
     
-    // Always regenerate excerpt if content changes
     if (data.content) {
         updateData.excerpt = createExcerpt(data.content);
     }
@@ -166,7 +168,9 @@ export async function updateBlogPost(id: string, data: Partial<NewBlogPostData>)
 }
 
 export async function deleteBlogPost(id: string): Promise<void> {
-    if (!dbAdmin) throw new Error("Firestore Admin not initialized.");
+    if (!dbAdmin) {
+        throw new Error("Firestore Admin not initialized.");
+    }
 
     const postRef = dbAdmin.collection('blog').doc(id);
     await postRef.delete();

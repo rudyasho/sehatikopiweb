@@ -83,15 +83,12 @@ export async function getAllOrders(): Promise<Order[]> {
     throw new Error('Database admin instance is not initialized.');
   }
 
-  const ordersCollection = dbAdmin.collection('orders');
-
   try {
-    const ordersSnapshot = await ordersCollection.orderBy('orderDate', 'desc').get();
+    const ordersSnapshot = await dbAdmin.collection('orders').orderBy('orderDate', 'desc').get();
     const orders = ordersSnapshot.docs.map(doc => doc.data() as Omit<Order, 'customerInfo'>);
 
     const userIds = [...new Set(orders.map(o => o.userId).filter((id): id is string => !!id))];
     if (userIds.length === 0) {
-        // Return orders with guest user info structure
         return orders.map(order => ({ ...order, customerInfo: undefined }));
     }
 

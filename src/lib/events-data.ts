@@ -56,7 +56,7 @@ async function seedDatabaseIfNeeded() {
   
   if (!dbAdmin) {
     console.warn("Firestore Admin is not initialized. Skipping seed operation.");
-    seedingCompleted = true; // Prevent multiple attempts if not initialized
+    seedingCompleted = true; 
     return;
   }
 
@@ -85,7 +85,6 @@ async function seedDatabaseIfNeeded() {
 
 export async function getEvents(): Promise<Event[]> {
     noStore();
-
     await seedDatabaseIfNeeded();
     
     if (!dbAdmin) {
@@ -106,7 +105,9 @@ export async function getEvents(): Promise<Event[]> {
 }
 
 export async function addEvent(eventData: EventFormData): Promise<Event> {
-    if (!dbAdmin) throw new Error("Firestore Admin not initialized.");
+    if (!dbAdmin) {
+        throw new Error("Firestore Admin not initialized.");
+    }
     const eventsCollection = dbAdmin.collection('events');
     const docRef = await eventsCollection.add(eventData);
     return {
@@ -116,14 +117,18 @@ export async function addEvent(eventData: EventFormData): Promise<Event> {
 }
 
 export async function updateEvent(id: string, data: Partial<EventFormData>): Promise<void> {
-    if (!dbAdmin) throw new Error("Firestore Admin not initialized.");
+    if (!dbAdmin) {
+        throw new Error("Firestore Admin not initialized.");
+    }
     const eventsCollection = dbAdmin.collection('events');
     const eventRef = eventsCollection.doc(id);
     await eventRef.update(data);
 }
 
 export async function deleteEvent(id: string): Promise<void> {
-    if (!dbAdmin) throw new Error("Firestore Admin not initialized.");
+    if (!dbAdmin) {
+        throw new Error("Firestore Admin not initialized.");
+    }
     const eventsCollection = dbAdmin.collection('events');
     const eventRef = eventsCollection.doc(id);
     await eventRef.delete();

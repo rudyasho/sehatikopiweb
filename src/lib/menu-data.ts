@@ -52,7 +52,7 @@ async function seedDatabaseIfNeeded() {
 
   if (!dbAdmin) {
     console.warn("Firestore Admin is not initialized. Skipping seed operation.");
-    seedingCompleted = true; // Prevent multiple attempts if not initialized
+    seedingCompleted = true; 
     return;
   }
   
@@ -81,7 +81,6 @@ async function seedDatabaseIfNeeded() {
 
 export async function getMenuItems(): Promise<MenuItems> {
     noStore();
-    
     await seedDatabaseIfNeeded();
 
     if (!dbAdmin) {
