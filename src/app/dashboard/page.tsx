@@ -11,16 +11,15 @@ import { format } from 'date-fns';
 import { 
     Coffee, Star, Calendar, Newspaper, Loader2, PlusCircle, Edit, BarChart3, LayoutGrid, 
     Save, ListOrdered, Trash2, BookText, Image as ImageIcon, CalendarCheck,
-    CalendarPlus, FilePlus2, Users, Settings, ImageUp, ShoppingBag, Menu
+    CalendarPlus, FilePlus2, Users, Settings, ImageUp, ShoppingBag, Menu, UserPlus
 } from 'lucide-react';
 
-import { useAuth, SUPER_ADMIN_EMAIL } from '@/context/auth-context';
-import type { AppUser } from '@/context/auth-context';
+import { useAuth, SUPER_ADMIN_EMAIL, AppUser } from '@/context/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { getProducts, updateProduct, deleteProduct, addProduct, type Product } from '@/lib/products-data';
 import { getBlogPosts, updateBlogPost, deleteBlogPost, addBlogPost, type BlogPost } from '@/lib/blog-data';
 import { getEvents, updateEvent, deleteEvent, addEvent, type Event } from '@/lib/events-data';
-import { listAllUsers, updateUserDisabledStatus, deleteUserAccount } from '@/lib/users-data';
+import { listAllUsers, updateUserDisabledStatus, deleteUserAccount, createUser, type CreateUserFormData } from '@/lib/users-data';
 import { getSettings, updateSettings, type SettingsFormData } from '@/lib/settings-data';
 import { getHeroData, updateHeroData, type HeroFormData } from '@/lib/hero-data';
 import { getAllOrders, updateOrderStatus, type Order, type OrderStatus } from '@/lib/orders-data';
@@ -97,6 +96,12 @@ const heroFormSchema = z.object({
   title: z.string().min(10, "Title is required."),
   subtitle: z.string().min(10, "Subtitle is required."),
   imageUrl: z.string().url("A valid image URL is required."),
+});
+
+const userFormSchema = z.object({
+  displayName: z.string().min(2, "Name is required."),
+  email: z.string().email("A valid email is required."),
+  password: z.string().min(8, "Password must be at least 8 characters."),
 });
 
 
@@ -1042,17 +1047,88 @@ const AnalyticsOverview = ({ stats, products, isLoading }: { stats: any, product
     )
 };
 
+const AddUserForm = ({ onFormSubmit, onFormCancel }: { onFormSubmit: () => void, onFormCancel: () => void }) => {
+    const { toast } = useToast();
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const form = useForm<CreateUserFormData>({
+        resolver: zodResolver(userFormSchema),
+        defaultValues: {
+            displayName: '',
+            email: '',
+            password: '',
+        },
+    });
+
+    const onSubmit = async (data: CreateUserFormData) => {
+        setIsSubmitting(true);
+        try {
+            await createUser(data);
+            toast({
+                title: "User Created!",
+                description: `Account for ${data.email} has been created successfully.`,
+            });
+            onFormSubmit();
+        } catch (error: any) {
+            console.error("Failed to create user:", error);
+            toast({
+                variant: 'destructive',
+                title: "Creation Failed!",
+                description: error.message || 'Could not create the new user account.',
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    return (
+        <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField control={form.control} name="displayName" render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Full Name</FormLabel>
+                        <FormControl><Input placeholder="John Doe" {...field} /></FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )} />
+                <FormField control={form.control} name="email" render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Email Address</FormLabel>
+                        <FormControl><Input type="email" placeholder="user@example.com" {...field} /></FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )} />
+                <FormField control={form.control} name="password" render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Password</FormLabel>
+                        <FormControl><Input type="password" placeholder="••••••••" {...field} /></FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )} />
+                <div className="flex justify-end gap-2 !mt-6">
+                    <Button type="button" variant="outline" onClick={onFormCancel}>Cancel</Button>
+                    <Button type="submit" disabled={isSubmitting}>
+                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Create User
+                    </Button>
+                </div>
+            </form>
+        </Form>
+    );
+};
+
+
 const ManageUsersView = ({ currentUser }: { currentUser: AppUser }) => {
     const [users, setUsers] = useState<AppUser[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const { toast } = useToast();
+    const [isAddUserOpen, setAddUserOpen] = useState(false);
 
     const refreshUsers = async () => {
         setIsLoading(true);
         try {
             const usersData = await listAllUsers();
-            // Filter out the currently logged-in admin from the list
-            setUsers(usersData.filter(user => user.uid !== currentUser.uid));
+            setUsers(usersData);
         } catch (error) {
             console.error("Failed to fetch users:", error);
             toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch users.' });
@@ -1087,6 +1163,11 @@ const ManageUsersView = ({ currentUser }: { currentUser: AppUser }) => {
             toast({ variant: 'destructive', title: 'Error', description: error.message || 'Could not delete user account.' });
         }
     };
+    
+    const handleFormSubmit = () => {
+        setAddUserOpen(false);
+        refreshUsers();
+    };
 
     if (isLoading) {
         return (
@@ -1096,14 +1177,30 @@ const ManageUsersView = ({ currentUser }: { currentUser: AppUser }) => {
             </Card>
         );
     }
+    
+    // Filter out the currently logged-in admin from the list
+    const displayUsers = users.filter(user => user.uid !== currentUser.uid);
 
     return (
         <Card className="shadow-lg bg-background">
-            <CardHeader>
-                <CardTitle className="font-headline text-2xl text-primary flex items-center gap-2">
-                    <Users /> Manage Users
-                </CardTitle>
-                <CardDescription>View, enable/disable, and delete user accounts.</CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+                 <div>
+                    <CardTitle className="font-headline text-2xl text-primary flex items-center gap-2">
+                        <Users /> Manage Users
+                    </CardTitle>
+                    <CardDescription>View, create, or manage user accounts.</CardDescription>
+                </div>
+                <Dialog open={isAddUserOpen} onOpenChange={setAddUserOpen}>
+                    <DialogTrigger asChild>
+                        <Button><UserPlus className="mr-2 h-4 w-4"/> Add New User</Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle className="font-headline text-2xl text-primary">Create New User Account</DialogTitle>
+                        </DialogHeader>
+                        <AddUserForm onFormSubmit={handleFormSubmit} onFormCancel={() => setAddUserOpen(false)} />
+                    </DialogContent>
+                </Dialog>
             </CardHeader>
             <CardContent>
                 <div className="border rounded-lg">
@@ -1118,7 +1215,7 @@ const ManageUsersView = ({ currentUser }: { currentUser: AppUser }) => {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {users.map((user) => (
+                            {displayUsers.map((user) => (
                                 <TableRow key={user.uid}>
                                     <TableCell>
                                         <div className="font-medium">{user.displayName || 'N/A'}</div>

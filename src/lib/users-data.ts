@@ -6,6 +6,13 @@ import { SUPER_ADMIN_EMAIL } from '@/context/auth-context';
 
 export type { AppUser } from '@/context/auth-context';
 
+export type CreateUserFormData = {
+  displayName: string;
+  email: string;
+  password?: string;
+};
+
+
 export async function listAllUsers(): Promise<AppUser[]> {
   if (!admin) {
     throw new Error("Firebase Admin SDK is not initialized.");
@@ -20,6 +27,25 @@ export async function listAllUsers(): Promise<AppUser[]> {
     creationTime: user.metadata.creationTime,
     disabled: user.disabled,
   }));
+}
+
+export async function createUser(userData: CreateUserFormData) {
+    if (!admin) {
+        throw new Error("Firebase Admin SDK is not initialized.");
+    }
+    
+    try {
+        await admin.auth().createUser({
+            email: userData.email,
+            password: userData.password,
+            displayName: userData.displayName,
+        });
+    } catch (error: any) {
+        if (error.code === 'auth/email-already-exists') {
+            throw new Error('A user with this email address already exists.');
+        }
+        throw new Error(error.message || 'Failed to create user account.');
+    }
 }
 
 
