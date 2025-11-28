@@ -1,3 +1,4 @@
+
 // src/lib/products-data.ts
 'use server';
 
@@ -27,7 +28,7 @@ const initialProducts: Omit<Product, 'id' | 'slug'>[] = [
     origin: 'Gayo Highlands, Aceh',
     description: 'A rich, full-bodied coffee with earthy notes of dark chocolate, cedar, and a hint of spice. Known for its smooth finish and low acidity, making it a classic Indonesian favorite.',
     price: 120000,
-    image: 'https://images.unsplash.com/photo-1607681034540-2c46cc71896d?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    image: 'https://images.unsplash.com/photo-1607681034540-2c46cc71896d?q=80&w=1170&auto=format&fit=crop&ixlib-rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     rating: 4.8,
     reviews: 125,
     tags: ['Earthy', 'Spicy', 'Full Body'],
@@ -38,7 +39,7 @@ const initialProducts: Omit<Product, 'id' | 'slug'>[] = [
     origin: 'Kintamani Highlands, Bali',
     description: 'A smooth, sweet coffee with a clean finish and bright, citrusy undertones. Grown on volcanic soil alongside citrus fruits, which imparts a unique fruity aroma and flavor.',
     price: 135000,
-    image: 'https://images.unsplash.com/photo-1629248989876-07129a68946d?q=80&w=1169&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    image: 'https://images.unsplash.com/photo-1629248989876-07129a68946d?q=80&w=1169&auto=format&fit=crop&ixlib-rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     rating: 4.9,
     reviews: 98,
     tags: ['Fruity', 'Citrus', 'Clean'],

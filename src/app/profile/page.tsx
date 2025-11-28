@@ -128,7 +128,7 @@ const ProfilePage = () => {
     );
   }
 
-  const isUserAdmin = user.email && SUPER_ADMIN_EMAIL.includes(user.email);
+  const isUserAdmin = user.email && user.email === SUPER_ADMIN_EMAIL;
 
   return (
     <div className="bg-secondary/50 min-h-screen">
