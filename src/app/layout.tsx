@@ -1,15 +1,12 @@
-'use client';
-
 import { PT_Sans, Playfair_Display, Roboto } from 'next/font/google';
 
 import './globals.css';
 import { cn } from '@/lib/utils';
-import { AuthProvider } from '@/context/auth-context';
-import { CartProvider } from '@/context/cart-context';
-import { ThemeProvider } from '@/components/layout/theme-provider';
+import { Providers } from '@/components/layout/providers';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
-import { Toaster } from "@/components/ui/toaster"
+import { getSettings } from '@/lib/settings-data';
+import type { Metadata } from 'next';
 
 const ptSans = PT_Sans({
   subsets: ['latin'],
@@ -32,33 +29,42 @@ const roboto = Roboto({
   display: 'swap',
 });
 
-export default function RootLayout({
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSettings();
+  return {
+      title: {
+          template: `%s | ${settings.siteName}`,
+          default: `${settings.siteName} - Jual Kopi Arabika & Robusta Indonesia`,
+      },
+      description: `Jelajahi & beli biji kopi arabika dan robusta single-origin terbaik dari seluruh Indonesia. ${settings.siteName} adalah roastery & kedai kopi Anda untuk rasa otentik yang dipanggang dengan penuh semangat.`,
+  };
+}
+
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const settings = await getSettings();
+
   return (
     <html lang="id" suppressHydrationWarning>
       <body className={cn('min-h-screen bg-background font-body antialiased', ptSans.variable, playfairDisplay.variable, roboto.variable)}>
-        <ThemeProvider
+        <Providers
             attribute="class"
             defaultTheme="light"
             enableSystem
             disableTransitionOnChange
         >
-          <AuthProvider>
-            <CartProvider>
-              <div className="relative flex min-h-dvh flex-col">
-                <Header />
-                <main className="flex-1">
-                  {children}
-                </main>
-                <Footer />
-              </div>
-              <Toaster />
-            </CartProvider>
-          </AuthProvider>
-        </ThemeProvider>
+          <div className="relative flex min-h-dvh flex-col">
+            <Header siteName={settings.siteName} />
+            <main className="flex-1">
+              {children}
+            </main>
+            <Footer siteName={settings.siteName} />
+          </div>
+        </Providers>
       </body>
     </html>
   );

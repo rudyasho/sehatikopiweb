@@ -11,10 +11,10 @@ import { format } from 'date-fns';
 import { 
     Coffee, Star, Calendar, Newspaper, Loader2, PlusCircle, Edit, BarChart3, LayoutGrid, 
     Save, ListOrdered, Trash2, BookText, Image as ImageIcon, CalendarCheck,
-    CalendarPlus, FilePlus2, Users, Settings, ImageUp, ShoppingBag, Menu, UserPlus
+    CalendarPlus, FilePlus2, Users, Settings, ImageUp, ShoppingBag, Menu, UserPlus, Home
 } from 'lucide-react';
 
-import { useAuth, SUPER_ADMIN_EMAIL, AppUser } from '@/context/auth-context';
+import { useAuth, SUPER_ADMIN_EMAIL, type AppUser } from '@/context/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { getProducts, updateProduct, deleteProduct, addProduct, type Product } from '@/lib/products-data';
 import { getBlogPosts, updateBlogPost, deleteBlogPost, addBlogPost, type BlogPost } from '@/lib/blog-data';
@@ -84,6 +84,7 @@ const eventFormSchema = z.object({
 type EventFormValues = z.infer<typeof eventFormSchema>;
 
 const settingsFormSchema = z.object({
+  siteName: z.string().min(3, "Site name is required."),
   contactPhone: z.string().min(10, "Phone number is required."),
   contactEmail: z.string().email("A valid email is required."),
   contactAddress: z.string().min(10, "Address is required."),
@@ -1345,12 +1346,20 @@ const SettingsView = () => {
                     <Settings /> Website Settings
                 </CardTitle>
                 <CardDescription>
-                    Manage your site's contact information and social media links here.
+                    Manage your site's name, contact information and social media links here.
                 </CardDescription>
             </CardHeader>
             <CardContent>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                        <Card className="p-6 bg-secondary/50">
+                            <h3 className="text-lg font-semibold text-primary mb-4">General</h3>
+                             <div className="space-y-4">
+                                <FormField control={form.control} name="siteName" render={({ field }) => (
+                                    <FormItem><FormLabel>Site Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                )}/>
+                             </div>
+                        </Card>
                         <Card className="p-6 bg-secondary/50">
                             <h3 className="text-lg font-semibold text-primary mb-4">Contact Information</h3>
                              <div className="space-y-4">

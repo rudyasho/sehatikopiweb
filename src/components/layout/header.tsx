@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from 'next/link';
@@ -24,7 +23,7 @@ import { ThemeToggle } from './theme-toggle';
 import { Separator } from '@/components/ui/separator';
 
 
-export function Header() {
+export function Header({ siteName }: { siteName: string }) {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { cart } = useCart();
@@ -119,7 +118,7 @@ export function Header() {
             <div className="flex items-center justify-between border-b p-4">
             <Link href="/" className="flex items-center space-x-2" onClick={() => setIsMobileMenuOpen(false)}>
                 <Coffee className="h-6 w-6 text-primary" />
-                <span className="font-bold font-headline text-lg">Sehati Kopi</span>
+                <span className="font-bold font-headline text-lg">{siteName}</span>
             </Link>
             <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(false)}>
                 <X />
@@ -217,7 +216,7 @@ export function Header() {
         <div className="mr-4 flex">
           <Link href="/" className="flex items-center space-x-2">
             <Coffee className="h-6 w-6 text-primary" />
-            <span className="font-bold font-headline text-lg">Sehati Kopi</span>
+            <span className="font-bold font-headline text-lg">{siteName}</span>
           </Link>
         </div>
         

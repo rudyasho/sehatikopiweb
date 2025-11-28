@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from 'next/link';
@@ -10,7 +9,7 @@ import { FormEvent, useEffect, useState } from 'react';
 import { getSettings, WebsiteSettings } from '@/lib/settings-data';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export function Footer() {
+export function Footer({ siteName }: { siteName: string }) {
   const { toast } = useToast();
   const [settings, setSettings] = useState<WebsiteSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -51,7 +50,7 @@ export function Footer() {
           <div className="space-y-4">
             <Link href="/" className="flex items-center space-x-2">
               <Coffee className="h-6 w-6 text-primary" />
-              <span className="font-bold font-headline text-lg">Sehati Kopi</span>
+              <span className="font-bold font-headline text-lg">{siteName}</span>
             </Link>
             <p className="text-sm text-foreground/80">
               Roasting the finest Indonesian coffee with heart and passion.
@@ -121,7 +120,7 @@ export function Footer() {
           </div>
         </div>
         <div className="mt-8 pt-8 border-t text-center text-sm text-foreground/60">
-          <p>&copy; {new Date().getFullYear()} Sehati Kopi Indonesia. All Rights Reserved.</p>
+          <p>&copy; {new Date().getFullYear()} {siteName}. All Rights Reserved.</p>
         </div>
       </div>
     </footer>

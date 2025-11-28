@@ -6,6 +6,7 @@ import { unstable_noStore as noStore } from 'next/cache';
 
 export type WebsiteSettings = {
     id: string;
+    siteName: string;
     contactPhone: string;
     contactEmail: string;
     contactAddress: string;
@@ -17,6 +18,7 @@ export type WebsiteSettings = {
 export type SettingsFormData = Omit<WebsiteSettings, 'id'>;
 
 const defaultSettings: SettingsFormData = {
+  siteName: 'Sehati Kopi',
   contactPhone: '+62 123 4567 890',
   contactEmail: 'info@sehatikopi.id',
   contactAddress: 'Jl. Kopi Nikmat No. 1, Jakarta, Indonesia',
@@ -41,6 +43,12 @@ async function initializeSettingsIfNeeded() {
       console.log('Settings document not found. Creating with default values...');
       await docRef.set(defaultSettings);
       console.log('Default settings created.');
+    } else {
+        // Add missing fields if they don't exist
+        const data = doc.data();
+        if (!data?.siteName) {
+            await docRef.update({ siteName: defaultSettings.siteName });
+        }
     }
   } catch (error) {
     console.error("Error initializing settings:", error);
@@ -52,14 +60,15 @@ export async function getSettings(): Promise<WebsiteSettings> {
     await initializeSettingsIfNeeded();
     
     if (!dbAdmin) {
-      throw new Error("Firestore Admin is not initialized. Returning default settings.");
+      console.error("Firestore Admin is not initialized. Returning default settings.");
+      return { id: 'main-settings', ...defaultSettings };
     }
     
     const docRef = dbAdmin.collection('settings').doc('main-settings');
     const doc = await docRef.get();
 
     if (!doc.exists) {
-        throw new Error("Settings document not found.");
+        return { id: 'main-settings', ...defaultSettings };
     }
     
     const data = doc.data() as SettingsFormData;
