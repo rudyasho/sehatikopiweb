@@ -1208,7 +1208,7 @@ const ManageUsersView = ({ currentUser }: { currentUser: AppUser }) => {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel onClick={() => setUserToDelete(null)}>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDeleteUser} disabled={!userToDelete}>
+                        <AlertDialogAction onClick={handleDeleteUser}>
                             Delete Permanently
                         </AlertDialogAction>
                     </AlertDialogFooter>
