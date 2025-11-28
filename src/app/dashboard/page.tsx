@@ -1179,7 +1179,6 @@ const ManageUsersView = ({ currentUser }: { currentUser: AppUser }) => {
         );
     }
     
-    // Filter out the currently logged-in admin from the list
     const displayUsers = users.filter(user => user.uid !== currentUser.uid);
 
     return (
@@ -1830,7 +1829,9 @@ const DashboardPage = () => {
     setActiveView(view);
     setInitialPostToEdit(null);
     router.push('/dashboard?view=' + view, { scroll: false });
-    setMobileMenuOpen(false);
+    if (isMobileMenuOpen) {
+      setMobileMenuOpen(false);
+    }
   }
   
   const SidebarNav = ({ className }: { className?: string }) => (
