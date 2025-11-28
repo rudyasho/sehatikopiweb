@@ -1051,7 +1051,8 @@ const ManageUsersView = ({ currentUser }: { currentUser: AppUser }) => {
         setIsLoading(true);
         try {
             const usersData = await listAllUsers();
-            setUsers(usersData.filter(user => user.email !== currentUser.email && user.email !== SUPER_ADMIN_EMAIL));
+            // Filter out the currently logged-in admin from the list
+            setUsers(usersData.filter(user => user.uid !== currentUser.uid));
         } catch (error) {
             console.error("Failed to fetch users:", error);
             toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch users.' });
@@ -1062,7 +1063,8 @@ const ManageUsersView = ({ currentUser }: { currentUser: AppUser }) => {
     
     useEffect(() => {
         refreshUsers();
-    }, [currentUser.email, toast]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentUser.uid]);
 
     const handleToggleDisabled = async (uid: string, disabled: boolean) => {
         try {
@@ -1130,49 +1132,55 @@ const ManageUsersView = ({ currentUser }: { currentUser: AppUser }) => {
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="text-center space-x-2">
-                                        <AlertDialog>
-                                            <AlertDialogTrigger asChild>
-                                                <Button variant="outline" size="sm">
-                                                    {user.disabled ? 'Enable' : 'Disable'}
-                                                </Button>
-                                            </AlertDialogTrigger>
-                                            <AlertDialogContent>
-                                                <AlertDialogHeader>
-                                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                                    <AlertDialogDescription>
-                                                        This will {user.disabled ? 'enable' : 'disable'} the user account for "{user.email}".
-                                                    </AlertDialogDescription>
-                                                </AlertDialogHeader>
-                                                <AlertDialogFooter>
-                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                    <AlertDialogAction onClick={() => handleToggleDisabled(user.uid, user.disabled)}>
-                                                        Confirm
-                                                    </AlertDialogAction>
-                                                </AlertDialogFooter>
-                                            </AlertDialogContent>
-                                        </AlertDialog>
+                                        {user.email !== SUPER_ADMIN_EMAIL ? (
+                                            <>
+                                                <AlertDialog>
+                                                    <AlertDialogTrigger asChild>
+                                                        <Button variant="outline" size="sm">
+                                                            {user.disabled ? 'Enable' : 'Disable'}
+                                                        </Button>
+                                                    </AlertDialogTrigger>
+                                                    <AlertDialogContent>
+                                                        <AlertDialogHeader>
+                                                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                            <AlertDialogDescription>
+                                                                This will {user.disabled ? 'enable' : 'disable'} the user account for "{user.email}".
+                                                            </AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <AlertDialogFooter>
+                                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                            <AlertDialogAction onClick={() => handleToggleDisabled(user.uid, user.disabled)}>
+                                                                Confirm
+                                                            </AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
 
-                                        <AlertDialog>
-                                            <AlertDialogTrigger asChild>
-                                                <Button variant="destructive" size="sm">
-                                                    Delete
-                                                </Button>
-                                            </AlertDialogTrigger>
-                                            <AlertDialogContent>
-                                                <AlertDialogHeader>
-                                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                                    <AlertDialogDescription>
-                                                        This action cannot be undone. This will permanently delete the account for "{user.email}".
-                                                    </AlertDialogDescription>
-                                                </AlertDialogHeader>
-                                                <AlertDialogFooter>
-                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                    <AlertDialogAction onClick={() => handleDeleteUser(user.uid)}>
-                                                        Delete Permanently
-                                                    </AlertDialogAction>
-                                                </AlertDialogFooter>
-                                            </AlertDialogContent>
-                                        </AlertDialog>
+                                                <AlertDialog>
+                                                    <AlertDialogTrigger asChild>
+                                                        <Button variant="destructive" size="sm">
+                                                            Delete
+                                                        </Button>
+                                                    </AlertDialogTrigger>
+                                                    <AlertDialogContent>
+                                                        <AlertDialogHeader>
+                                                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                            <AlertDialogDescription>
+                                                                This action cannot be undone. This will permanently delete the account for "{user.email}".
+                                                            </AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <AlertDialogFooter>
+                                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                            <AlertDialogAction onClick={() => handleDeleteUser(user.uid)}>
+                                                                Delete Permanently
+                                                            </AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
+                                            </>
+                                        ) : (
+                                            <Badge variant="outline">Super Admin</Badge>
+                                        )}
                                     </TableCell>
                                 </TableRow>
                             ))}
