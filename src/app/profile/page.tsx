@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { format } from 'date-fns';
 import { Loader2, Mail, LogOut, LayoutDashboard, ShoppingBag } from 'lucide-react';
 
-import { useAuth, SUPER_ADMIN_EMAIL } from '@/context/auth-context';
+import { useAuth } from '@/context/auth-context';
 import { getOrdersByUserId, type Order } from '@/lib/orders-data';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -128,7 +128,7 @@ const ProfilePage = () => {
     );
   }
 
-  const isUserAdmin = user.email && user.email === SUPER_ADMIN_EMAIL;
+  const isUserAdmin = user.role === 'Admin' || user.role === 'Super Admin';
 
   return (
     <div className="bg-secondary/50 min-h-screen">
@@ -144,7 +144,7 @@ const ProfilePage = () => {
                     <div className="flex-grow text-center sm:text-left">
                         <div className="flex items-center justify-center sm:justify-start gap-3">
                             <CardTitle className="font-headline text-4xl text-primary">{user.displayName}</CardTitle>
-                            {isUserAdmin && <Badge>Admin</Badge>}
+                            {user.role && user.role !== 'User' && <Badge>{user.role}</Badge>}
                         </div>
                         <CardDescription className="text-lg flex items-center justify-center sm:justify-start gap-2 mt-1 text-muted-foreground">
                             <Mail className="h-4 w-4"/> {user.email}

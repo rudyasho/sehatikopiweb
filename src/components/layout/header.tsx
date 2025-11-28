@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -18,7 +19,7 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { useCart } from '@/context/cart-context';
-import { useAuth, SUPER_ADMIN_EMAIL } from '@/context/auth-context';
+import { useAuth } from '@/context/auth-context';
 import { ThemeToggle } from './theme-toggle';
 import { Separator } from '@/components/ui/separator';
 
@@ -46,7 +47,7 @@ export function Header({ siteName }: { siteName: string }) {
 
   const itemCount = cart.reduce((total, item) => total + item.quantity, 0);
 
-  const isUserAdmin = user && user.email && user.email === SUPER_ADMIN_EMAIL;
+  const isUserAdmin = user?.role === 'Admin' || user?.role === 'Super Admin';
 
   const AuthNav = () => {
     if (loading) return <div className="h-10 w-10 rounded-full bg-muted animate-pulse" />;

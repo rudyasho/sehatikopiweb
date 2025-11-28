@@ -12,15 +12,16 @@ import { format } from 'date-fns';
 import { 
     Coffee, Star, Calendar, Newspaper, Loader2, PlusCircle, Edit, BarChart3, LayoutGrid, 
     Save, ListOrdered, Trash2, BookText, Image as ImageIcon, CalendarCheck,
-    CalendarPlus, FilePlus2, Users, Settings, ImageUp, ShoppingBag, Menu, UserPlus, Home
+    CalendarPlus, FilePlus2, Users, Settings, ImageUp, ShoppingBag, Menu, UserPlus, Home,
+    ChevronDown, UserCheck, Shield, UserCog
 } from 'lucide-react';
 
-import { useAuth, SUPER_ADMIN_EMAIL, type AppUser, type User } from '@/context/auth-context';
+import { useAuth, type AppUser } from '@/context/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { getProducts, updateProduct, deleteProduct, addProduct, type Product } from '@/lib/products-data';
 import { getBlogPosts, updateBlogPost, deleteBlogPost, addBlogPost, type BlogPost } from '@/lib/blog-data';
 import { getEvents, updateEvent, deleteEvent, addEvent, type Event } from '@/lib/events-data';
-import { listAllUsers, updateUserDisabledStatus, deleteUserAccount, createUser, type CreateUserFormData } from '@/lib/users-data';
+import { listAllUsers, updateUserDisabledStatus, deleteUserAccount, createUser, type CreateUserFormData, setUserRole } from '@/lib/users-data';
 import { getSettings, updateSettings, type SettingsFormData } from '@/lib/settings-data';
 import { getHeroData, updateHeroData, type HeroFormData } from '@/lib/hero-data';
 import { getAllOrders, updateOrderStatus, type Order, type OrderStatus } from '@/lib/orders-data';
@@ -43,6 +44,7 @@ import { Sheet, SheetTrigger, SheetContent } from '@/components/ui/sheet';
 import { BlogEditor } from './blog-editor';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 
 const formatCurrency = (amount: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
@@ -553,7 +555,7 @@ const ManageProductsView = ({ onDataChange }: { onDataChange: () => void }) => {
     );
 }
 
-const BlogPostForm = ({ post, onFormSubmit, onFormCancel, currentUser }: { post?: BlogPost | null, onFormSubmit: () => void, onFormCancel: () => void, currentUser?: User | null }) => {
+const BlogPostForm = ({ post, onFormSubmit, onFormCancel, currentUser }: { post?: BlogPost | null, onFormSubmit: () => void, onFormCancel: () => void, currentUser?: AppUser | null }) => {
     const { toast } = useToast();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { user } = useAuth();
@@ -1144,6 +1146,16 @@ const ManageUsersView = ({ currentUser }: { currentUser: AppUser }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    const handleSetRole = async (uid: string, role: 'admin' | 'user') => {
+        try {
+            await setUserRole(uid, role);
+            toast({ title: 'Role Updated', description: `User role has been changed to ${role}.` });
+            refreshUsers();
+        } catch (error: any) {
+            toast({ variant: 'destructive', title: 'Error', description: error.message || 'Could not update user role.' });
+        }
+    };
+
     const handleToggleDisabled = async (uid: string, disabled: boolean) => {
         try {
             await updateUserDisabledStatus(uid, !disabled);
@@ -1189,7 +1201,7 @@ const ManageUsersView = ({ currentUser }: { currentUser: AppUser }) => {
                     <CardTitle className="font-headline text-2xl text-primary flex items-center gap-2">
                         <Users /> Manage Users
                     </CardTitle>
-                    <CardDescription>View, create, or manage user accounts.</CardDescription>
+                    <CardDescription>View, create, or manage user accounts and roles.</CardDescription>
                 </div>
                 <Dialog open={isAddUserOpen} onOpenChange={setAddUserOpen}>
                     <DialogTrigger asChild>
@@ -1209,8 +1221,7 @@ const ManageUsersView = ({ currentUser }: { currentUser: AppUser }) => {
                         <TableHeader>
                             <TableRow>
                                 <TableHead>User</TableHead>
-                                <TableHead>UID</TableHead>
-                                <TableHead>Created</TableHead>
+                                <TableHead>Role</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead className="text-center">Actions</TableHead>
                             </TableRow>
@@ -1222,49 +1233,49 @@ const ManageUsersView = ({ currentUser }: { currentUser: AppUser }) => {
                                         <div className="font-medium">{user.displayName || 'N/A'}</div>
                                         <div className="text-xs text-muted-foreground">{user.email}</div>
                                     </TableCell>
-                                    <TableCell className="font-mono text-xs">{user.uid}</TableCell>
-                                    <TableCell>{format(new Date(user.creationTime), 'MMM d, yyyy')}</TableCell>
+                                     <TableCell>
+                                        <Badge variant={user.role === 'Super Admin' ? 'default' : user.role === 'Admin' ? 'secondary' : 'outline'}>
+                                            {user.role}
+                                        </Badge>
+                                    </TableCell>
                                     <TableCell>
                                         <Badge variant={user.disabled ? 'destructive' : 'secondary'}>
                                             {user.disabled ? 'Disabled' : 'Active'}
                                         </Badge>
                                     </TableCell>
-                                    <TableCell className="text-center space-x-2">
-                                        {user.email !== SUPER_ADMIN_EMAIL ? (
+                                    <TableCell className="text-center space-x-1">
+                                        {user.role !== 'Super Admin' && currentUser.role === 'Super Admin' ? (
                                             <>
-                                                <AlertDialog>
-                                                    <AlertDialogTrigger asChild>
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
                                                         <Button variant="outline" size="sm">
-                                                            {user.disabled ? 'Enable' : 'Disable'}
+                                                            Actions <ChevronDown className="ml-2 h-4 w-4"/>
                                                         </Button>
-                                                    </AlertDialogTrigger>
-                                                    <AlertDialogContent>
-                                                        <AlertDialogHeader>
-                                                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                                            <AlertDialogDescription>
-                                                                This will {user.disabled ? 'enable' : 'disable'} the user account for "{user.email}".
-                                                            </AlertDialogDescription>
-                                                        </AlertDialogHeader>
-                                                        <AlertDialogFooter>
-                                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                            <AlertDialogAction onClick={() => handleToggleDisabled(user.uid, user.disabled)}>
-                                                                Confirm
-                                                            </AlertDialogAction>
-                                                        </AlertDialogFooter>
-                                                    </AlertDialogContent>
-                                                </AlertDialog>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuItem onSelect={() => handleSetRole(user.uid, user.role === 'Admin' ? 'user' : 'admin')}>
+                                                            {user.role === 'Admin' ? <UserCog className="mr-2 h-4 w-4" /> : <Shield className="mr-2 h-4 w-4" />}
+                                                            Make {user.role === 'Admin' ? 'User' : 'Admin'}
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem onSelect={() => handleToggleDisabled(user.uid, user.disabled)}>
+                                                            <UserCheck className="mr-2 h-4 w-4" />
+                                                            {user.disabled ? 'Enable' : 'Disable'}
+                                                        </DropdownMenuItem>
+                                                        <AlertDialogTrigger asChild>
+                                                            <DropdownMenuItem className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+                                                                <Trash2 className="mr-2 h-4 w-4" />
+                                                                Delete User
+                                                            </DropdownMenuItem>
+                                                        </AlertDialogTrigger>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
 
                                                 <AlertDialog>
-                                                    <AlertDialogTrigger asChild>
-                                                        <Button variant="destructive" size="sm">
-                                                            Delete
-                                                        </Button>
-                                                    </AlertDialogTrigger>
                                                     <AlertDialogContent>
                                                         <AlertDialogHeader>
                                                             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                                                             <AlertDialogDescription>
-                                                                This action cannot be undone. This will permanently delete the account for "{user.email}".
+                                                                This will permanently delete the account for "{user.email}".
                                                             </AlertDialogDescription>
                                                         </AlertDialogHeader>
                                                         <AlertDialogFooter>
@@ -1277,7 +1288,7 @@ const ManageUsersView = ({ currentUser }: { currentUser: AppUser }) => {
                                                 </AlertDialog>
                                             </>
                                         ) : (
-                                            <Badge variant="outline">Super Admin</Badge>
+                                           <span className="text-xs text-muted-foreground">-</span>
                                         )}
                                     </TableCell>
                                 </TableRow>
@@ -1726,6 +1737,8 @@ const DashboardPage = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [isDataLoading, setIsDataLoading] = useState(true);
 
+  const isAdmin = user?.role === 'Admin' || user?.role === 'Super Admin';
+
   useEffect(() => {
     const fetchDashboardData = async () => {
         setIsDataLoading(true);
@@ -1752,15 +1765,17 @@ const DashboardPage = () => {
             setIsDataLoading(false);
         }
     }
-    fetchDashboardData();
-  }, [refreshKey]);
+    if (isAdmin) {
+      fetchDashboardData();
+    }
+  }, [refreshKey, isAdmin]);
 
 
   useEffect(() => {
-    if (!loading && (!user || user.email !== SUPER_ADMIN_EMAIL)) {
+    if (!loading && !isAdmin) {
       router.replace('/');
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, isAdmin]);
   
   useEffect(() => {
       const view = searchParams.get('view') as DashboardView;
@@ -1780,7 +1795,7 @@ const DashboardPage = () => {
   }, [searchParams]);
 
   
-  if (loading || !user || user.email !== SUPER_ADMIN_EMAIL) {
+  if (loading || !user || !isAdmin) {
     return (
       <div className="flex h-screen items-center justify-center bg-secondary/50">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
@@ -1793,8 +1808,6 @@ const DashboardPage = () => {
   };
   
   const renderContent = () => {
-    if (!user) return null;
-
     switch (activeView) {
         case 'overview':
             return <AnalyticsOverview stats={stats} products={products} isLoading={isDataLoading} />;
@@ -1807,6 +1820,7 @@ const DashboardPage = () => {
         case 'manageOrders':
             return <ManageOrdersView onDataChange={handleDataChange} />;
         case 'manageUsers':
+            if (user.role !== 'Super Admin') return null;
             return <ManageUsersView currentUser={user} />;
         case 'settings':
             return <SettingsView />;
@@ -1823,7 +1837,7 @@ const DashboardPage = () => {
       { id: 'manageProducts', label: 'Manage Products', icon: ListOrdered },
       { id: 'manageBlog', label: 'Manage Posts', icon: BookText },
       { id: 'manageEvents', label: 'Manage Events', icon: CalendarCheck },
-      { id: 'manageUsers', label: 'Manage Users', icon: Users },
+      ...(user.role === 'Super Admin' ? [{ id: 'manageUsers' as const, label: 'Manage Users', icon: Users }] : []),
       { id: 'heroSettings', label: 'Hero Settings', icon: ImageUp },
       { id: 'settings', label: 'Website Settings', icon: Settings },
   ];
@@ -1907,5 +1921,3 @@ export default function DashboardPageWithSuspense() {
         <DashboardPage />
     );
 }
-
-    

@@ -1,4 +1,3 @@
-
 // src/context/auth-context.tsx
 'use client';
 
@@ -7,21 +6,14 @@ import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signO
 import { app } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 
-export type User = FirebaseUser;
-
 export const SUPER_ADMIN_EMAIL = 'rd.lapawawoi@gmail.com';
 
-export type AppUser = {
-  uid: string;
-  email: string | null | undefined;
-  displayName: string | null | undefined;
-  creationTime: string;
-  disabled: boolean;
-};
-
+export interface AppUser extends FirebaseUser {
+  role?: 'Super Admin' | 'Admin' | 'User';
+}
 
 interface AuthContextType {
-  user: User | null;
+  user: AppUser | null;
   loading: boolean;
   loginWithGoogle: () => Promise<void>;
   loginWithEmail: (email: string, password: string) => Promise<void>;
@@ -32,21 +24,31 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    // Only initialize auth if the app object was created successfully
     if (app) {
       const auth = getAuth(app);
-      const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-        setUser(firebaseUser);
+      const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+        if (firebaseUser) {
+          const tokenResult = await firebaseUser.getIdTokenResult();
+          const claims = tokenResult.claims;
+          const userRole = claims.role ? (claims.role as 'Admin' | 'User') : 'User';
+          
+          const appUser: AppUser = {
+            ...firebaseUser,
+            role: firebaseUser.email === SUPER_ADMIN_EMAIL ? 'Super Admin' : userRole,
+          };
+          setUser(appUser);
+        } else {
+          setUser(null);
+        }
         setLoading(false);
       });
       return () => unsubscribe();
     } else {
-      // If firebase app is not initialized, stop loading and do nothing.
       setLoading(false);
     }
   }, []);
@@ -68,11 +70,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(userCredential.user, { displayName });
-        // Manually update the user in state to reflect the new displayName
-        setUser({ ...userCredential.user, displayName });
+        
+        // Force token refresh to get custom claims if any are set on creation
+        await userCredential.user.getIdToken(true);
+
+        const appUser: AppUser = { ...userCredential.user, displayName, role: 'User' };
+        setUser(appUser);
         handleAuthSuccess(userCredential.user);
       } catch (error: any) {
-        // Provide more specific error messages
         if (error.code === 'auth/email-already-in-use') {
             throw new Error('This email address is already in use.');
         }
@@ -143,5 +148,3 @@ export const useAuth = () => {
   }
   return context;
 };
-
-    

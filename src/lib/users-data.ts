@@ -2,7 +2,7 @@
 'use server';
 
 import { admin } from './firebase-admin';
-import { SUPER_ADMIN_EMAIL } from '@/context/auth-context';
+import { SUPER_ADMIN_EMAIL, type AppUser } from '@/context/auth-context';
 
 export type { AppUser } from '@/context/auth-context';
 
@@ -12,7 +12,6 @@ export type CreateUserFormData = {
   password?: string;
 };
 
-
 export async function listAllUsers(): Promise<AppUser[]> {
   if (!admin) {
     throw new Error("Firebase Admin SDK is not initialized.");
@@ -20,13 +19,22 @@ export async function listAllUsers(): Promise<AppUser[]> {
   
   const userRecords = await admin.auth().listUsers();
   
-  return userRecords.users.map(user => ({
-    uid: user.uid,
-    email: user.email,
-    displayName: user.displayName,
-    creationTime: user.metadata.creationTime,
-    disabled: user.disabled,
-  }));
+  return userRecords.users.map(user => {
+    const customClaims = (user.customClaims || {}) as { role?: string };
+    let role = customClaims.role || 'User';
+    if (user.email === SUPER_ADMIN_EMAIL) {
+        role = 'Super Admin';
+    }
+
+    return {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        creationTime: user.metadata.creationTime,
+        disabled: user.disabled,
+        role: role
+    }
+  });
 }
 
 export async function createUser(userData: CreateUserFormData) {
@@ -48,6 +56,17 @@ export async function createUser(userData: CreateUserFormData) {
     }
 }
 
+export async function setUserRole(uid: string, role: 'admin' | 'user'): Promise<void> {
+    if (!admin) {
+        throw new Error("Firebase Admin SDK is not initialized.");
+    }
+    const userToUpdate = await admin.auth().getUser(uid);
+    if (userToUpdate.email === SUPER_ADMIN_EMAIL) {
+        throw new Error("Cannot change the role of the Super Admin account.");
+    }
+
+    await admin.auth().setCustomUserClaims(uid, { role });
+}
 
 export async function updateUserDisabledStatus(uid: string, disabled: boolean) {
     if (!admin) {
@@ -59,8 +78,6 @@ export async function updateUserDisabledStatus(uid: string, disabled: boolean) {
     }
     await admin.auth().updateUser(uid, { disabled });
 }
-
-
 
 export async function deleteUserAccount(uid: string) {
     if (!admin) {
