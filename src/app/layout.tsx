@@ -1,7 +1,7 @@
 
 'use client';
 
-import { Poppins, Playfair_Display, Roboto } from 'next/font/google';
+import { PT_Sans, Playfair_Display, Roboto } from 'next/font/google';
 
 import './globals.css';
 import { cn } from '@/lib/utils';
@@ -12,7 +12,7 @@ import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { Toaster } from "@/components/ui/toaster"
 
-const poppins = Poppins({
+const ptSans = PT_Sans({
   subsets: ['latin'],
   weight: ['400', '700'],
   variable: '--font-body',
@@ -40,7 +40,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id">
-      <body className={cn('min-h-screen bg-background font-body antialiased', poppins.variable, playfairDisplay.variable, roboto.variable)}>
+      <body className={cn('min-h-screen bg-background font-body antialiased', ptSans.variable, playfairDisplay.variable, roboto.variable)}>
         <ThemeProvider
             attribute="class"
             defaultTheme="light"
