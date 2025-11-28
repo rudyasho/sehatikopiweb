@@ -96,7 +96,10 @@ const ManageUsersView = ({ currentUser }: ManageUsersViewProps) => {
     if (isLoading) {
         return (
             <Card className="shadow-lg bg-background p-6">
-                <Skeleton className="h-8 w-1/4 mb-4" />
+                <div className="flex justify-between items-center mb-4">
+                    <Skeleton className="h-8 w-1/4" />
+                    <Skeleton className="h-10 w-32" />
+                </div>
                 <Skeleton className="h-64 w-full" />
             </Card>
         );
@@ -211,3 +214,5 @@ const ManageUsersView = ({ currentUser }: ManageUsersViewProps) => {
 };
 
 export default ManageUsersView;
+
+    

@@ -6,3 +6,5 @@ Disallow: /profile
 Disallow: /search
 
 Sitemap: https://sehatikopi.id/sitemap.xml
+
+    
