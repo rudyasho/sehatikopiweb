@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { format } from 'date-fns';
 import { Loader2, Mail, LogOut, LayoutDashboard, ShoppingBag } from 'lucide-react';
 
-import { useAuth, ADMIN_EMAILS } from '@/context/auth-context';
+import { useAuth, SUPER_ADMIN_EMAIL } from '@/context/auth-context';
 import { getOrdersByUserId, type Order } from '@/lib/orders-data';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -128,7 +128,7 @@ const ProfilePage = () => {
     );
   }
 
-  const isUserAdmin = user.email && ADMIN_EMAILS.includes(user.email);
+  const isUserAdmin = user.email && SUPER_ADMIN_EMAIL.includes(user.email);
 
   return (
     <div className="bg-secondary/50 min-h-screen">

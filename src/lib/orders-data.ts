@@ -14,7 +14,7 @@ import type { AppUser } from '@/context/auth-context';
 export type OrderStatus = 'Pending' | 'Shipped' | 'Delivered' | 'Cancelled';
 
 export type Order = {
-  userId: string | null; // Null jika guest user
+  userId: string | null;
   orderId: string;
   orderDate: string; // ISO 8601 string
   items: CartItem[];
@@ -22,7 +22,7 @@ export type Order = {
   shipping: number;
   total: number;
   status: OrderStatus;
-  customerInfo?: AppUser; // Opsional
+  customerInfo?: AppUser; // Populated server-side for the admin view
 };
 
 // -----------------------------
@@ -47,44 +47,35 @@ export async function addOrder(orderData: Omit<Order, 'customerInfo'>) {
 }
 
 // -----------------------------
-// Get Orders by User ID (login / guest)
+// Get Orders by User ID
 // -----------------------------
 
-export async function getOrdersByUserId(userId: string | null): Promise<Order[]> {
+export async function getOrdersByUserId(userId: string): Promise<Order[]> {
   noStore();
-
   if (!dbAdmin) {
     console.error('Firestore Admin is not initialized. Cannot get orders.');
     return [];
   }
-
+  
   try {
-    const ordersCollection = dbAdmin.collection('orders');
-
-    // Jika guest (null), ambil order tanpa userId
-    let query;
-    if (userId) {
-      query = ordersCollection.where('userId', '==', userId);
-    } else {
-      query = ordersCollection.where('userId', '==', null);
-    }
-
-    const ordersSnapshot = await query.orderBy('orderDate', 'desc').get();
-
-    return ordersSnapshot.docs.map((doc) => doc.data() as Order);
+    const ordersSnapshot = await dbAdmin.collection('orders')
+      .where('userId', '==', userId)
+      .orderBy('orderDate', 'desc')
+      .get();
+    
+    return ordersSnapshot.docs.map(doc => doc.data() as Order);
   } catch (error) {
-    console.error('Error fetching orders by user ID:', error);
+    console.error(`Error fetching orders for user ${userId}:`, error);
     return [];
   }
 }
 
 // -----------------------------
-// Get All Orders (with User Info if available)
+// Get All Orders (for Admin Dashboard)
 // -----------------------------
 
 export async function getAllOrders(): Promise<Order[]> {
   noStore();
-
   if (!dbAdmin) {
     throw new Error('Database admin instance is not initialized.');
   }
@@ -92,38 +83,25 @@ export async function getAllOrders(): Promise<Order[]> {
   const ordersCollection = dbAdmin.collection('orders');
 
   try {
-    const ordersSnapshot = await ordersCollection
-      .orderBy('orderDate', 'desc')
-      .get();
+    const ordersSnapshot = await ordersCollection.orderBy('orderDate', 'desc').get();
+    const orders = ordersSnapshot.docs.map(doc => doc.data() as Omit<Order, 'customerInfo'>);
 
-    const orders = ordersSnapshot.docs.map((doc) => ({
-      ...doc.data(),
-      orderId: doc.id,
-    })) as Order[];
+    const userIds = [...new Set(orders.map(o => o.userId).filter((id): id is string => !!id))];
+    if (userIds.length === 0) {
+        // Return orders with guest user info structure
+        return orders.map(order => ({ ...order, customerInfo: undefined }));
+    }
 
-    // Ambil hanya userId valid (bukan null)
-    const userIds = [
-      ...new Set(orders.map((o) => o.userId).filter((id): id is string => !!id)),
-    ];
-
-    if (userIds.length === 0) return orders;
-
-    // Ambil info user
     const userRecords = await Promise.all(
-      userIds.map((uid) =>
-        dbAdmin
-          .auth()
-          .getUser(uid)
-          .catch(() => null) // kalau error (misal user sudah dihapus), abaikan
-      )
+      userIds.map(uid => dbAdmin.auth().getUser(uid).catch(() => null))
     );
 
     const usersMap = userRecords.reduce((acc, user) => {
       if (user) {
         acc[user.uid] = {
           uid: user.uid,
-          email: user.email || 'N/A',
-          displayName: user.displayName || 'Guest',
+          email: user.email,
+          displayName: user.displayName,
           creationTime: user.metadata.creationTime,
           disabled: user.disabled,
         };
@@ -131,7 +109,7 @@ export async function getAllOrders(): Promise<Order[]> {
       return acc;
     }, {} as Record<string, AppUser>);
 
-    return orders.map((order) => ({
+    return orders.map(order => ({
       ...order,
       customerInfo: order.userId ? usersMap[order.userId] : undefined,
     }));
@@ -149,11 +127,9 @@ export async function updateOrderStatus(orderId: string, status: OrderStatus): P
   if (!dbAdmin) {
     throw new Error('Firestore Admin not initialized.');
   }
-
-  const ordersCollection = dbAdmin.collection('orders');
-
+  const orderRef = dbAdmin.collection('orders').doc(orderId);
+  
   try {
-    const orderRef = ordersCollection.doc(orderId);
     await orderRef.update({ status });
     console.log(`Order ${orderId} status updated to ${status}.`);
   } catch (error) {

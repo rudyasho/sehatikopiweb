@@ -14,7 +14,7 @@ import {
     CalendarPlus, FilePlus2, Users, Settings, ImageUp, ShoppingBag, Menu
 } from 'lucide-react';
 
-import { useAuth, type User, type AppUser, SUPER_ADMIN_EMAIL, ADMIN_EMAILS } from '@/context/auth-context';
+import { useAuth, type User, type AppUser, SUPER_ADMIN_EMAIL } from '@/context/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { getProducts, updateProduct, deleteProduct, addProduct, type Product } from '@/lib/products-data';
 import { getBlogPosts, updateBlogPost, deleteBlogPost, addBlogPost, type BlogPost } from '@/lib/blog-data';
@@ -1005,6 +1005,7 @@ const ManageUsersView = ({ currentUser }: { currentUser: User }) => {
     
     useEffect(() => {
         refreshUsers();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentUser.email, toast]);
 
     const handleToggleDisabled = async (uid: string, disabled: boolean) => {
@@ -1587,7 +1588,7 @@ const DashboardPage = () => {
 
 
   useEffect(() => {
-    if (!loading && (!user || !ADMIN_EMAILS.includes(user.email || ''))) {
+    if (!loading && (!user || !SUPER_ADMIN_EMAIL.includes(user.email || ''))) {
       router.replace('/');
     }
   }, [user, loading, router]);
@@ -1610,7 +1611,7 @@ const DashboardPage = () => {
   }, [searchParams]);
 
   
-  if (loading || !user || !ADMIN_EMAILS.includes(user.email || '')) {
+  if (loading || !user || !SUPER_ADMIN_EMAIL.includes(user.email || '')) {
     return (
       <div className="flex h-screen items-center justify-center bg-secondary/50">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />

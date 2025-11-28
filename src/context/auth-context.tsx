@@ -10,8 +10,6 @@ import { useRouter } from 'next/navigation';
 export type User = FirebaseUser;
 
 export const SUPER_ADMIN_EMAIL = 'dev@sidepe.com';
-export const ADMIN_EMAILS = [SUPER_ADMIN_EMAIL];
-
 
 export type AppUser = {
   uid: string;
@@ -55,7 +53,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   
   const handleAuthSuccess = (firebaseUser: FirebaseUser | null) => {
       if (firebaseUser) {
-          if (firebaseUser.email && ADMIN_EMAILS.includes(firebaseUser.email)) {
+          if (firebaseUser.email && SUPER_ADMIN_EMAIL.includes(firebaseUser.email)) {
             router.push('/dashboard');
           } else {
             router.push('/profile');
