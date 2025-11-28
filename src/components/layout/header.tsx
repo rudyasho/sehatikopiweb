@@ -19,7 +19,7 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { useCart } from '@/context/cart-context';
-import { useAuth, ADMIN_EMAILS } from '@/context/auth-context';
+import { useAuth, SUPER_ADMIN_EMAIL } from '@/context/auth-context';
 import { ThemeToggle } from './theme-toggle';
 import { Separator } from '@/components/ui/separator';
 
@@ -47,7 +47,7 @@ export function Header() {
 
   const itemCount = cart.reduce((total, item) => total + item.quantity, 0);
 
-  const isUserAdmin = user && user.email && ADMIN_EMAILS.includes(user.email);
+  const isUserAdmin = user && user.email && user.email === SUPER_ADMIN_EMAIL;
 
   const AuthNav = () => {
     if (loading) return <div className="h-10 w-10 rounded-full bg-muted animate-pulse" />;

@@ -1,4 +1,3 @@
-
 // src/context/auth-context.tsx
 'use client';
 
@@ -53,7 +52,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   
   const handleAuthSuccess = (firebaseUser: FirebaseUser | null) => {
       if (firebaseUser) {
-          if (firebaseUser.email && SUPER_ADMIN_EMAIL.includes(firebaseUser.email)) {
+          if (firebaseUser.email && firebaseUser.email === SUPER_ADMIN_EMAIL) {
             router.push('/dashboard');
           } else {
             router.push('/profile');
