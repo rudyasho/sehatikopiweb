@@ -16,7 +16,7 @@ export type HeroFormData = Omit<HeroData, 'id'>;
 const defaultHeroData: HeroFormData = {
   title: 'A Journey of Indonesian Flavor',
   subtitle: 'Discover the rich heritage and exquisite taste of single-origin Indonesian coffee, roasted with passion and precision.',
-  imageUrl: 'https://images.unsplash.com/photo-1511537190424-bbbab87ac5eb?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  imageUrl: 'https://images.unsplash.com/photo-1511537190424-bbbab87ac5eb?q=80&w=1170&auto=format&fit=crop&ixlib-rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
 };
 
 async function initializeHeroDataIfNeeded() {
