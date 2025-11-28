@@ -1,5 +1,5 @@
 // src/lib/firebase.ts
-import { initializeApp, getApps, getApp, type FirebaseOptions } from "firebase/app";
+import { initializeApp, getApps, getApp, type FirebaseOptions, type FirebaseApp } from "firebase/app";
 
 const firebaseConfig: FirebaseOptions = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -11,7 +11,7 @@ const firebaseConfig: FirebaseOptions = {
 };
 
 // Initialize Firebase App
-let app;
+let app: FirebaseApp | undefined;
 if (getApps().length === 0) {
     // Check if all required config values are present
     if (firebaseConfig.apiKey && firebaseConfig.projectId) {
