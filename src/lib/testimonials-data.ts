@@ -34,16 +34,16 @@ const initialTestimonials: Omit<Testimonial, 'id'>[] = [
 ];
 
 
-const testimonialsCollection = dbAdmin?.collection('testimonials');
 let isSeeding = false;
 let seedingCompleted = false;
 
 async function seedDatabaseIfNeeded() {
-  if (!dbAdmin || !testimonialsCollection || seedingCompleted || isSeeding) {
+  if (!dbAdmin || seedingCompleted || isSeeding) {
     return;
   }
   
   isSeeding = true;
+  const testimonialsCollection = dbAdmin.collection('testimonials');
 
   try {
     const snapshot = await testimonialsCollection.limit(1).get();
@@ -67,14 +67,15 @@ async function seedDatabaseIfNeeded() {
 
 export async function getTestimonials(): Promise<Testimonial[]> {
     noStore();
+    
+    await seedDatabaseIfNeeded();
 
-    if (!dbAdmin || !testimonialsCollection) {
+    if (!dbAdmin) {
       console.error("Firestore Admin is not initialized. Cannot get testimonials.");
       return [];
     }
-
-    await seedDatabaseIfNeeded();
-
+    
+    const testimonialsCollection = dbAdmin.collection('testimonials');
     const snapshot = await testimonialsCollection.limit(3).get();
     const list = snapshot.docs.map(doc => {
       const data = doc.data();

@@ -42,16 +42,16 @@ const initialMenuItems: Omit<MenuItem, 'id'>[] = [
     { name: 'Pandan Latte', description: 'A unique blend of espresso, steamed milk, and fragrant pandan syrup.', price: 'Rp 35.000', image: 'https://images.unsplash.com/photo-1558030006-450675393462?q=80&w=1287&auto=format&fit=crop', category: 'signature' },
 ];
 
-const menuCollection = dbAdmin?.collection('menu');
 let isSeeding = false;
 let seedingCompleted = false;
 
 async function seedDatabaseIfNeeded() {
-  if (!dbAdmin || !menuCollection || seedingCompleted || isSeeding) {
+  if (!dbAdmin || seedingCompleted || isSeeding) {
     return;
   }
   
   isSeeding = true;
+  const menuCollection = dbAdmin.collection('menu');
 
   try {
     const snapshot = await menuCollection.limit(1).get();
@@ -75,14 +75,15 @@ async function seedDatabaseIfNeeded() {
 
 export async function getMenuItems(): Promise<MenuItems> {
     noStore();
+    
+    await seedDatabaseIfNeeded();
 
-    if (!dbAdmin || !menuCollection) {
+    if (!dbAdmin) {
       console.error("Firestore Admin is not initialized. Cannot get menu items.");
       return { hot: [], cold: [], manual: [], signature: [] };
     }
 
-    await seedDatabaseIfNeeded();
-
+    const menuCollection = dbAdmin.collection('menu');
     const menuSnapshot = await menuCollection.get();
     const menuList = menuSnapshot.docs.map(doc => ({
         id: doc.id,

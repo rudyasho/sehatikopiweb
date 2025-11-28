@@ -46,16 +46,16 @@ const initialEvents: Omit<Event, 'id'>[] = [
 ];
 
 
-const eventsCollection = dbAdmin?.collection('events');
 let isSeeding = false;
 let seedingCompleted = false;
 
 async function seedDatabaseIfNeeded() {
-  if (!dbAdmin || !eventsCollection || seedingCompleted || isSeeding) {
+  if (!dbAdmin || seedingCompleted || isSeeding) {
     return;
   }
   
   isSeeding = true;
+  const eventsCollection = dbAdmin.collection('events');
 
   try {
     const snapshot = await eventsCollection.limit(1).get();
@@ -80,13 +80,14 @@ async function seedDatabaseIfNeeded() {
 export async function getEvents(): Promise<Event[]> {
     noStore();
 
-    if (!dbAdmin || !eventsCollection) {
+    await seedDatabaseIfNeeded();
+    
+    if (!dbAdmin) {
       console.error("Firestore Admin is not initialized. Cannot get events.");
       return [];
     }
-
-    await seedDatabaseIfNeeded();
-
+    
+    const eventsCollection = dbAdmin.collection('events');
     const eventsSnapshot = await eventsCollection.orderBy('date').get();
     const eventsList = eventsSnapshot.docs.map(doc => {
       const data = doc.data();
@@ -100,7 +101,8 @@ export async function getEvents(): Promise<Event[]> {
 }
 
 export async function addEvent(eventData: EventFormData): Promise<Event> {
-    if (!dbAdmin || !eventsCollection) throw new Error("Firestore Admin not initialized.");
+    if (!dbAdmin) throw new Error("Firestore Admin not initialized.");
+    const eventsCollection = dbAdmin.collection('events');
     const docRef = await eventsCollection.add(eventData);
     return {
         id: docRef.id,
@@ -109,13 +111,15 @@ export async function addEvent(eventData: EventFormData): Promise<Event> {
 }
 
 export async function updateEvent(id: string, data: Partial<EventFormData>): Promise<void> {
-    if (!dbAdmin || !eventsCollection) throw new Error("Firestore Admin not initialized.");
+    if (!dbAdmin) throw new Error("Firestore Admin not initialized.");
+    const eventsCollection = dbAdmin.collection('events');
     const eventRef = eventsCollection.doc(id);
     await eventRef.update(data);
 }
 
 export async function deleteEvent(id: string): Promise<void> {
-    if (!dbAdmin || !eventsCollection) throw new Error("Firestore Admin not initialized.");
+    if (!dbAdmin) throw new Error("Firestore Admin not initialized.");
+    const eventsCollection = dbAdmin.collection('events');
     const eventRef = eventsCollection.doc(id);
     await eventRef.delete();
 }

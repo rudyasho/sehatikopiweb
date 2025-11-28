@@ -101,17 +101,16 @@ const initialProducts: Omit<Product, 'id' | 'slug'>[] = [
   },
 ];
 
-
-const productsCollection = dbAdmin?.collection('products');
-let isSeeding = false; 
-let seedingCompleted = false; 
+let isSeeding = false;
+let seedingCompleted = false;
 
 async function seedDatabaseIfNeeded() {
-  if (!productsCollection || seedingCompleted || isSeeding) {
+  if (!dbAdmin || seedingCompleted || isSeeding) {
     return;
   }
   
   isSeeding = true;
+  const productsCollection = dbAdmin.collection('products');
 
   try {
     const snapshot = await productsCollection.limit(1).get();
@@ -124,11 +123,11 @@ async function seedDatabaseIfNeeded() {
           batch.set(docRef, {...productData, slug });
       });
       await batch.commit();
-      console.log('Database seeded successfully.');
+      console.log('Products database seeded successfully.');
     }
     seedingCompleted = true;
   } catch (error) {
-    console.error("Error seeding database:", error);
+    console.error("Error seeding products database:", error);
   } finally {
     isSeeding = false;
   }
@@ -137,13 +136,14 @@ async function seedDatabaseIfNeeded() {
 export async function getProducts(): Promise<Product[]> {
   noStore();
   
-  if (!productsCollection) {
+  await seedDatabaseIfNeeded();
+
+  if (!dbAdmin) {
     console.error("Firestore Admin is not initialized. Cannot get products.");
     return [];
   }
 
-  await seedDatabaseIfNeeded();
-
+  const productsCollection = dbAdmin.collection('products');
   const productsSnapshot = await productsCollection.get();
   const productsList = productsSnapshot.docs.map(doc => {
     return {
@@ -157,10 +157,11 @@ export async function getProducts(): Promise<Product[]> {
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
     noStore();
-    if (!productsCollection) {
+    if (!dbAdmin) {
         console.error("Firestore Admin is not initialized. Cannot get product by slug.");
         return null;
     }
+    const productsCollection = dbAdmin.collection('products');
     const snapshot = await productsCollection.where('slug', '==', slug).limit(1).get();
     if (snapshot.empty) {
         return null;
@@ -170,8 +171,9 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
 }
 
 export async function addProduct(productData: Omit<ProductFormData, 'tags'> & { tags: string }): Promise<Product> {
-  if (!productsCollection) throw new Error("Firestore Admin not initialized.");
+  if (!dbAdmin) throw new Error("Firestore Admin not initialized.");
 
+  const productsCollection = dbAdmin.collection('products');
   const slug = productData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
   
   const newProductData = {
@@ -193,8 +195,9 @@ export async function addProduct(productData: Omit<ProductFormData, 'tags'> & { 
 }
 
 export async function updateProduct(id: string, productData: Omit<ProductFormData, 'tags'> & { tags: string }): Promise<void> {
-    if (!productsCollection) throw new Error("Firestore Admin not initialized.");
+    if (!dbAdmin) throw new Error("Firestore Admin not initialized.");
     
+    const productsCollection = dbAdmin.collection('products');
     const productRef = productsCollection.doc(id);
     const updatedData = {
         ...productData,
@@ -205,8 +208,9 @@ export async function updateProduct(id: string, productData: Omit<ProductFormDat
 }
 
 export async function deleteProduct(id: string): Promise<void> {
-    if (!productsCollection) throw new Error("Firestore Admin not initialized.");
+    if (!dbAdmin) throw new Error("Firestore Admin not initialized.");
     
+    const productsCollection = dbAdmin.collection('products');
     const productRef = productsCollection.doc(id);
     await productRef.delete();
 }
