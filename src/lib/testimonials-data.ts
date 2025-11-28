@@ -75,7 +75,7 @@ async function seedDatabaseIfNeeded() {
   }
 }
 
-export async function getTestimonials(limit: number = 3, showPending = false): Promise<Testimonial[]> {
+export async function getTestimonials(limit: number = 3, showPending: boolean = false): Promise<Testimonial[]> {
     noStore();
     await seedDatabaseIfNeeded();
 
@@ -83,13 +83,14 @@ export async function getTestimonials(limit: number = 3, showPending = false): P
       throw new Error("Firestore Admin is not initialized. Cannot get testimonials.");
     }
     
-    let query = dbAdmin.collection('testimonials').orderBy('date', 'desc');
+    let query: admin.firestore.Query<admin.firestore.DocumentData> = dbAdmin.collection('testimonials').orderBy('date', 'desc');
     
     if (!showPending) {
         query = query.where('status', '==', 'published');
     }
     
-    if (limit) {
+    // If limit is 0, we fetch all documents.
+    if (limit > 0) {
         query = query.limit(limit);
     }
     

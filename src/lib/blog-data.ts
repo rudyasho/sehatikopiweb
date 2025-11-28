@@ -3,6 +3,9 @@
 
 import { unstable_noStore as noStore } from 'next/cache';
 import { dbAdmin } from './firebase-admin';
+import { authAdmin } from './firebase-admin';
+import { useAuth } from '@/context/auth-context';
+
 
 export type BlogPost = {
     id: string;
@@ -93,7 +96,7 @@ async function seedDatabaseIfNeeded() {
   }
 }
 
-export async function getBlogPosts(showPending = false): Promise<BlogPost[]> {
+export async function getBlogPosts(showAllStatuses = false): Promise<BlogPost[]> {
     noStore();
     await seedDatabaseIfNeeded();
     
@@ -101,11 +104,13 @@ export async function getBlogPosts(showPending = false): Promise<BlogPost[]> {
         throw new Error("Firestore Admin is not initialized. Cannot get blog posts.");
     }
 
-    let query = dbAdmin.collection('blog').orderBy('date', 'desc');
+    let query: admin.firestore.Query<admin.firestore.DocumentData> = dbAdmin.collection('blog');
 
-    if (!showPending) {
+    if (!showAllStatuses) {
         query = query.where('status', '==', 'published');
     }
+    
+    query = query.orderBy('date', 'desc');
 
     const blogSnapshot = await query.get();
     const blogList = blogSnapshot.docs.map(doc => {
@@ -142,6 +147,10 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
 export async function addBlogPost(post: NewBlogPostData): Promise<BlogPost> {
     if (!dbAdmin) {
         throw new Error("Firestore Admin not initialized.");
+    }
+    
+    if (!post.authorId) {
+        throw new Error("User must be authenticated to create a post.");
     }
 
     const slug = post.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');

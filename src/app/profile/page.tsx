@@ -5,11 +5,11 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { format } from 'date-fns';
-import { Loader2, Mail, LogOut, LayoutDashboard, ShoppingBag, Edit, FilePlus2, Star } from 'lucide-react';
+import { Loader2, Mail, LogOut, LayoutDashboard, ShoppingBag, FilePlus2, Star } from 'lucide-react';
 
 import { useAuth } from '@/context/auth-context';
 import { getOrdersByUserId, type Order } from '@/lib/orders-data';
-import { getBlogPosts, type BlogPost, addBlogPost, NewBlogPostData } from '@/lib/blog-data';
+import { getBlogPosts, type BlogPost } from '@/lib/blog-data';
 import { getTestimonials, type Testimonial } from '@/lib/testimonials-data';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -122,7 +122,7 @@ const MyPosts = ({ userId }: { userId: string }) => {
     const fetchPosts = async () => {
         setIsLoading(true);
         try {
-            const allPosts = await getBlogPosts();
+            const allPosts = await getBlogPosts(true); // show pending for the author
             setPosts(allPosts.filter(p => p.authorId === userId));
         } catch(e) {
             console.error(e);
@@ -133,6 +133,7 @@ const MyPosts = ({ userId }: { userId: string }) => {
     
     useEffect(() => {
         fetchPosts();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [userId]);
 
     if (isLoading) {
@@ -179,7 +180,7 @@ const MyPosts = ({ userId }: { userId: string }) => {
                                     <TableCell>{format(new Date(post.date), 'MMM d, yyyy')}</TableCell>
                                     <TableCell>
                                         <Badge variant={post.status === 'published' ? 'secondary' : 'outline'}>
-                                            {post.status === 'published' ? 'Published' : 'Pending'}
+                                            {post.status}
                                         </Badge>
                                     </TableCell>
                                 </TableRow>
@@ -200,7 +201,7 @@ const MyTestimonials = ({ userId }: { userId: string }) => {
         const fetchTestimonials = async () => {
             setIsLoading(true);
             try {
-                const allTestimonials = await getTestimonials(200); // fetch a large number
+                const allTestimonials = await getTestimonials(0, true); // fetch all for user
                 setTestimonials(allTestimonials.filter(t => t.userId === userId));
             } catch(e) {
                 console.error(e);
@@ -228,7 +229,7 @@ const MyTestimonials = ({ userId }: { userId: string }) => {
                             <div className="flex justify-between items-start">
                                 <div className="flex items-center gap-2">
                                      <Badge variant={item.status === 'published' ? 'secondary' : 'outline'}>
-                                        {item.status === 'published' ? 'Published' : 'Pending'}
+                                        {item.status}
                                     </Badge>
                                     <div className="flex text-amber-500">
                                         {[...Array(item.rating)].map((_, i) => <Star key={i} className="w-4 h-4 fill-current" />)}
