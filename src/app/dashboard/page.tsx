@@ -19,11 +19,10 @@ import { useToast } from '@/hooks/use-toast';
 import { getProducts, updateProduct, deleteProduct, addProduct, type Product } from '@/lib/products-data';
 import { getBlogPosts, updateBlogPost, deleteBlogPost, addBlogPost, type BlogPost } from '@/lib/blog-data';
 import { getEvents, updateEvent, deleteEvent, addEvent, type Event } from '@/lib/events-data';
-import { listAllUsers, updateUserDisabledStatus, deleteUserAccount } from '@/lib/users-data';
+import { listAllUsers, updateUserDisabledStatus, deleteUserAccount, AppUser } from '@/lib/users-data';
 import { getSettings, updateSettings, type SettingsFormData } from '@/lib/settings-data';
 import { getHeroData, updateHeroData, type HeroFormData } from '@/lib/hero-data';
 import { getAllOrders, updateOrderStatus, type Order, type OrderStatus } from '@/lib/orders-data';
-import { generateProductDescription, generateBlogIdeas, type ProductDescriptionInput } from '@/ai/flows/content-generation-flow';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ProductPopularityChart } from './product-popularity-chart';
 import { RoastDistributionChart } from './roast-distribution-chart';
@@ -47,7 +46,7 @@ import { Separator } from '@/components/ui/separator';
 
 const formatCurrency = (amount: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
 
-type DashboardView = 'overview' | 'manageProducts' | 'manageBlog' | 'manageEvents' | 'manageUsers' | 'settings' | 'heroSettings' | 'manageOrders' | 'aiAssistant';
+type DashboardView = 'overview' | 'manageProducts' | 'manageBlog' | 'manageEvents' | 'manageUsers' | 'settings' | 'heroSettings' | 'manageOrders';
 
 
 const productFormSchema = z.object({
@@ -117,6 +116,7 @@ const ProductForm = ({ product, onFormSubmit, onFormCancel }: { product?: Produc
     const { toast } = useToast();
     const [imageUrl, setImageUrl] = useState(product?.image || '');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const { user } = useAuth();
 
     const form = useForm<ProductFormValues>({
         resolver: zodResolver(productFormSchema),
@@ -149,6 +149,16 @@ const ProductForm = ({ product, onFormSubmit, onFormCancel }: { product?: Produc
 
     const onSubmit = async (data: ProductFormValues) => {
         setIsSubmitting(true);
+        if (!user) {
+             toast({
+                variant: 'destructive',
+                title: "Authentication Error!",
+                description: `You must be logged in to perform this action.`,
+            });
+            setIsSubmitting(false);
+            return;
+        }
+
         try {
             if (product) {
                 await updateProduct(product.id, data);
@@ -272,6 +282,7 @@ const ProductForm = ({ product, onFormSubmit, onFormCancel }: { product?: Produc
 const EventForm = ({ event, onFormSubmit, onFormCancel }: { event?: Event | null, onFormSubmit: () => void, onFormCancel: () => void }) => {
     const { toast } = useToast();
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const { user } = useAuth();
 
     const form = useForm<EventFormValues>({
         resolver: zodResolver(eventFormSchema),
@@ -287,6 +298,16 @@ const EventForm = ({ event, onFormSubmit, onFormCancel }: { event?: Event | null
 
     const onSubmit = async (data: EventFormValues) => {
         setIsSubmitting(true);
+        if (!user) {
+             toast({
+                variant: 'destructive',
+                title: "Authentication Error!",
+                description: `You must be logged in to perform this action.`,
+            });
+            setIsSubmitting(false);
+            return;
+        }
+
         try {
             if (event) {
                 await updateEvent(event.id, data);
@@ -373,6 +394,7 @@ const ManageProductsView = ({ onDataChange }: { onDataChange: () => void }) => {
     const { toast } = useToast();
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [isProductDialogOpen, setIsProductDialogOpen] = useState(false);
+    const { user } = useAuth();
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -391,6 +413,10 @@ const ManageProductsView = ({ onDataChange }: { onDataChange: () => void }) => {
     }, [toast, onDataChange]);
 
     const handleDelete = async (productId: string, productName: string) => {
+        if (!user) {
+            toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in.' });
+            return;
+        }
         try {
             await deleteProduct(productId);
             toast({ title: "Product Deleted", description: `"${productName}" has been removed.` });
@@ -508,9 +534,10 @@ const ManageProductsView = ({ onDataChange }: { onDataChange: () => void }) => {
     );
 }
 
-const BlogPostForm = ({ post, onFormSubmit, onFormCancel, currentUser }: { post?: BlogPost | null, onFormSubmit: () => void, onFormCancel: () => void, currentUser?: User | null }) => {
+const BlogPostForm = ({ post, onFormSubmit, onFormCancel, currentUser }: { post?: BlogPost | null, onFormSubmit: () => void, onFormCancel: () => void, currentUser?: AppUser | null }) => {
     const { toast } = useToast();
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const { user } = useAuth();
     
     const form = useForm<BlogPostFormValues>({
         resolver: zodResolver(blogPostFormSchema),
@@ -540,6 +567,16 @@ const BlogPostForm = ({ post, onFormSubmit, onFormCancel, currentUser }: { post?
 
     const onSubmit = async (data: BlogPostFormValues) => {
         setIsSubmitting(true);
+        if (!user) {
+             toast({
+                variant: 'destructive',
+                title: "Authentication Error!",
+                description: `You must be logged in to perform this action.`,
+            });
+            setIsSubmitting(false);
+            return;
+        }
+
         try {
             if (post) {
                 await updateBlogPost(post.id, data);
@@ -677,6 +714,10 @@ const ManageBlogPostsView = ({ onDataChange, initialPostToEdit }: { onDataChange
     }, [initialPostToEdit, toast, onDataChange, router]);
 
     const handleDelete = async (postId: string, postTitle: string) => {
+        if (!user) {
+            toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in.' });
+            return;
+        }
         try {
             await deleteBlogPost(postId);
             toast({ title: "Post Deleted", description: `"${postTitle}" has been removed.` });
@@ -802,6 +843,7 @@ const ManageEventsView = ({ onDataChange }: { onDataChange: () => void }) => {
     const { toast } = useToast();
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+    const { user } = useAuth();
 
     useEffect(() => {
         const fetchEvents = async () => {
@@ -820,6 +862,10 @@ const ManageEventsView = ({ onDataChange }: { onDataChange: () => void }) => {
     }, [toast, onDataChange]);
 
     const handleDelete = async (eventId: string, eventTitle: string) => {
+        if (!user) {
+            toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in.' });
+            return;
+        }
         try {
             await deleteEvent(eventId);
             toast({ title: "Event Deleted", description: `"${eventTitle}" has been removed.` });
@@ -985,7 +1031,7 @@ const AnalyticsOverview = ({ stats, products, isLoading }: { stats: any, product
     )
 };
 
-const ManageUsersView = ({ currentUser }: { currentUser: User }) => {
+const ManageUsersView = ({ currentUser }: { currentUser: AppUser }) => {
     const [users, setUsers] = useState<AppUser[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const { toast } = useToast();
@@ -1385,6 +1431,7 @@ const ManageOrdersView = ({ onDataChange }: { onDataChange: () => void }) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [isOrderDialogOpen, setOrderDialogOpen] = useState(false);
+    const { user } = useAuth();
 
     useEffect(() => {
         const fetchOrders = async () => {
@@ -1403,7 +1450,7 @@ const ManageOrdersView = ({ onDataChange }: { onDataChange: () => void }) => {
     }, [toast, onDataChange]);
 
     const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {
-        if (!selectedOrder) return;
+        if (!selectedOrder || !user) return;
         setIsSubmitting(true);
         try {
             await updateOrderStatus(orderId, newStatus);
@@ -1543,140 +1590,6 @@ const ManageOrdersView = ({ onDataChange }: { onDataChange: () => void }) => {
     );
 };
 
-const productDescriptionSchema = z.object({
-  productName: z.string().min(1, 'Product name is required'),
-  origin: z.string().min(1, 'Origin is required'),
-  tags: z.string().min(1, 'Please provide at least one tag'),
-});
-type ProductDescriptionForm = z.infer<typeof productDescriptionSchema>;
-
-const blogIdeaSchema = z.object({
-    topic: z.string().min(1, 'Topic is required'),
-});
-type BlogIdeaForm = z.infer<typeof blogIdeaSchema>;
-
-
-const AiAssistantView = () => {
-    const { toast } = useToast();
-    const [isPending, startTransition] = useTransition();
-
-    const [generatedDescription, setGeneratedDescription] = useState('');
-    const [generatedBlogIdeas, setGeneratedBlogIdeas] = useState<string[]>([]);
-    
-    const productForm = useForm<ProductDescriptionForm>({
-        resolver: zodResolver(productDescriptionSchema),
-        defaultValues: { productName: '', origin: '', tags: '' },
-    });
-
-    const blogForm = useForm<BlogIdeaForm>({
-        resolver: zodResolver(blogIdeaSchema),
-        defaultValues: { topic: '' },
-    });
-
-    const onProductSubmit = (data: ProductDescriptionForm) => {
-        startTransition(async () => {
-            setGeneratedDescription('');
-            try {
-                const result = await generateProductDescription(data);
-                setGeneratedDescription(result.description);
-                 toast({ title: 'Description Generated!', description: 'Your new product description is ready.' });
-            } catch (error) {
-                console.error('AI description generation failed:', error);
-                toast({ variant: 'destructive', title: 'Generation Failed', description: 'Could not generate a description. Please try again.' });
-            }
-        });
-    };
-
-    const onBlogSubmit = (data: BlogIdeaForm) => {
-        startTransition(async () => {
-            setGeneratedBlogIdeas([]);
-            try {
-                const result = await generateBlogIdeas(data.topic);
-                setGeneratedBlogIdeas(result.ideas);
-                toast({ title: 'Blog Ideas Generated!', description: 'Fresh new ideas are ready for you.' });
-            } catch (error) {
-                console.error('AI blog idea generation failed:', error);
-                toast({ variant: 'destructive', title: 'Generation Failed', description: 'Could not generate blog ideas. Please try again.' });
-            }
-        });
-    };
-
-    return (
-        <div className="space-y-8">
-            <Card className="shadow-lg bg-background">
-                <CardHeader>
-                    <CardTitle className="font-headline text-2xl text-primary flex items-center gap-2">
-                        <WandSparkles/> AI Content Assistant
-                    </CardTitle>
-                    <CardDescription>Generate compelling content for your products and blog using AI.</CardDescription>
-                </CardHeader>
-            </Card>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="font-headline text-xl text-primary">Product Description Generator</CardTitle>
-                        <CardDescription>Create rich product descriptions from a few keywords.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <Form {...productForm}>
-                            <form onSubmit={productForm.handleSubmit(onProductSubmit)} className="space-y-4">
-                                <FormField control={productForm.control} name="productName" render={({ field }) => (
-                                    <FormItem><FormLabel>Product Name</FormLabel><FormControl><Input placeholder="e.g., Flores Bajawa" {...field} /></FormControl><FormMessage /></FormItem>
-                                )} />
-                                <FormField control={productForm.control} name="origin" render={({ field }) => (
-                                    <FormItem><FormLabel>Origin</FormLabel><FormControl><Input placeholder="e.g., Bajawa, Flores" {...field} /></FormControl><FormMessage /></FormItem>
-                                )} />
-                                <FormField control={productForm.control} name="tags" render={({ field }) => (
-                                    <FormItem><FormLabel>Key Features / Tags</FormLabel><FormControl><Input placeholder="e.g., Floral, Chocolate, Syrupy" {...field} /></FormControl><FormMessage /></FormItem>
-                                )} />
-                                <Button type="submit" disabled={isPending}>
-                                    {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                                    Generate Description
-                                </Button>
-                            </form>
-                        </Form>
-                        {generatedDescription && (
-                            <div className="mt-6 border-t pt-6">
-                                <h4 className="font-semibold mb-2">Generated Description:</h4>
-                                <Textarea readOnly value={generatedDescription} rows={8} className="bg-secondary/50"/>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-                 <Card>
-                    <CardHeader>
-                        <CardTitle className="font-headline text-xl text-primary">Blog Idea Generator</CardTitle>
-                        <CardDescription>Get a list of creative blog post ideas based on a topic.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                         <Form {...blogForm}>
-                            <form onSubmit={blogForm.handleSubmit(onBlogSubmit)} className="space-y-4">
-                                <FormField control={blogForm.control} name="topic" render={({ field }) => (
-                                    <FormItem><FormLabel>Topic</FormLabel><FormControl><Input placeholder="e.g., Cold brew techniques" {...field} /></FormControl><FormMessage /></FormItem>
-                                )} />
-                                <Button type="submit" disabled={isPending}>
-                                    {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                                    Generate Ideas
-                                </Button>
-                            </form>
-                        </Form>
-                         {generatedBlogIdeas.length > 0 && (
-                            <div className="mt-6 border-t pt-6">
-                                <h4 className="font-semibold mb-2">Generated Ideas:</h4>
-                                <ul className="list-disc pl-5 space-y-2 bg-secondary/50 p-4 rounded-md">
-                                    {generatedBlogIdeas.map((idea, index) => <li key={index}>{idea}</li>)}
-                                </ul>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-            </div>
-        </div>
-    );
-};
-
-
 const DashboardPage = () => {
   const { user, loading } = useAuth();
   const router = useRouter();
@@ -1775,8 +1688,6 @@ const DashboardPage = () => {
             return <SettingsView />;
         case 'heroSettings':
             return <HeroSettingsView />;
-        case 'aiAssistant':
-            return <AiAssistantView />;
         default:
             return <AnalyticsOverview stats={stats} products={products} isLoading={isDataLoading} />;
     }
@@ -1784,7 +1695,6 @@ const DashboardPage = () => {
   
   const sidebarNavItems = [
       { id: 'overview', label: 'Overview', icon: LayoutGrid },
-      { id: 'aiAssistant', label: 'AI Assistant', icon: WandSparkles },
       { id: 'manageOrders', label: 'Manage Orders', icon: ShoppingBag },
       { id: 'manageProducts', label: 'Manage Products', icon: ListOrdered },
       { id: 'manageBlog', label: 'Manage Posts', icon: BookText },
