@@ -68,6 +68,7 @@ const ManageUsersView = ({ currentUser }: ManageUsersViewProps) => {
             await updateUserDisabledStatus(uid, !disabled);
             toast({ title: 'User Updated', description: `User has been ${!disabled ? 'disabled' : 'enabled'}.` });
             refreshUsers();
+            router.refresh();
         } catch (error: any) {
             console.error("Failed to update user status:", error);
             toast({ variant: 'destructive', title: 'Error', description: error.message || 'Could not update user status.' });
@@ -80,6 +81,7 @@ const ManageUsersView = ({ currentUser }: ManageUsersViewProps) => {
             await deleteUserAccount(userToDelete.uid);
             toast({ title: 'User Deleted', description: 'User account has been permanently deleted.' });
             refreshUsers();
+            router.refresh();
         } catch (error: any) {
             console.error("Failed to delete user:", error);
             toast({ variant: 'destructive', title: 'Error', description: error.message || 'Could not delete user account.' });
@@ -91,6 +93,7 @@ const ManageUsersView = ({ currentUser }: ManageUsersViewProps) => {
     const handleFormSubmit = () => {
         setAddUserOpen(false);
         refreshUsers();
+        router.refresh();
     };
 
     if (isLoading) {

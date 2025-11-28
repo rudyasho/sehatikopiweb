@@ -69,6 +69,7 @@ const ManageProductsView = () => {
     const handleFormSubmit = () => {
         closeDialog();
         fetchAndSetProducts(); // Refetch data
+        router.refresh(); // Revalidate server components
     };
 
     if (isLoading) {

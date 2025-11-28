@@ -83,6 +83,7 @@ const ManageBlogPostsView = ({ initialPostToEdit }: ManageBlogViewProps) => {
     const handleFormSubmit = () => {
         closeDialog();
         fetchAndSetPosts();
+        router.refresh();
     };
     
     if (isLoading) {

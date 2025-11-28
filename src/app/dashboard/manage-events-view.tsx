@@ -66,6 +66,7 @@ const ManageEventsView = () => {
     const handleFormSubmit = () => {
         closeForm();
         fetchAndSetEvents();
+        router.refresh();
     };
 
     if (isLoading) {
