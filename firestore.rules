@@ -3,46 +3,53 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Publicly readable collections
+    // Function to check if a user is an admin
+    function isAdmin() {
+      return request.auth != null && ('role' in request.auth.token && (request.auth.token.role == 'Admin' || request.auth.token.role == 'Super Admin'));
+    }
+
+    // Publicly readable collections, writable only by admins
     match /products/{productId} {
       allow read: if true;
-      allow write: if request.auth != null; // Allow write for authenticated users (admins)
+      allow write: if isAdmin();
     }
     match /blog/{postId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if isAdmin();
     }
     match /events/{eventId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if isAdmin();
     }
     match /menu/{itemId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if isAdmin();
     }
     match /testimonials/{testimonialId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if isAdmin();
     }
     match /siteContent/{docId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if isAdmin();
     }
      match /settings/{docId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if isAdmin();
     }
 
-    // Orders can be created by anyone, but only read/updated by the user who owns them or an admin.
+    // Orders can be created by anyone, read by the owner or admin, and updated only by admin.
     match /orders/{orderId} {
       allow create: if true; // Allow guests and users to create orders
-      allow read: if request.auth != null && (resource.data.userId == request.auth.uid || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin');
-      allow update: if request.auth != null; // Allow update for authenticated users (admins)
+      allow read: if request.auth != null && (resource.data.userId == request.auth.uid || isAdmin());
+      allow update: if isAdmin(); // Only admins can update order status etc.
+      allow delete: if isAdmin();
     }
 
-    // Users can only read their own user document
+    // Users can read/write their own document. Admins can read any user document.
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow list, get: if isAdmin(); // Admins can get or list users
     }
     
     // Default rule: Deny all other access for security
