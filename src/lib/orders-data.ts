@@ -107,6 +107,10 @@ export async function getAllOrders(): Promise<Order[]> {
     ];
 
     if (userIds.length === 0) return orders;
+    
+    if (!dbAdmin) {
+        throw new Error('Database admin instance is not initialized when fetching user records.');
+    }
 
     // Ambil info user
     const userRecords = await Promise.all(

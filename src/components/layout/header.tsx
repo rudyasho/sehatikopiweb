@@ -190,7 +190,7 @@ export function Header() {
                         variant="default"
                     >
                         <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
-                            <LogIn className="mr-4 h-5 w-5" />
+                            <LogIn className="mr-2 h-5 w-5" />
                             Login / Sign Up
                         </Link>
                     </Button>

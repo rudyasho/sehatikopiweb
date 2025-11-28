@@ -118,7 +118,7 @@ export default function LoginPage() {
             <div className="mt-6 text-center text-sm">
                 Don't have an account?{' '}
                 <Link href="/signup" className="font-semibold text-primary hover:underline">
-                    Sign up
+                    Sign Up
                 </Link>
             </div>
           </CardContent>

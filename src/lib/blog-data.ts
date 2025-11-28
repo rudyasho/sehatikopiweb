@@ -24,10 +24,6 @@ export type NewBlogPostData = {
     author: string;
 }
 
-
-const blogCollection = dbAdmin?.collection('blog');
-
-
 const createExcerpt = (content: string, length = 150): string => {
     if (!content) return '';
     const cleanContent = content
@@ -44,12 +40,12 @@ const createExcerpt = (content: string, length = 150): string => {
 export async function getBlogPosts(): Promise<BlogPost[]> {
     noStore();
 
-    if (!blogCollection) {
+    if (!dbAdmin) {
       console.error("Firestore Admin is not initialized. Cannot get blog posts.");
       return [];
     }
 
-    const blogSnapshot = await blogCollection.orderBy('date', 'desc').get();
+    const blogSnapshot = await dbAdmin.collection('blog').orderBy('date', 'desc').get();
     const blogList = blogSnapshot.docs.map(doc => {
       const data = doc.data();
       return {
@@ -63,11 +59,11 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
 
 export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
     noStore();
-    if (!blogCollection) {
+    if (!dbAdmin) {
         console.error("Firestore Admin is not initialized. Cannot get post by slug.");
         return null;
     }
-    const snapshot = await blogCollection.where('slug', '==', slug).limit(1).get();
+    const snapshot = await dbAdmin.collection('blog').where('slug', '==', slug).limit(1).get();
     if (snapshot.empty) {
         return null;
     }
@@ -76,7 +72,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
 }
 
 export async function addBlogPost(post: NewBlogPostData): Promise<BlogPost> {
-    if (!blogCollection) throw new Error("Firestore Admin not initialized.");
+    if (!dbAdmin) throw new Error("Firestore Admin not initialized.");
 
     const slug = post.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
     
@@ -87,7 +83,7 @@ export async function addBlogPost(post: NewBlogPostData): Promise<BlogPost> {
         date: new Date().toISOString(),
     };
 
-    const docRef = await blogCollection.add(newPostData);
+    const docRef = await dbAdmin.collection('blog').add(newPostData);
     
     return {
         id: docRef.id,
@@ -96,9 +92,9 @@ export async function addBlogPost(post: NewBlogPostData): Promise<BlogPost> {
 }
 
 export async function updateBlogPost(id: string, data: Partial<NewBlogPostData>): Promise<void> {
-    if (!blogCollection) throw new Error("Firestore Admin not initialized.");
+    if (!dbAdmin) throw new Error("Firestore Admin not initialized.");
     
-    const postRef = blogCollection.doc(id);
+    const postRef = dbAdmin.collection('blog').doc(id);
     const updateData: { [key: string]: any } = { ...data };
     
     if (data.title) {
@@ -114,8 +110,8 @@ export async function updateBlogPost(id: string, data: Partial<NewBlogPostData>)
 }
 
 export async function deleteBlogPost(id: string): Promise<void> {
-    if (!blogCollection) throw new Error("Firestore Admin not initialized.");
+    if (!dbAdmin) throw new Error("Firestore Admin not initialized.");
 
-    const postRef = blogCollection.doc(id);
+    const postRef = dbAdmin.collection('blog').doc(id);
     await postRef.delete();
 }
