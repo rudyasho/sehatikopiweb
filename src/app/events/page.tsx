@@ -1,14 +1,17 @@
 // src/app/events/page.tsx
-'use client';
-
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Calendar, Clock, MapPin, Check, Loader2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { useState, useEffect } from 'react';
+import { Calendar, Clock, MapPin, Loader2 } from 'lucide-react';
 import { getEvents, type Event } from '@/lib/events-data';
 import { Skeleton } from '@/components/ui/skeleton';
+import { EventCardClient } from './event-card-client';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Events & Workshops',
+  description: 'Join our coffee community. Sign up for cupping sessions, latte art workshops, and other exclusive events at Sehati Kopi.',
+};
+
 
 const EventCardSkeleton = () => (
     <Card className="grid md:grid-cols-5 gap-0 md:gap-6 overflow-hidden items-center bg-background">
@@ -26,35 +29,8 @@ const EventCardSkeleton = () => (
     </Card>
 );
 
-const EventsPage = () => {
-  const { toast } = useToast();
-  const [registeredEvents, setRegisteredEvents] = useState<Record<string, boolean>>({});
-  const [events, setEvents] = useState<Event[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchEvents() {
-        setIsLoading(true);
-        try {
-            const eventsData = await getEvents();
-            setEvents(eventsData);
-        } catch (error) {
-            console.error("Failed to fetch events:", error);
-            toast({ variant: "destructive", title: "Error", description: "Could not load events." });
-        } finally {
-            setIsLoading(false);
-        }
-    }
-    fetchEvents();
-  }, [toast]);
-
-  const handleRegister = (eventId: string, eventTitle: string) => {
-    setRegisteredEvents(prev => ({ ...prev, [eventId]: true }));
-    toast({
-      title: 'Registration Confirmed!',
-      description: `You have successfully registered for "${eventTitle}". We've sent a confirmation to your email.`,
-    });
-  };
+const EventsPage = async () => {
+  const events = await getEvents();
   
   return (
     <div className="bg-secondary/50">
@@ -64,15 +40,13 @@ const EventsPage = () => {
           <p className="mt-2 text-lg text-foreground/80">Join our community and deepen your coffee knowledge.</p>
         </div>
         <div className="space-y-12">
-          {isLoading ? (
+          {!events ? (
             <>
                 <EventCardSkeleton />
                 <EventCardSkeleton />
             </>
           ) : events.length > 0 ? (
-            events.map((event) => {
-              const isRegistered = registeredEvents[event.id];
-              return (
+            events.map((event) => (
                 <Card key={event.id} className="grid md:grid-cols-5 gap-0 md:gap-6 overflow-hidden shadow-xl items-center bg-background">
                   <div className="md:col-span-2 relative h-60 md:h-full w-full">
                     <Image src={event.image} alt={event.title} fill className="object-cover" />
@@ -99,20 +73,11 @@ const EventsPage = () => {
                       <CardDescription>{event.description}</CardDescription>
                     </CardContent>
                     <CardFooter className="p-0 pt-6">
-                      <Button size="lg" onClick={() => handleRegister(event.id, event.title)} disabled={isRegistered}>
-                        {isRegistered ? (
-                          <>
-                            <Check className="mr-2" /> Registered
-                          </>
-                        ) : (
-                          'Register Now'
-                        )}
-                      </Button>
+                      <EventCardClient eventId={event.id} eventTitle={event.title} />
                     </CardFooter>
                   </div>
                 </Card>
-              );
-            })
+            ))
           ) : (
              <div className="text-center py-16">
                 <Calendar className="mx-auto h-24 w-24 text-foreground/30" />

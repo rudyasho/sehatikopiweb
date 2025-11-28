@@ -1,21 +1,21 @@
-
+// src/app/home-client.tsx
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowRight, Coffee, Leaf, Star, ShoppingCart, Check, Loader2, BookOpen } from 'lucide-react';
+import { ArrowRight, Coffee, Leaf, Star, ShoppingCart, Check, BookOpen } from 'lucide-react';
 
 import { useCart } from '@/context/cart-context';
 import { useToast } from '@/hooks/use-toast';
-import { getProducts, type Product } from '@/lib/products-data';
-import { getHeroData, type HeroData } from '@/lib/hero-data';
-import { getTestimonials, type Testimonial } from '@/lib/testimonials-data';
+import { type Product } from '@/lib/products-data';
+import { type HeroData } from '@/lib/hero-data';
+import { type Testimonial } from '@/lib/testimonials-data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Skeleton } from '@/components/ui/skeleton';
+
 
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -29,28 +29,14 @@ const cardVariants = {
   }
 };
 
+interface FeaturedProductsProps {
+  products: Product[];
+}
 
-function FeaturedProducts() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+function FeaturedProducts({ products }: FeaturedProductsProps) {
   const { addToCart } = useCart();
   const { toast } = useToast();
   const [addedProducts, setAddedProducts] = useState<Record<string, boolean>>({});
-
-  useEffect(() => {
-    async function fetchProducts() {
-        setIsLoading(true);
-        try {
-            const fetchedProducts = await getProducts();
-            setProducts(fetchedProducts.sort((a, b) => b.reviews - a.reviews).slice(0, 3));
-        } catch (error) {
-            console.error("Failed to fetch products:", error);
-        } finally {
-            setIsLoading(false);
-        }
-    }
-    fetchProducts();
-  }, []);
 
   const handleAddToCart = (product: Product) => {
     addToCart(product, 1);
@@ -63,26 +49,6 @@ function FeaturedProducts() {
       setAddedProducts(prev => ({ ...prev, [product.slug]: false }));
     }, 2000);
   };
-
-  if (isLoading) {
-    return (
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[...Array(3)].map((_, i) => (
-                <Card key={i} className="text-left overflow-hidden bg-background flex flex-col">
-                    <Skeleton className="h-60 w-full" />
-                    <CardContent className="p-6 flex-grow">
-                        <Skeleton className="h-8 w-3/4 mb-4" />
-                        <Skeleton className="h-12 w-full" />
-                    </CardContent>
-                    <CardFooter className="flex justify-between items-center p-6 bg-secondary/50">
-                       <Skeleton className="h-8 w-1/3" />
-                       <Skeleton className="h-10 w-24" />
-                    </CardFooter>
-                </Card>
-            ))}
-        </div>
-    );
-  }
 
   return (
     <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -134,10 +100,7 @@ function FeaturedProducts() {
   );
 }
 
-const HeroSection = () => {
-  const [heroData, setHeroData] = useState<HeroData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  
+const HeroSection = ({ heroData }: { heroData: HeroData }) => {
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -157,37 +120,6 @@ const HeroSection = () => {
       transition: { duration: 0.6, ease: "easeOut" },
     },
   };
-
-  useEffect(() => {
-    const fetchHeroData = async () => {
-        setIsLoading(true);
-        try {
-            const data = await getHeroData();
-            setHeroData(data);
-        } catch (error) {
-            console.error("Failed to load hero data:", error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-    fetchHeroData();
-  }, []);
-
-  if (isLoading) {
-    return (
-      <section className="relative h-[60vh] md:h-[80vh] w-full flex items-center justify-center text-center text-white bg-secondary/50">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
-      </section>
-    );
-  }
-
-  if (!heroData) {
-    return (
-        <section className="relative h-[60vh] md:h-[80vh] w-full flex items-center justify-center text-center text-white bg-destructive">
-            <p>Could not load hero content.</p>
-        </section>
-    );
-  }
 
   return (
     <section className="relative h-[60vh] md:h-[80vh] w-full flex items-center justify-center text-center text-white">
@@ -231,49 +163,10 @@ const HeroSection = () => {
 };
 
 
-function Testimonials() {
-  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchTestimonials() {
-      setIsLoading(true);
-      try {
-        const fetchedTestimonials = await getTestimonials();
-        setTestimonials(fetchedTestimonials);
-      } catch (error) {
-        console.error("Failed to fetch testimonials:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    fetchTestimonials();
-  }, []);
-
-  if (isLoading) {
-    return (
-      <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {[...Array(3)].map((_, i) => (
-          <Card key={i} className="text-left bg-secondary/50">
-            <CardHeader className="flex flex-row items-center gap-4 p-6">
-              <Skeleton className="h-16 w-16 rounded-full" />
-              <div className="space-y-2">
-                <Skeleton className="h-5 w-24" />
-                <Skeleton className="h-4 w-20" />
-              </div>
-            </CardHeader>
-            <CardContent className="p-6 pt-0">
-              <Skeleton className="h-16 w-full" />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    );
-  }
-
+function Testimonials({ testimonials }: { testimonials: Testimonial[] }) {
   return (
     <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-      {testimonials && testimonials.map((testimonial, index) => (
+      {testimonials && testimonials.map((testimonial) => (
          <motion.div
             key={testimonial.id}
             variants={cardVariants}
@@ -305,10 +198,16 @@ function Testimonials() {
   );
 }
 
-export function HomeClient() {
+interface HomeClientProps {
+    featuredProducts: Product[];
+    testimonials: Testimonial[];
+    heroData: HeroData;
+}
+
+export function HomeClient({ featuredProducts, testimonials, heroData }: HomeClientProps) {
   return (
     <div className="flex flex-col">
-      <HeroSection />
+      {heroData && <HeroSection heroData={heroData} />}
 
       <section className="py-16 md:py-24 bg-background">
         <div className="container mx-auto px-4 grid md:grid-cols-2 gap-12 items-center">
@@ -351,7 +250,7 @@ export function HomeClient() {
           <p className="mt-2 text-lg max-w-2xl mx-auto text-foreground/80">
             Pilihan biji kopi terbaik kami, dikurasi untuk pengalaman yang luar biasa.
           </p>
-          <FeaturedProducts />
+          <FeaturedProducts products={featuredProducts} />
            <Button asChild variant="outline" size="lg" className="mt-12">
             <Link href="/products">
               Belanja Semua Kopi
@@ -363,7 +262,7 @@ export function HomeClient() {
       <section className="py-16 md:py-24 bg-background">
         <div className="container mx-auto px-4 text-center">
           <h2 className="font-headline text-3xl md:text-4xl font-semibold text-primary">Apa Kata Pelanggan Kami</h2>
-          <Testimonials />
+          <Testimonials testimonials={testimonials} />
         </div>
       </section>
 

@@ -1,5 +1,9 @@
+// src/app/page.tsx
 import { HomeClient } from './home-client';
 import type { Metadata } from 'next';
+import { getProducts } from '@/lib/products-data';
+import { getHeroData } from '@/lib/hero-data';
+import { getTestimonials } from '@/lib/testimonials-data';
 
 
 export const metadata: Metadata = {
@@ -30,7 +34,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Sehati Kopi Digital - Jual Kopi Arabika Pilihan',
     description: 'Temukan warisan kopi Indonesia yang kaya dan cita rasa yang istimewa, dari biji kopi arabika hingga robusta.',
-    images: ['https://images.unsplash.com/photo-1511537190424-bbbab87ac5eb?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
+    images: ['https://images.unsplash.com/photo-1511537190424-bbbab87ac5eb?q=80&w=1170&auto=format&fit=crop&ixlib-rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
   },
   robots: {
     index: true,
@@ -45,8 +49,20 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Home() {
+export default async function Home() {
+  const [products, testimonials, heroData] = await Promise.all([
+    getProducts(),
+    getTestimonials(),
+    getHeroData()
+  ]);
+
+  const featuredProducts = products.sort((a, b) => b.reviews - a.reviews).slice(0, 3);
+  
   return (
-    <HomeClient />
+    <HomeClient 
+      featuredProducts={featuredProducts} 
+      testimonials={testimonials} 
+      heroData={heroData} 
+    />
   );
 }

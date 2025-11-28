@@ -1,13 +1,16 @@
-'use client';
-
-import React, { useState, useEffect } from 'react';
+// src/app/menu/page.tsx
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
 import { getMenuItems, type MenuItems, type MenuCategory } from '@/lib/menu-data';
 import { Skeleton } from '@/components/ui/skeleton';
+import { MenuClient } from './menu-client';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Menu Kedai Kopi',
+  description: 'Jelajahi menu di kedai kami. Dari kopi panas klasik, minuman dingin yang menyegarkan, hingga racikan khas Sehati Kopi.',
+};
 
 const MenuSkeleton = () => (
   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
@@ -27,33 +30,8 @@ const MenuSkeleton = () => (
   </div>
 );
 
-const Page = () => {
-  const { toast } = useToast();
-  const [menuItems, setMenuItems] = useState<MenuItems | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchMenu = async () => {
-      setIsLoading(true);
-      try {
-        const items = await getMenuItems();
-        setMenuItems(items);
-      } catch (error) {
-        console.error("Failed to fetch menu items:", error);
-        toast({ variant: 'destructive', title: 'Error', description: 'Could not load menu items.' });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchMenu();
-  }, [toast]);
-
-  const handleOrderClick = (itemName: string) => {
-    toast({
-      title: "Item Added!",
-      description: `1x ${itemName}. Please confirm your order at the counter.`,
-    });
-  };
+const Page = async () => {
+  const menuItems = await getMenuItems();
 
   return (
     <div className="bg-secondary/50">
@@ -69,11 +47,11 @@ const Page = () => {
             <TabsTrigger value="manual" className="py-2">Manual Brew</TabsTrigger>
             <TabsTrigger value="signature" className="py-2">Signature</TabsTrigger>
           </TabsList>
-          {isLoading ? (
+           {!menuItems ? (
              <TabsContent value="hot">
                 <MenuSkeleton />
               </TabsContent>
-          ) : menuItems ? (
+          ) : (
             (Object.keys(menuItems) as MenuCategory[]).map((category) => (
               <TabsContent key={category} value={category}>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
@@ -90,15 +68,13 @@ const Page = () => {
                       </CardContent>
                       <CardFooter className="flex justify-between items-center p-4 bg-secondary/50">
                         <span className="text-lg font-bold text-primary">{item.price}</span>
-                        <Button variant="secondary" onClick={() => handleOrderClick(item.name)}>Order</Button>
+                        <MenuClient itemName={item.name} />
                       </CardFooter>
                     </Card>
                   ))}
                 </div>
               </TabsContent>
             ))
-          ) : (
-            <div className="text-center py-16 text-destructive">Could not load menu.</div>
           )}
         </Tabs>
       </div>
