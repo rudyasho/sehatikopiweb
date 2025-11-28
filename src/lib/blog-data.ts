@@ -37,8 +37,60 @@ const createExcerpt = (content: string, length = 150): string => {
     return `${trimmed.substring(0, Math.min(trimmed.length, trimmed.lastIndexOf(" ")))}...`;
 };
 
+const initialBlogPosts: Omit<BlogPost, 'id' | 'slug' | 'date' | 'excerpt'>[] = [
+    {
+        title: 'The Ultimate Guide to Brewing with a V60',
+        content: 'The V60 is a fantastic brewer, but it can be tricky to master. In this guide, we break down the variables to help you brew the perfect cup, every time. We\'ll cover grind size, water temperature, pouring technique, and more.\n\n## What You\'ll Need\n- Hario V60 Dripper\n- V60 paper filters\n- Gooseneck kettle\n- Digital scale\n- Your favorite Sehati Kopi beans (we recommend Bali Kintamani!)\n\n## Step-by-Step\n1.  **Rinse the filter:** Place the paper filter in the V60 and rinse it thoroughly with hot water. This removes any paper taste and preheats the brewer.\n2.  **Grind your coffee:** Use a medium-fine grind. It should feel something like table salt.\n3.  **Bloom the coffee:** Add your ground coffee, start your timer, and pour in double the amount of water as coffee (e.g., 30g of water for 15g of coffee). Let it sit for 30-45 seconds. You\'ll see bubbles appear as the coffee de-gasses.\n4.  **Continue pouring:** Pour the rest of your water in slow, concentric circles. Aim to finish pouring around the 2:30 mark.\n5.  **Let it drain:** Once you\'ve poured all your water, let it drain completely. Your total brew time should be around 3 to 4 minutes. Enjoy!',
+        category: 'Brewing Tips',
+        image: 'https://images.unsplash.com/photo-1545665225-b23b99e4d45e?q=80&w=1287&auto=format&fit=crop',
+        author: 'Adi Prasetyo',
+    },
+    {
+        title: 'Our Journey to the Highlands of Gayo',
+        content: 'Last month, our team had the incredible opportunity to visit our farming partners in the Gayo Highlands of Aceh. The journey was long, but the destination was breathtaking. We witnessed firsthand the meticulous care that goes into every coffee cherry, from picking to processing. It was a powerful reminder of the human element in every cup of Sehati Kopi. These are not just beans; they are the livelihood and passion of a community.\n\nWe are more committed than ever to our Direct Trade relationship, ensuring that our partners are fairly compensated for their exceptional work. When you drink our Aceh Gayo, you are tasting the story of a place and its people.',
+        category: 'Storytelling',
+        image: 'https://images.unsplash.com/photo-1509223103657-2a29718ea935?q=80&w=1332&auto=format&fit=crop',
+        author: 'Siti Aminah',
+    }
+];
+
+let isSeeding = false;
+let seedingCompleted = false;
+
+async function seedDatabaseIfNeeded() {
+  if (!dbAdmin || seedingCompleted || isSeeding) {
+    return;
+  }
+  
+  isSeeding = true;
+  const blogCollection = dbAdmin.collection('blog');
+
+  try {
+    const snapshot = await blogCollection.limit(1).get();
+    if (snapshot.empty) {
+      console.log('Blog collection is empty. Seeding database...');
+      const batch = dbAdmin.batch();
+      initialBlogPosts.forEach(postData => {
+          const docRef = blogCollection.doc();
+          const slug = postData.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+          const excerpt = createExcerpt(postData.content);
+          batch.set(docRef, { ...postData, slug, excerpt, date: new Date().toISOString() });
+      });
+      await batch.commit();
+      console.log('Blog database seeded successfully.');
+    }
+    seedingCompleted = true;
+  } catch (error) {
+    console.error("Error seeding blog database:", error);
+  } finally {
+    isSeeding = false;
+  }
+}
+
 export async function getBlogPosts(): Promise<BlogPost[]> {
     noStore();
+
+    await seedDatabaseIfNeeded();
 
     if (!dbAdmin) {
       console.error("Firestore Admin is not initialized. Cannot get blog posts.");
