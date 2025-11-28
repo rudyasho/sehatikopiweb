@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             displayName: firebaseUser.displayName,
             photoURL: firebaseUser.photoURL,
             emailVerified: firebaseUser.emailVerified,
-            disabled: firebaseUser.metadata.creationTime === firebaseUser.metadata.lastSignInTime, // Heuristic for disabled, not reliable
+            disabled: false, // This is not reliably detectable on client
             role: firebaseUser.email === SUPER_ADMIN_EMAIL ? 'Super Admin' : userRole,
           };
           setUser(appUser);
@@ -67,9 +67,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   
   const handleAuthSuccess = (firebaseUser: FirebaseUser | null) => {
       if (firebaseUser) {
-          if (firebaseUser.email && firebaseUser.email === SUPER_ADMIN_EMAIL) {
+          // If the logged-in user is the super admin, always redirect to the dashboard.
+          if (firebaseUser.email === SUPER_ADMIN_EMAIL) {
             router.push('/dashboard');
           } else {
+            // For all other users, redirect to their profile page.
             router.push('/profile');
           }
       }
