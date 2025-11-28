@@ -49,7 +49,7 @@ export function CartClientPage() {
     const orderId = `SK-${Date.now()}`;
     const orderDetails = {
       orderId: orderId,
-      userId: user?.uid || null, // Add userId if user is logged in, otherwise null
+      userId: user?.uid || null,
       items: cart,
       subtotal,
       shipping,
@@ -67,12 +67,11 @@ export function CartClientPage() {
             title: 'Order Error',
             description: 'Could not save your order. Please try again.',
         });
-        // Stop the process if saving the order fails
         return;
     }
 
 
-    const phoneNumber = "6285796123218"; // Replace with your WhatsApp number
+    const phoneNumber = "6285796123218"; // Ganti dengan nomor WhatsApp Anda
     const message = `Halo Sehati Kopi, saya ingin memesan (Order ID: ${orderId}):\n\n${cart
       .map(item => `${item.quantity}x ${item.name} (${formatCurrency(item.price * item.quantity)})`)
       .join('\n')}\n\nSubtotal: ${formatCurrency(subtotal)}\nShipping: ${formatCurrency(shipping)}\n*Total: ${formatCurrency(total)}*\n\nTerima kasih!`;
