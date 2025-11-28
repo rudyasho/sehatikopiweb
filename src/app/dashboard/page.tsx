@@ -1126,12 +1126,14 @@ const ManageUsersView = ({ currentUser }: { currentUser: AppUser }) => {
     const [isLoading, setIsLoading] = useState(true);
     const { toast } = useToast();
     const [isAddUserOpen, setAddUserOpen] = useState(false);
+    const [userToDelete, setUserToDelete] = useState<AppUser | null>(null);
 
     const refreshUsers = async () => {
         setIsLoading(true);
         try {
             const usersData = await listAllUsers();
-            setUsers(usersData);
+            // Filter out the currently logged-in admin from the list
+            setUsers(usersData.filter(u => u.uid !== currentUser.uid));
         } catch (error) {
             console.error("Failed to fetch users:", error);
             toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch users.' });
@@ -1166,14 +1168,17 @@ const ManageUsersView = ({ currentUser }: { currentUser: AppUser }) => {
         }
     };
 
-    const handleDeleteUser = async (uid: string) => {
+    const handleDeleteUser = async () => {
+        if (!userToDelete) return;
         try {
-            await deleteUserAccount(uid);
+            await deleteUserAccount(userToDelete.uid);
             toast({ title: 'User Deleted', description: 'User account has been permanently deleted.' });
             refreshUsers();
         } catch (error: any) {
             console.error("Failed to delete user:", error);
             toast({ variant: 'destructive', title: 'Error', description: error.message || 'Could not delete user account.' });
+        } finally {
+            setUserToDelete(null);
         }
     };
     
@@ -1191,60 +1196,75 @@ const ManageUsersView = ({ currentUser }: { currentUser: AppUser }) => {
         );
     }
     
-    const displayUsers = users.filter(user => user.uid !== currentUser.uid);
-
     return (
-        <Card className="shadow-lg bg-background">
-            <CardHeader className="flex flex-row items-center justify-between">
-                 <div>
-                    <CardTitle className="font-headline text-2xl text-primary flex items-center gap-2">
-                        <Users /> Manage Users
-                    </CardTitle>
-                    <CardDescription>View, create, or manage user accounts and roles.</CardDescription>
-                </div>
-                <Dialog open={isAddUserOpen} onOpenChange={setAddUserOpen}>
-                    <DialogTrigger asChild>
-                        <Button><UserPlus className="mr-2 h-4 w-4"/> Add New User</Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle className="font-headline text-2xl text-primary">Create New User Account</DialogTitle>
-                        </DialogHeader>
-                        <AddUserForm onFormSubmit={handleFormSubmit} onFormCancel={() => setAddUserOpen(false)} />
-                    </DialogContent>
-                </Dialog>
-            </CardHeader>
-            <CardContent>
-                <div className="border rounded-lg">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>User</TableHead>
-                                <TableHead>Role</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead className="text-center">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {displayUsers.map((user) => (
-                                <TableRow key={user.uid}>
-                                    <TableCell>
-                                        <div className="font-medium">{user.displayName || 'N/A'}</div>
-                                        <div className="text-xs text-muted-foreground">{user.email}</div>
-                                    </TableCell>
-                                     <TableCell>
-                                        <Badge variant={user.role === 'Super Admin' ? 'default' : user.role === 'Admin' ? 'secondary' : 'outline'}>
-                                            {user.role}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge variant={user.disabled ? 'destructive' : 'secondary'}>
-                                            {user.disabled ? 'Disabled' : 'Active'}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell className="text-center space-x-1">
-                                        {user.role !== 'Super Admin' && currentUser.role === 'Super Admin' ? (
-                                            <>
+        <>
+            <AlertDialog open={!!userToDelete} onOpenChange={(open) => !open && setUserToDelete(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This will permanently delete the account for "{userToDelete?.email}". This action cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel onClick={() => setUserToDelete(null)}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDeleteUser} disabled={!userToDelete}>
+                            Delete Permanently
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            <Card className="shadow-lg bg-background">
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <div>
+                        <CardTitle className="font-headline text-2xl text-primary flex items-center gap-2">
+                            <Users /> Manage Users
+                        </CardTitle>
+                        <CardDescription>View, create, or manage user accounts and roles.</CardDescription>
+                    </div>
+                    <Dialog open={isAddUserOpen} onOpenChange={setAddUserOpen}>
+                        <DialogTrigger asChild>
+                            <Button><UserPlus className="mr-2 h-4 w-4"/> Add New User</Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle className="font-headline text-2xl text-primary">Create New User Account</DialogTitle>
+                            </DialogHeader>
+                            <AddUserForm onFormSubmit={handleFormSubmit} onFormCancel={() => setAddUserOpen(false)} />
+                        </DialogContent>
+                    </Dialog>
+                </CardHeader>
+                <CardContent>
+                    <div className="border rounded-lg">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>User</TableHead>
+                                    <TableHead>Role</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead className="text-center">Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {users.map((user) => (
+                                    <TableRow key={user.uid}>
+                                        <TableCell>
+                                            <div className="font-medium">{user.displayName || 'N/A'}</div>
+                                            <div className="text-xs text-muted-foreground">{user.email}</div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge variant={user.role === 'Super Admin' ? 'default' : user.role === 'Admin' ? 'secondary' : 'outline'}>
+                                                {user.role}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge variant={user.disabled ? 'destructive' : 'secondary'}>
+                                                {user.disabled ? 'Disabled' : 'Active'}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="text-center space-x-1">
+                                            {user.role !== 'Super Admin' && currentUser.role === 'Super Admin' ? (
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
                                                         <Button variant="outline" size="sm">
@@ -1260,43 +1280,27 @@ const ManageUsersView = ({ currentUser }: { currentUser: AppUser }) => {
                                                             <UserCheck className="mr-2 h-4 w-4" />
                                                             {user.disabled ? 'Enable' : 'Disable'}
                                                         </DropdownMenuItem>
-                                                        <AlertDialogTrigger asChild>
-                                                            <DropdownMenuItem className="text-destructive focus:bg-destructive/10 focus:text-destructive">
-                                                                <Trash2 className="mr-2 h-4 w-4" />
-                                                                Delete User
-                                                            </DropdownMenuItem>
-                                                        </AlertDialogTrigger>
+                                                        <DropdownMenuItem 
+                                                            className="text-destructive focus:bg-destructive/10 focus:text-destructive"
+                                                            onSelect={() => setUserToDelete(user)}
+                                                        >
+                                                            <Trash2 className="mr-2 h-4 w-4" />
+                                                            Delete User
+                                                        </DropdownMenuItem>
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
-
-                                                <AlertDialog>
-                                                    <AlertDialogContent>
-                                                        <AlertDialogHeader>
-                                                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                                            <AlertDialogDescription>
-                                                                This will permanently delete the account for "{user.email}".
-                                                            </AlertDialogDescription>
-                                                        </AlertDialogHeader>
-                                                        <AlertDialogFooter>
-                                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                            <AlertDialogAction onClick={() => handleDeleteUser(user.uid)}>
-                                                                Delete Permanently
-                                                            </AlertDialogAction>
-                                                        </AlertDialogFooter>
-                                                    </AlertDialogContent>
-                                                </AlertDialog>
-                                            </>
-                                        ) : (
-                                           <span className="text-xs text-muted-foreground">-</span>
-                                        )}
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </div>
-            </CardContent>
-        </Card>
+                                            ) : (
+                                            <span className="text-xs text-muted-foreground">-</span>
+                                            )}
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                </CardContent>
+            </Card>
+        </>
     );
 };
 
