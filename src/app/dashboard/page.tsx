@@ -1588,7 +1588,7 @@ const DashboardPage = () => {
 
 
   useEffect(() => {
-    if (!loading && (!user || !SUPER_ADMIN_EMAIL.includes(user.email || ''))) {
+    if (!loading && (!user || user.email !== SUPER_ADMIN_EMAIL)) {
       router.replace('/');
     }
   }, [user, loading, router]);
@@ -1611,7 +1611,7 @@ const DashboardPage = () => {
   }, [searchParams]);
 
   
-  if (loading || !user || !SUPER_ADMIN_EMAIL.includes(user.email || '')) {
+  if (loading || !user || user.email !== SUPER_ADMIN_EMAIL) {
     return (
       <div className="flex h-screen items-center justify-center bg-secondary/50">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />

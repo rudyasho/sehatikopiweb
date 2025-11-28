@@ -8,6 +8,7 @@ const hasServiceAccount =
     process.env.FIREBASE_PRIVATE_KEY;
 
 let dbAdmin: admin.firestore.Firestore | null = null;
+let adminApp: admin.app.App | null = null;
 
 if (!admin.apps.length) {
     if (hasServiceAccount) {
@@ -18,23 +19,26 @@ if (!admin.apps.length) {
                 privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
             } as admin.ServiceAccount;
 
-            admin.initializeApp({
+            adminApp = admin.initializeApp({
                 credential: admin.credential.cert(serviceAccount),
             });
             
             console.log("Firebase Admin SDK initialized successfully.");
-            dbAdmin = getFirestore();
+            dbAdmin = getFirestore(adminApp);
 
         } catch (error: any) {
             console.error("Firebase Admin SDK initialization error:", error.message);
-            throw new Error("Firebase Admin SDK could not be initialized. Check your configuration and environment variables.");
+            // We don't throw here to allow the app to run, but server-side operations will fail.
         }
     } else {
         console.warn("Firebase Admin environment variables are not set. Skipping Admin SDK initialization. Server-side Firebase operations will fail.");
     }
 } else {
     // If already initialized, get the firestore instance
-    dbAdmin = getFirestore();
+    adminApp = admin.apps[0];
+    if (adminApp) {
+        dbAdmin = getFirestore(adminApp);
+    }
 }
 
 export { admin, dbAdmin };

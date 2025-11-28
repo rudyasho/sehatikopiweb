@@ -1,37 +1,26 @@
 // src/lib/firebase.ts
 import { initializeApp, getApps, getApp, type FirebaseOptions } from "firebase/app";
-import { getAuth, connectAuthEmulator } from "firebase/auth";
-import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
 
 const firebaseConfig: FirebaseOptions = {
-  apiKey: "AIzaSyBWJoWerUztk9opWD1J6I45TwhdoDp6dnY",
-  authDomain: "sehati-kopi-digital-fy12l.firebaseapp.com",
-  databaseURL: "https://sehati-kopi-digital-fy12l-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "sehati-kopi-digital-fy12l",
-  storageBucket: "sehati-kopi-digital-fy12l.firebasestorage.app",
-  messagingSenderId: "1013267327927",
-  appId: "1:1013267327927:web:fce6c5d0f7e2b834871632"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-
 // Initialize Firebase App
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-// Connect to emulators in development.
-if (process.env.NODE_ENV === 'development') {
-    // This is a common pattern to avoid reconnecting on hot reloads.
-    // The emulators don't throw an error if you connect more than once,
-    // but it's good practice to avoid it.
-    if ((auth as any)._emulatorConfig === undefined) {
-        connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
-        console.log("Firebase Auth emulator connected.");
+let app;
+if (getApps().length === 0) {
+    // Check if all required config values are present
+    if (firebaseConfig.apiKey && firebaseConfig.projectId) {
+        app = initializeApp(firebaseConfig);
+    } else {
+        console.error("Firebase config is missing. Please check your .env file. Client-side Firebase features will be disabled.");
     }
-    if ((db as any)._settings.host !== "127.0.0.1:8080") {
-        connectFirestoreEmulator(db, "127.0.0.1", 8080);
-        console.log("Firestore emulator connected.");
-    }
+} else {
+    app = getApp();
 }
 
-export { app, auth, db };
+export { app };

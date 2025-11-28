@@ -31,7 +31,7 @@ export type Order = {
 
 export async function addOrder(orderData: Omit<Order, 'customerInfo'>) {
   if (!dbAdmin) {
-    throw new Error('Firestore Admin not initialized.');
+    throw new Error('Firestore Admin not initialized. Cannot add order.');
   }
 
   const ordersCollection = dbAdmin.collection('orders');
@@ -129,7 +129,7 @@ export async function getAllOrders(): Promise<Order[]> {
 
 export async function updateOrderStatus(orderId: string, status: OrderStatus): Promise<void> {
   if (!dbAdmin) {
-    throw new Error('Firestore Admin not initialized.');
+    throw new Error('Firestore Admin not initialized. Cannot update status.');
   }
   const orderRef = dbAdmin.collection('orders').doc(orderId);
   
