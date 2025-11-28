@@ -19,22 +19,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 const formatCurrency = (amount: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
 
-const getStatusVariant = (status: string) => {
-    switch(status.toLowerCase()) {
-        case 'shipped': return 'default';
-        case 'delivered': return 'secondary';
-        case 'pending': return 'outline';
-        case 'cancelled': return 'destructive';
-        default: return 'secondary';
-    }
-}
-
 const ManageOrdersView = () => {
     const [orders, setOrders] = useState<Order[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const { toast } = useToast();
     const router = useRouter();
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState<string | null>(null); // Store orderId being submitted
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [isOrderDialogOpen, setOrderDialogOpen] = useState(false);
 
@@ -56,14 +46,12 @@ const ManageOrdersView = () => {
     }, []);
 
     const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {
-        if (!selectedOrder) return;
-        setIsSubmitting(true);
+        setIsSubmitting(orderId);
         try {
             await updateOrderStatus(orderId, newStatus);
             toast({ title: 'Status Updated', description: `Order ${orderId} is now "${newStatus}".` });
             
             // Optimistically update UI
-            setSelectedOrder(prev => prev ? {...prev, status: newStatus} : null);
             setOrders(prevOrders => prevOrders.map(o => o.orderId === orderId ? { ...o, status: newStatus } : o));
 
             router.refresh(); // Invalidate server cache for profile pages
@@ -71,7 +59,7 @@ const ManageOrdersView = () => {
             console.error("Failed to update order status:", error);
             toast({ variant: 'destructive', title: 'Update Failed', description: 'Could not update order status.' });
         } finally {
-            setIsSubmitting(false);
+            setIsSubmitting(null);
         }
     };
     
@@ -135,25 +123,6 @@ const ManageOrdersView = () => {
                                         <span>{formatCurrency(selectedOrder.total)}</span>
                                     </div>
                                 </div>
-                                <div className="p-4 border rounded-lg bg-secondary/50">
-                                    <h3 className="font-semibold mb-2">Update Status</h3>
-                                    <div className="flex items-center gap-2">
-                                        <Select 
-                                            defaultValue={selectedOrder.status}
-                                            onValueChange={(value) => handleStatusChange(selectedOrder.orderId, value as OrderStatus)}
-                                        >
-                                            <SelectTrigger disabled={isSubmitting}>
-                                                <SelectValue/>
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="Pending">Pending</SelectItem>
-                                                <SelectItem value="Shipped">Shipped</SelectItem>
-                                                <SelectItem value="Delivered">Delivered</SelectItem>
-                                                <SelectItem value="Cancelled">Cancelled</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                </div>
                                  <DialogClose asChild>
                                     <Button variant="outline" className="w-full">Close</Button>
                                  </DialogClose>
@@ -183,11 +152,25 @@ const ManageOrdersView = () => {
                                     </TableCell>
                                     <TableCell>{format(new Date(order.orderDate), 'MMM d, yyyy')}</TableCell>
                                     <TableCell className="text-center">
-                                        <Badge variant={getStatusVariant(order.status) as any}>{order.status}</Badge>
+                                        <Select
+                                            value={order.status}
+                                            onValueChange={(value) => handleStatusChange(order.orderId, value as OrderStatus)}
+                                            disabled={isSubmitting === order.orderId}
+                                        >
+                                            <SelectTrigger className="w-[120px] mx-auto">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="Pending">Pending</SelectItem>
+                                                <SelectItem value="Shipped">Shipped</SelectItem>
+                                                <SelectItem value="Delivered">Delivered</SelectItem>
+                                                <SelectItem value="Cancelled">Cancelled</SelectItem>
+                                            </SelectContent>
+                                        </Select>
                                     </TableCell>
                                     <TableCell className="text-right">{formatCurrency(order.total)}</TableCell>
                                     <TableCell className="text-center">
-                                        <Button variant="outline" size="sm" onClick={() => handleViewClick(order)}>View</Button>
+                                        <Button variant="outline" size="sm" onClick={() => handleViewClick(order)}>View Details</Button>
                                     </TableCell>
                                 </TableRow>
                             ))}
