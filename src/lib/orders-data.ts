@@ -49,7 +49,11 @@ export async function addOrder(orderData: Omit<Order, 'customerInfo'>) {
 // -----------------------------
 // Get Orders by User ID
 // -----------------------------
-
+/**
+ * Fetches all orders belonging to a specific user.
+ * @param userId - The UID of the user whose orders are to be fetched.
+ * @returns A promise that resolves to an array of orders.
+ */
 export async function getOrdersByUserId(userId: string): Promise<Order[]> {
   noStore();
   if (!dbAdmin) {
