@@ -1,4 +1,3 @@
-
 # Prompt Rekayasa Aplikasi Final: Sehati Kopi Digital
 
 Berikut adalah serangkaian prompt terperinci yang dirancang untuk memandu AI coding partner dalam membangun aplikasi web e-commerce dan portal konten "Sehati Kopi Digital" dari awal hingga selesai.
@@ -92,8 +91,9 @@ Berikut adalah serangkaian prompt terperinci yang dirancang untuk memandu AI cod
 ### **Tantangan & Solusi Selama Pengembangan**
 
 - **Konflik Komponen Klien/Server**: Terjadi *build error* karena `generateStaticParams` digunakan dalam file yang sama dengan `'use client'`. **Solusi**: Memisahkan halaman menjadi dua file, satu untuk logika server (`page.tsx`) dan satu untuk logika klien (`client-page.tsx`), sesuai dengan praktik terbaik Next.js.
-- **Error Tipe `null`**: Pemeriksa tipe TypeScript mengidentifikasi bahwa objek `dbAdmin` bisa `null` dalam beberapa kasus. **Solusi**: Menambahkan pemeriksaan `if (!dbAdmin) { throw new Error(...) }` di awal fungsi terkait untuk menjamin *type safety* dan membuat aplikasi lebih kuat.
-- **Impor yang Hilang**: Beberapa *runtime error* disebabkan oleh komponen (`Separator`, `DialogClose`) yang digunakan tanpa diimpor. **Solusi**: Melakukan audit pada komponen dan menambahkan pernyataan impor yang hilang.
+- **Error Tipe `null`**: Pemeriksa tipe TypeScript mengidentifikasi bahwa objek `dbAdmin` bisa `null` dalam beberapa kasus, atau tipe `user` dari konteks tidak cocok dengan yang diharapkan komponen. **Solusi**: Menambahkan pemeriksaan `if (!dbAdmin)` atau `if (!user)` di awal fungsi/komponen terkait untuk menjamin *type safety* dan membuat aplikasi lebih kuat.
+- **Impor yang Hilang**: Beberapa *runtime error* disebabkan oleh komponen (`Separator`, `DialogClose`) atau paket (`use-debounce`) yang digunakan tanpa diimpor atau diinstal. **Solusi**: Melakukan audit pada komponen dan menambahkan pernyataan impor yang hilang, serta memastikan `package.json` selalu diperbarui.
+- **Refaktor Arsitektur Dasbor**: Dasbor awalnya dibuat sebagai satu komponen besar (*god component*) yang sulit dikelola. **Solusi**: Melakukan refaktor besar dengan memecah dasbor menjadi komponen-komponen server yang lebih kecil dan independen untuk setiap modul (misalnya, `manage-products-view.tsx`), di mana setiap modul bertanggung jawab atas pengambilan datanya sendiri.
 
 ### **Hasil Akhir**
 

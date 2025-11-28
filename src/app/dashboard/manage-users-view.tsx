@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
@@ -133,9 +133,7 @@ const ManageUsersView = ({ currentUser }: ManageUsersViewProps) => {
                         <CardDescription>View, create, or manage user accounts and roles.</CardDescription>
                     </div>
                     <Dialog open={isAddUserOpen} onOpenChange={setAddUserOpen}>
-                        <DialogTrigger asChild>
-                            <Button><UserPlus className="mr-2 h-4 w-4"/> Add New User</Button>
-                        </DialogTrigger>
+                        <Button onClick={() => setAddUserOpen(true)}><UserPlus className="mr-2 h-4 w-4"/> Add New User</Button>
                         <DialogContent>
                             <DialogHeader>
                                 <DialogTitle className="font-headline text-2xl text-primary">Create New User Account</DialogTitle>
@@ -214,5 +212,3 @@ const ManageUsersView = ({ currentUser }: ManageUsersViewProps) => {
 };
 
 export default ManageUsersView;
-
-    

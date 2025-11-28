@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { useRouter } from 'next/navigation';
-import { ShoppingBag, Loader2 } from 'lucide-react';
+import { ShoppingBag } from 'lucide-react';
 
 import { getAllOrders, updateOrderStatus, type Order, type OrderStatus } from '@/lib/orders-data';
 import { useToast } from '@/hooks/use-toast';

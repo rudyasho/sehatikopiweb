@@ -15,7 +15,7 @@ This is a Next.js application for "Sehati Kopi Digital", a fictional Indonesian 
     - **Analytics**: An overview page showing key business metrics and charts for product popularity, roast, and origin distribution.
     - **Order Management**: A dedicated view to check all incoming customer orders, inspect their details, and update fulfillment status (e.g., Pending, Shipped).
     - **Product, Blog & Event Management**: Full CRUD (Create, Read, Update, Delete) interfaces for managing content, including support for **Google Drive URLs for images**.
-    - **User Management**: A view for admins to see all registered users, create new ones, disable/enable their accounts, or delete them.
+    - **User Management**: A view for admins to see all registered users, create new ones, disable/enable their accounts, or delete them. Role management (Admin vs. User) is also included.
     - **Website & Hero Settings**: Panels to dynamically update sitewide information (like the site name and contact details) and homepage content without code changes.
 - **Centralized Search**: A dedicated search page to find products and blog articles efficiently.
 - **User Authentication**: A complete authentication system using Firebase (Email/Password & Google) allowing users to sign up, log in, and view a profile page with their real order history saved in Firestore. Admin roles grant access to protected features.
