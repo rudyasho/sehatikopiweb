@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 
 export type User = FirebaseUser;
 
-export const SUPER_ADMIN_EMAIL = 'dev@sidepe.com';
+export const SUPER_ADMIN_EMAIL = 'rd.lapawawoi@gmail.com';
 
 export type AppUser = {
   uid: string;
