@@ -6,8 +6,9 @@ import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
 const firebaseConfig: FirebaseOptions = {
   apiKey: "AIzaSyBWJoWerUztk9opWD1J6I45TwhdoDp6dnY",
   authDomain: "sehati-kopi-digital-fy12l.firebaseapp.com",
+  databaseURL: "https://sehati-kopi-digital-fy12l-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "sehati-kopi-digital-fy12l",
-  storageBucket: "sehati-kopi-digital-fy12l.appspot.com",
+  storageBucket: "sehati-kopi-digital-fy12l.firebasestorage.app",
   messagingSenderId: "1013267327927",
   appId: "1:1013267327927:web:fce6c5d0f7e2b834871632"
 };
