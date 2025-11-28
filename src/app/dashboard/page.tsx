@@ -14,7 +14,8 @@ import {
     CalendarPlus, FilePlus2, Users, Settings, ImageUp, ShoppingBag, Menu
 } from 'lucide-react';
 
-import { useAuth, SUPER_ADMIN_EMAIL, type AppUser } from '@/context/auth-context';
+import { useAuth, SUPER_ADMIN_EMAIL } from '@/context/auth-context';
+import type { AppUser } from '@/context/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { getProducts, updateProduct, deleteProduct, addProduct, type Product } from '@/lib/products-data';
 import { getBlogPosts, updateBlogPost, deleteBlogPost, addBlogPost, type BlogPost } from '@/lib/blog-data';
