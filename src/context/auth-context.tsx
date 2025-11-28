@@ -1,3 +1,4 @@
+
 // src/context/auth-context.tsx
 'use client';
 
@@ -142,3 +143,5 @@ export const useAuth = () => {
   }
   return context;
 };
+
+    

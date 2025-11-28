@@ -1,3 +1,4 @@
+
 // src/app/dashboard/page.tsx
 'use client';
 
@@ -14,7 +15,7 @@ import {
     CalendarPlus, FilePlus2, Users, Settings, ImageUp, ShoppingBag, Menu, UserPlus, Home
 } from 'lucide-react';
 
-import { useAuth, SUPER_ADMIN_EMAIL, type AppUser } from '@/context/auth-context';
+import { useAuth, SUPER_ADMIN_EMAIL, type AppUser, type User } from '@/context/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { getProducts, updateProduct, deleteProduct, addProduct, type Product } from '@/lib/products-data';
 import { getBlogPosts, updateBlogPost, deleteBlogPost, addBlogPost, type BlogPost } from '@/lib/blog-data';
@@ -552,7 +553,7 @@ const ManageProductsView = ({ onDataChange }: { onDataChange: () => void }) => {
     );
 }
 
-const BlogPostForm = ({ post, onFormSubmit, onFormCancel, currentUser }: { post?: BlogPost | null, onFormSubmit: () => void, onFormCancel: () => void, currentUser?: AppUser | null }) => {
+const BlogPostForm = ({ post, onFormSubmit, onFormCancel, currentUser }: { post?: BlogPost | null, onFormSubmit: () => void, onFormCancel: () => void, currentUser?: User | null }) => {
     const { toast } = useToast();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { user } = useAuth();
@@ -1792,6 +1793,8 @@ const DashboardPage = () => {
   };
   
   const renderContent = () => {
+    if (!user) return null;
+
     switch (activeView) {
         case 'overview':
             return <AnalyticsOverview stats={stats} products={products} isLoading={isDataLoading} />;
@@ -1904,3 +1907,5 @@ export default function DashboardPageWithSuspense() {
         <DashboardPage />
     );
 }
+
+    
