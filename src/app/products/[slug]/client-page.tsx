@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Star, Minus, Plus, ShoppingCart, ArrowLeft, Check } from 'lucide-react';
+import { Star, Minus, Plus, ShoppingCart, ArrowLeft, Check, PackageX } from 'lucide-react';
 import { useCart } from '@/context/cart-context';
 import type { Product } from '@/lib/products-data';
 import { useToast } from '@/hooks/use-toast';
@@ -51,7 +51,7 @@ export function ProductClientPage({ product }: { product: Product }) {
       url: `https://sehatikopi.id/products/${product.slug}`,
       priceCurrency: 'IDR',
       price: product.price,
-      availability: 'https://schema.org/InStock',
+      availability: product.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
     },
     aggregateRating: {
         '@type': 'AggregateRating',
@@ -59,6 +59,16 @@ export function ProductClientPage({ product }: { product: Product }) {
         reviewCount: product.reviews
     }
   };
+  
+  const StockStatus = () => {
+    if (product.stock > 10) {
+      return <Badge variant="secondary">In Stock</Badge>;
+    }
+    if (product.stock > 0) {
+      return <Badge variant="outline" className="text-amber-600 border-amber-500">Low Stock ({product.stock} left)</Badge>;
+    }
+    return <Badge variant="destructive">Out of Stock</Badge>;
+  }
 
   return (
     <>
@@ -90,7 +100,10 @@ export function ProductClientPage({ product }: { product: Product }) {
 
             <div className="space-y-6">
               <div>
-                <Badge variant="outline">{product.origin}</Badge>
+                <div className="flex items-center gap-2">
+                    <Badge variant="outline">{product.origin}</Badge>
+                    <StockStatus />
+                </div>
                 <h1 className="font-headline text-3xl md:text-5xl font-bold text-primary mt-2">{product.name}</h1>
                 <div className="flex items-center gap-2 mt-2">
                   <div className="flex text-amber-500">
@@ -120,28 +133,37 @@ export function ProductClientPage({ product }: { product: Product }) {
                 <span className="text-base font-normal text-foreground/60"> / 250g</span>
               </div>
               
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                  <span className="font-semibold flex-shrink-0">Jumlah:</span>
-                  <div className="flex items-center border rounded-md self-start">
-                      <Button variant="ghost" size="icon" className="h-10 w-10" onClick={() => setQuantity(q => Math.max(1, q-1))}><Minus/></Button>
-                      <span className="px-4 font-bold text-lg">{quantity}</span>
-                      <Button variant="ghost" size="icon" className="h-10 w-10" onClick={() => setQuantity(q => q+1)}><Plus/></Button>
-                  </div>
-              </div>
+              {product.stock > 0 && (
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                    <span className="font-semibold flex-shrink-0">Jumlah:</span>
+                    <div className="flex items-center border rounded-md self-start">
+                        <Button variant="ghost" size="icon" className="h-10 w-10" onClick={() => setQuantity(q => Math.max(1, q-1))}><Minus/></Button>
+                        <span className="px-4 font-bold text-lg">{quantity}</span>
+                        <Button variant="ghost" size="icon" className="h-10 w-10" onClick={() => setQuantity(q => Math.min(product.stock, q + 1))}><Plus/></Button>
+                    </div>
+                </div>
+              )}
 
-              <Button size="lg" className="w-full sm:w-auto" onClick={handleAddToCart} disabled={isAdded}>
-                {isAdded ? (
-                  <>
-                    <Check className="mr-2 h-4 w-4" />
-                    Ditambahkan!
-                  </>
-                ) : (
-                  <>
-                    <ShoppingCart className="mr-2 h-4 w-4" />
-                    Tambah ke Keranjang
-                  </>
-                )}
-              </Button>
+              {product.stock > 0 ? (
+                <Button size="lg" className="w-full sm:w-auto" onClick={handleAddToCart} disabled={isAdded}>
+                  {isAdded ? (
+                    <>
+                      <Check className="mr-2 h-4 w-4" />
+                      Ditambahkan!
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingCart className="mr-2 h-4 w-4" />
+                      Tambah ke Keranjang
+                    </>
+                  )}
+                </Button>
+              ) : (
+                 <Button size="lg" className="w-full sm:w-auto" disabled>
+                    <PackageX className="mr-2 h-4 w-4" />
+                    Out of Stock
+                </Button>
+              )}
             </div>
           </div>
         </div>

@@ -17,9 +17,10 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useCart } from '@/context/cart-context';
 import { useToast } from '@/hooks/use-toast';
-import { ShoppingCart, Check, ListFilter } from 'lucide-react';
+import { ShoppingCart, Check, ListFilter, PackageX } from 'lucide-react';
 import { ProductFilters, type Filters } from './product-filters';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 
 export function ProductsClientPage({ initialProducts }: { initialProducts: Product[]}) {
   const [products] = useState<Product[]>(initialProducts);
@@ -143,12 +144,15 @@ export function ProductsClientPage({ initialProducts }: { initialProducts: Produ
                     <CardHeader className="p-0">
                       <Link href={`/products/${product.slug}`}>
                         <div className="relative h-60 w-full">
+                          {product.stock === 0 && (
+                            <Badge variant="destructive" className="absolute top-2 left-2 z-10">Out of Stock</Badge>
+                          )}
                           <Image
                             src={product.image}
                             alt={product.name}
                             fill
                             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                            className="object-cover"
+                            className={`object-cover ${product.stock === 0 ? 'grayscale' : ''}`}
                           />
                         </div>
                       </Link>
@@ -169,23 +173,30 @@ export function ProductsClientPage({ initialProducts }: { initialProducts: Produ
                           minimumFractionDigits: 0,
                         }).format(product.price)}
                       </span>
-                      <div className="flex gap-2 w-full sm:w-auto">
-                        <Button asChild variant="outline" className="flex-1">
-                          <Link href={`/products/${product.slug}`}>View</Link>
+                      {product.stock > 0 ? (
+                          <div className="flex gap-2 w-full sm:w-auto">
+                            <Button asChild variant="outline" className="flex-1">
+                              <Link href={`/products/${product.slug}`}>View</Link>
+                            </Button>
+                            <Button
+                              onClick={() => handleAddToCart(product)}
+                              disabled={addedProducts[product.slug]}
+                              className="flex-1"
+                              aria-label={`Add ${product.name} to cart`}
+                            >
+                              {addedProducts[product.slug] ? (
+                                <Check className="h-4 w-4" />
+                              ) : (
+                                <ShoppingCart className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </div>
+                      ) : (
+                        <Button disabled className="w-full sm:w-auto">
+                          <PackageX className="mr-2 h-4 w-4" />
+                          Out of Stock
                         </Button>
-                        <Button
-                          onClick={() => handleAddToCart(product)}
-                          disabled={addedProducts[product.slug]}
-                          className="flex-1"
-                          aria-label={`Add ${product.name} to cart`}
-                        >
-                          {addedProducts[product.slug] ? (
-                            <Check className="h-4 w-4" />
-                          ) : (
-                            <ShoppingCart className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </div>
+                      )}
                     </CardFooter>
                   </Card>
               </motion.div>

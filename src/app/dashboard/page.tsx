@@ -54,6 +54,7 @@ const productFormSchema = z.object({
   origin: z.string().min(3, "Origin is required."),
   description: z.string().min(10, "Description is required."),
   price: z.coerce.number().min(1, "Price must be greater than 0."),
+  stock: z.coerce.number().min(0, "Stock cannot be negative."),
   roast: z.string().min(3, "Roast level is required."),
   tags: z.string().min(3, "Please add at least one tag, comma separated."),
   image: z.string().url("Image URL is required."),
@@ -124,7 +125,8 @@ const ProductForm = ({ product, onFormSubmit, onFormCancel }: { product?: Produc
             name: product?.name || '', 
             origin: product?.origin || '', 
             description: product?.description || '', 
-            price: product?.price || 0, 
+            price: product?.price || 0,
+            stock: product?.stock ?? 0, 
             roast: product?.roast || '', 
             tags: product?.tags.join(', ') || '', 
             image: product?.image || '', 
@@ -212,11 +214,18 @@ const ProductForm = ({ product, onFormSubmit, onFormCancel }: { product?: Produc
                                 <FormMessage />
                             </FormItem>
                         )} />
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <FormField control={form.control} name="price" render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Price (IDR)</FormLabel>
                                         <FormControl><Input type="number" placeholder="150000" {...field} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )} />
+                             <FormField control={form.control} name="stock" render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Stock</FormLabel>
+                                        <FormControl><Input type="number" placeholder="50" {...field} /></FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )} />
@@ -489,6 +498,7 @@ const ManageProductsView = ({ onDataChange }: { onDataChange: () => void }) => {
                                 <TableHead>Product Name</TableHead>
                                 <TableHead>Origin</TableHead>
                                 <TableHead className="text-right">Price</TableHead>
+                                <TableHead className="text-right">Stock</TableHead>
                                 <TableHead className="text-center">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -498,6 +508,7 @@ const ManageProductsView = ({ onDataChange }: { onDataChange: () => void }) => {
                                     <TableCell className="font-medium">{product.name}</TableCell>
                                     <TableCell className="text-muted-foreground">{product.origin}</TableCell>
                                     <TableCell className="text-right">{formatCurrency(product.price)}</TableCell>
+                                    <TableCell className="text-right">{product.stock}</TableCell>
                                     <TableCell className="text-center space-x-2">
                                          <Button variant="outline" size="icon" aria-label={`Edit ${product.name}`} onClick={() => openDialog(product)}>
                                             <Edit className="h-4 w-4" />
