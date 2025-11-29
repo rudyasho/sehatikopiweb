@@ -62,7 +62,7 @@ export async function getOrdersByUserId(userId: string): Promise<Order[]> {
 export async function getAllOrders(): Promise<Order[]> {
   noStore();
   if (!dbAdmin) {
-    throw new Error('Database or Auth admin instance is not initialized.');
+    throw new Error('Database admin instance is not initialized.');
   }
 
   try {
