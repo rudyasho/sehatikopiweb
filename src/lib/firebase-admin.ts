@@ -7,7 +7,7 @@ const hasAdminCredentials =
     process.env.FIREBASE_CLIENT_EMAIL &&
     process.env.FIREBASE_PRIVATE_KEY;
 
-let app: admin.app.App;
+let app: admin.app.App | undefined;
 
 // Initialize the app only if it hasn't been initialized yet and credentials are provided.
 if (!admin.apps.length) {
@@ -56,5 +56,5 @@ const getAuthAdmin = () => {
 
 // Export getters instead of the potentially null constants
 export { app as adminApp };
-export const dbAdmin = hasAdminCredentials ? getDbAdmin() : null;
-export const authAdmin = hasAdminCredentials ? getAuthAdmin() : null;
+export const getDb = getDbAdmin;
+export const getAuth = getAuthAdmin;

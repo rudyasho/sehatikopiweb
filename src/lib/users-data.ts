@@ -1,7 +1,7 @@
 // src/lib/users-data.ts
 'use server';
 
-import { authAdmin, dbAdmin } from './firebase-admin';
+import { getAuth, getDb } from './firebase-admin';
 import { SUPER_ADMIN_EMAIL, type AppUser } from '@/context/auth-context';
 
 export type { AppUser } from '@/context/auth-context';
@@ -23,9 +23,8 @@ type FirestoreUser = {
 };
 
 export async function createUserInFirestore(userData: FirestoreUser) {
-    if (!dbAdmin) {
-        throw new Error("Firestore Admin is not initialized. Cannot create user in Firestore.");
-    }
+    const dbAdmin = getDb();
+    const authAdmin = getAuth();
     const userRef = dbAdmin.collection('users').doc(userData.uid);
     const userDoc = await userRef.get();
 
@@ -39,16 +38,14 @@ export async function createUserInFirestore(userData: FirestoreUser) {
         });
         
         // Also set custom claims if it's the super admin
-        if (role === 'Super Admin' && authAdmin) {
+        if (role === 'Super Admin') {
              await authAdmin.setCustomUserClaims(userData.uid, { role: 'Super Admin' });
         }
     }
 }
 
 export async function listAllUsers(): Promise<AppUser[]> {
-  if (!authAdmin) {
-    throw new Error("Firebase Admin SDK for Auth is not initialized.");
-  }
+  const authAdmin = getAuth();
   
   const userRecords = await authAdmin.listUsers();
   
@@ -75,9 +72,7 @@ export async function listAllUsers(): Promise<AppUser[]> {
 }
 
 export async function createUser(userData: CreateUserFormData) {
-    if (!authAdmin) {
-        throw new Error("Firebase Admin SDK for Auth is not initialized.");
-    }
+    const authAdmin = getAuth();
     
     try {
         const userRecord = await authAdmin.createUser({
@@ -103,9 +98,8 @@ export async function createUser(userData: CreateUserFormData) {
 }
 
 export async function setUserRole(uid: string, role: 'Admin' | 'User'): Promise<void> {
-    if (!authAdmin || !dbAdmin) {
-        throw new Error("Firebase Admin SDK is not initialized.");
-    }
+    const dbAdmin = getDb();
+    const authAdmin = getAuth();
     const userToUpdate = await authAdmin.getUser(uid);
     if (userToUpdate.email === SUPER_ADMIN_EMAIL) {
         throw new Error("Cannot change the role of the Super Admin account.");
@@ -119,9 +113,7 @@ export async function setUserRole(uid: string, role: 'Admin' | 'User'): Promise<
 }
 
 export async function updateUserDisabledStatus(uid: string, disabled: boolean) {
-    if (!authAdmin) {
-        throw new Error("Firebase Admin SDK for Auth is not initialized.");
-    }
+    const authAdmin = getAuth();
     const userToUpdate = await authAdmin.getUser(uid);
     if (userToUpdate.email === SUPER_ADMIN_EMAIL) {
         throw new Error("Cannot modify the Super Admin account.");
@@ -130,9 +122,8 @@ export async function updateUserDisabledStatus(uid: string, disabled: boolean) {
 }
 
 export async function deleteUserAccount(uid: string) {
-    if (!authAdmin || !dbAdmin) {
-        throw new Error("Firebase Admin SDK is not initialized.");
-    }
+    const dbAdmin = getDb();
+    const authAdmin = getAuth();
     const userToDelete = await authAdmin.getUser(uid);
     if (userToDelete.email === SUPER_ADMIN_EMAIL) {
         throw new Error("Cannot delete the Super Admin account.");

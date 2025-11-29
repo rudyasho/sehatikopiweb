@@ -1,7 +1,7 @@
 // src/lib/events-data.ts
 'use server';
 
-import { dbAdmin } from './firebase-admin';
+import { getDb } from './firebase-admin';
 import { unstable_noStore as noStore } from 'next/cache';
 
 export type Event = {
@@ -46,11 +46,7 @@ const initialEvents: Omit<Event, 'id'>[] = [
 
 
 async function seedDatabaseIfNeeded() {
-  if (!dbAdmin) {
-    console.warn("Firestore Admin is not initialized. Skipping seed operation.");
-    return;
-  }
-
+  const dbAdmin = getDb();
   const eventsCollection = dbAdmin.collection('events');
 
   try {
@@ -72,10 +68,7 @@ async function seedDatabaseIfNeeded() {
 
 export async function getEvents(): Promise<Event[]> {
     noStore();
-    
-    if (!dbAdmin) {
-      throw new Error("Firestore Admin is not initialized. Cannot get events.");
-    }
+    const dbAdmin = getDb();
     await seedDatabaseIfNeeded();
     
     const eventsCollection = dbAdmin.collection('events');
@@ -92,10 +85,7 @@ export async function getEvents(): Promise<Event[]> {
 }
 
 export async function addEvent(eventData: EventFormData): Promise<Event> {
-    if (!dbAdmin) {
-        throw new Error("Firestore Admin not initialized.");
-    }
-
+    const dbAdmin = getDb();
     const eventsCollection = dbAdmin.collection('events');
     const docRef = await eventsCollection.add(eventData);
     return {
@@ -105,20 +95,14 @@ export async function addEvent(eventData: EventFormData): Promise<Event> {
 }
 
 export async function updateEvent(id: string, data: Partial<EventFormData>): Promise<void> {
-    if (!dbAdmin) {
-        throw new Error("Firestore Admin not initialized.");
-    }
-
+    const dbAdmin = getDb();
     const eventsCollection = dbAdmin.collection('events');
     const eventRef = eventsCollection.doc(id);
     await eventRef.update(data);
 }
 
 export async function deleteEvent(id: string): Promise<void> {
-    if (!dbAdmin) {
-        throw new Error("Firestore Admin not initialized.");
-    }
-
+    const dbAdmin = getDb();
     const eventsCollection = dbAdmin.collection('events');
     const eventRef = eventsCollection.doc(id);
     await eventRef.delete();

@@ -3,7 +3,7 @@
 
 import admin from 'firebase-admin';
 import { unstable_noStore as noStore } from 'next/cache';
-import { dbAdmin } from './firebase-admin';
+import { getDb } from './firebase-admin';
 
 export type BlogPost = {
     id: string;
@@ -61,11 +61,7 @@ const initialBlogPosts: Omit<BlogPost, 'id' | 'slug' | 'date' | 'excerpt' | 'aut
 ];
 
 async function seedDatabaseIfNeeded() {
-  if (!dbAdmin) {
-    console.warn("Firestore Admin is not initialized. Skipping seed operation.");
-    return;
-  }
-
+  const dbAdmin = getDb();
   const blogCollection = dbAdmin.collection('blog');
 
   try {
@@ -95,9 +91,7 @@ async function seedDatabaseIfNeeded() {
 
 export async function getBlogPostsForAdmin(): Promise<BlogPost[]> {
     noStore();
-    if (!dbAdmin) {
-        throw new Error("Firestore Admin is not initialized. Cannot get blog posts.");
-    }
+    const dbAdmin = getDb();
     await seedDatabaseIfNeeded();
     
     let query = dbAdmin.collection('blog').orderBy('date', 'desc');
@@ -117,10 +111,7 @@ export async function getBlogPostsForAdmin(): Promise<BlogPost[]> {
 
 export async function getBlogPosts(): Promise<BlogPost[]> {
     noStore();
-    
-    if (!dbAdmin) {
-        throw new Error("Firestore Admin is not initialized. Cannot get blog posts.");
-    }
+    const dbAdmin = getDb();
     await seedDatabaseIfNeeded();
     
     let query = dbAdmin.collection('blog').where('status', '==', 'published').orderBy('date', 'desc');
@@ -139,25 +130,17 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
 
 export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
     noStore();
-    if (!dbAdmin) {
-        throw new Error("Firestore Admin is not initialized. Cannot get post by slug.");
-    }
+    const dbAdmin = getDb();
     const snapshot = await dbAdmin.collection('blog').where('slug', '==', slug).limit(1).get();
     if (snapshot.empty) {
         return null;
     }
     const doc = snapshot.docs[0];
-    const postData = { id: doc.id, ...doc.data() } as BlogPost;
-
-    // By security rules, only published posts are readable by the public.
-    // If we get here, it's either published or the request is from an admin.
-    return postData;
+    return { id: doc.id, ...doc.data() } as BlogPost;
 }
 
 export async function addBlogPost(post: NewBlogPostData): Promise<BlogPost> {
-    if (!dbAdmin) {
-        throw new Error("Firestore Admin is not initialized.");
-    }
+    const dbAdmin = getDb();
     
     const { title, category, content, image, author, authorId } = post;
     const slug = title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
@@ -185,9 +168,7 @@ export async function addBlogPost(post: NewBlogPostData): Promise<BlogPost> {
 
 
 export async function updateBlogPost(id: string, data: Partial<NewBlogPostData>): Promise<void> {
-    if (!dbAdmin) {
-        throw new Error("Firestore Admin not initialized.");
-    }
+    const dbAdmin = getDb();
     
     const postRef = dbAdmin.collection('blog').doc(id);
     const updateData: { [key: string]: any } = { ...data };
@@ -204,10 +185,7 @@ export async function updateBlogPost(id: string, data: Partial<NewBlogPostData>)
 }
 
 export async function deleteBlogPost(id: string): Promise<void> {
-    if (!dbAdmin) {
-        throw new Error("Firestore Admin not initialized.");
-    }
-
+    const dbAdmin = getDb();
     const postRef = dbAdmin.collection('blog').doc(id);
     await postRef.delete();
 }

@@ -1,14 +1,16 @@
 // src/app/products/[slug]/page.tsx
 import { notFound } from 'next/navigation';
-import { getProductBySlug, getProducts, Product } from '@/lib/products-data';
-import { Metadata, ResolvingMetadata } from 'next';
+import { getProductBySlug, getProducts } from '@/lib/products-data';
+import { Metadata } from 'next';
 import { ProductClientPage } from './client-page';
 import { getSettings } from '@/lib/settings-data';
 import { getTestimonials } from '@/lib/testimonials-data';
 import { ReviewsSection } from './reviews-section';
 
+
 export async function generateStaticParams() {
   const products = await getProducts();
+  if (!products) return [];
   return products.map((product) => ({
     slug: product.slug,
   }));
@@ -18,7 +20,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   const product = await getProductBySlug(params.slug);
   const settings = await getSettings();
 
-  if (!product) {
+  if (!product || !settings) {
     return {
       title: 'Product Not Found',
     }
@@ -61,12 +63,12 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
     notFound();
   }
 
-  const reviews = await getTestimonials(0, true); // Fetch all (including pending) for reviews section
+  const reviews = await getTestimonials(0, true);
 
   return (
       <>
         <ProductClientPage product={product} />
-        <ReviewsSection initialReviews={reviews} productName={product.name} productId={product.id} />
+        <ReviewsSection initialReviews={reviews || []} productName={product.name} productId={product.id} />
       </>
   );
 }

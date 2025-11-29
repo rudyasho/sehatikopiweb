@@ -1,7 +1,7 @@
 // src/app/dashboard/page.tsx
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, Suspense, use } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { 
     LayoutGrid, ShoppingBag, ListOrdered, BookText, CalendarCheck, 
@@ -21,11 +21,11 @@ import ManageUsersView from './manage-users-view';
 import HeroSettingsView from './hero-settings-view';
 import SettingsView from './settings-view';
 import ManageTestimonialsView from './manage-testimonials-view';
-import { getProducts, type Product } from '@/lib/products-data';
-import { getBlogPostsForAdmin, type BlogPost } from '@/lib/blog-data';
-import { getEvents, type Event } from '@/lib/events-data';
-import { getAllOrders, type Order } from '@/lib/orders-data';
-import { getTestimonials, type Testimonial } from '@/lib/testimonials-data';
+import { getProducts } from '@/lib/products-data';
+import { getBlogPostsForAdmin } from '@/lib/blog-data';
+import { getEvents } from '@/lib/events-data';
+import { getAllOrders } from '@/lib/orders-data';
+import { getTestimonials } from '@/lib/testimonials-data';
 import { listAllUsers, type AppUser } from '@/lib/users-data';
 
 type DashboardView = 'overview' | 'manageOrders' | 'manageProducts' | 'manageBlog' | 'manageEvents' | 'manageUsers' | 'manageTestimonials' | 'heroSettings' | 'settings';
@@ -42,10 +42,10 @@ const DashboardPage = () => {
   const isAdmin = user?.role === 'Admin' || user?.role === 'Super Admin';
 
   useEffect(() => {
-    if (!loading && !isAdmin) {
-      router.replace('/');
+    if (!loading && !user) {
+      router.replace('/login');
     }
-  }, [user, loading, router, isAdmin]);
+  }, [user, loading, router]);
   
   useEffect(() => {
       const view = searchParams.get('view') as DashboardView;
@@ -56,7 +56,7 @@ const DashboardPage = () => {
       }
   }, [searchParams]);
 
-  if (loading || !user || !isAdmin) {
+  if (loading || !user) {
     return (
       <div className="flex h-screen items-center justify-center bg-secondary/50">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
@@ -152,45 +152,49 @@ const DashboardPage = () => {
 
 
 // This new Server Component handles data fetching based on the active view
-const DashboardViewLoader = async ({ view, currentUser }: { view: DashboardView; currentUser: AppUser }) => {
+const DashboardViewLoader = ({ view, currentUser }: { view: DashboardView; currentUser: AppUser }) => {
+  
+  const data = use(
+    Promise.all([
+      getProducts(),
+      getAllOrders(),
+      getBlogPostsForAdmin(),
+      getEvents(),
+      getTestimonials(0, true),
+      currentUser.role === 'Super Admin' ? listAllUsers() : Promise.resolve([]),
+    ]).then(([products, orders, posts, events, testimonials, users]) => ({
+      products,
+      orders,
+      posts,
+      events,
+      testimonials,
+      users
+    }))
+  );
+
   switch (view) {
-    case 'manageOrders': {
-      const orders = await getAllOrders();
-      return <ManageOrdersView orders={orders} />;
-    }
-    case 'manageProducts': {
-      const products = await getProducts();
-      return <ManageProductsView products={products} />;
-    }
-    case 'manageBlog': {
-      const posts = await getBlogPostsForAdmin(); // Fetch all statuses for admin
-      return <ManageBlogPostsView posts={posts} />;
-    }
-    case 'manageEvents': {
-      const events = await getEvents();
-      return <ManageEventsView events={events} />;
-    }
-    case 'manageTestimonials': {
-      const testimonials = await getTestimonials(0, true);
-      return <ManageTestimonialsView testimonials={testimonials} />;
-    }
-    case 'manageUsers': {
+    case 'manageOrders':
+      return <ManageOrdersView orders={data.orders} />;
+    case 'manageProducts':
+      return <ManageProductsView products={data.products || []} />;
+    case 'manageBlog':
+      return <ManageBlogPostsView posts={data.posts} />;
+    case 'manageEvents':
+      return <ManageEventsView events={data.events} />;
+    case 'manageTestimonials':
+      return <ManageTestimonialsView testimonials={data.testimonials} />;
+    case 'manageUsers':
       if (currentUser.role !== 'Super Admin') {
         return <p>You do not have permission to view this page.</p>;
       }
-      const users = await listAllUsers();
-      return <ManageUsersView currentUser={currentUser} users={users} />;
-    }
-    case 'heroSettings': {
+      return <ManageUsersView currentUser={currentUser} users={data.users} />;
+    case 'heroSettings':
       return <HeroSettingsView />;
-    }
-    case 'settings': {
+    case 'settings':
       return <SettingsView />;
-    }
     case 'overview':
-    default: {
+    default:
       return <AnalyticsOverview />;
-    }
   }
 };
 

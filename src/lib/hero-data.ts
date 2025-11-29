@@ -1,7 +1,7 @@
 // src/lib/hero-data.ts
 'use server';
 
-import { dbAdmin } from './firebase-admin';
+import { getDb } from './firebase-admin';
 import { unstable_noStore as noStore } from 'next/cache';
 
 export type HeroData = {
@@ -20,11 +20,7 @@ const defaultHeroData: HeroFormData = {
 };
 
 async function initializeHeroDataIfNeeded() {
-  if (!dbAdmin) {
-    console.warn("Firestore Admin is not initialized. Skipping hero data initialization.");
-    return;
-  }
-  
+  const dbAdmin = getDb();
   const contentCollection = dbAdmin.collection('siteContent');
   const HERO_DOC_ID = 'homepage-hero';
 
@@ -43,11 +39,7 @@ async function initializeHeroDataIfNeeded() {
 
 export async function getHeroData(): Promise<HeroData> {
     noStore();
-    
-    if (!dbAdmin) {
-      console.error("Firestore Admin is not initialized. Returning default hero data.");
-      return { id: 'homepage-hero', ...defaultHeroData };
-    }
+    const dbAdmin = getDb();
     await initializeHeroDataIfNeeded();
     
     const docRef = dbAdmin.collection('siteContent').doc('homepage-hero');
@@ -62,10 +54,7 @@ export async function getHeroData(): Promise<HeroData> {
 }
 
 export async function updateHeroData(data: HeroFormData): Promise<void> {
-    if (!dbAdmin) {
-        throw new Error("Firestore Admin not initialized.");
-    }
-
+    const dbAdmin = getDb();
     const docRef = dbAdmin.collection('siteContent').doc('homepage-hero');
     await docRef.update(data);
 }

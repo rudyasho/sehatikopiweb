@@ -2,7 +2,7 @@
 'use server';
 
 import { unstable_noStore as noStore } from 'next/cache';
-import { dbAdmin, authAdmin } from './firebase-admin';
+import { getDb, getAuth } from './firebase-admin';
 import type { CartItem } from '@/context/cart-context';
 import type { AppUser } from '@/context/auth-context';
 
@@ -22,10 +22,7 @@ export type Order = {
 
 
 export async function addOrder(orderData: Omit<Order, 'customerInfo'>) {
-  if (!dbAdmin) {
-    throw new Error('Firestore Admin not initialized. Cannot add order.');
-  }
-
+  const dbAdmin = getDb();
   const ordersCollection = dbAdmin.collection('orders');
   const orderRef = ordersCollection.doc(orderData.orderId);
 
@@ -41,9 +38,7 @@ export async function addOrder(orderData: Omit<Order, 'customerInfo'>) {
 
 export async function getOrdersByUserId(userId: string): Promise<Order[]> {
   noStore();
-  if (!dbAdmin) {
-    throw new Error('Firestore Admin is not initialized. Cannot get orders.');
-  }
+  const dbAdmin = getDb();
   
   try {
     const ordersSnapshot = await dbAdmin.collection('orders')
@@ -61,9 +56,8 @@ export async function getOrdersByUserId(userId: string): Promise<Order[]> {
 
 export async function getAllOrders(): Promise<Order[]> {
   noStore();
-  if (!dbAdmin) {
-    throw new Error('Database admin instance is not initialized.');
-  }
+  const dbAdmin = getDb();
+  const authAdmin = getAuth();
 
   try {
     const ordersSnapshot = await dbAdmin.collection('orders').orderBy('orderDate', 'desc').get();
@@ -71,11 +65,6 @@ export async function getAllOrders(): Promise<Order[]> {
 
     const userIds = [...new Set(orders.map(o => o.userId).filter((id): id is string => !!id))];
     if (userIds.length === 0) {
-        return orders.map(order => ({ ...order, customerInfo: undefined }));
-    }
-
-    if (!authAdmin) {
-        console.warn("Auth Admin not available, cannot fetch user info for orders.");
         return orders.map(order => ({ ...order, customerInfo: undefined }));
     }
 
@@ -108,9 +97,7 @@ export async function getAllOrders(): Promise<Order[]> {
 
 
 export async function updateOrderStatus(orderId: string, status: OrderStatus): Promise<void> {
-  if (!dbAdmin) {
-    throw new Error('Firestore Admin not initialized. Cannot update status.');
-  }
+  const dbAdmin = getDb();
   const orderRef = dbAdmin.collection('orders').doc(orderId);
   
   try {

@@ -1,7 +1,7 @@
 // src/lib/settings-data.ts
 'use server';
 
-import { dbAdmin } from './firebase-admin';
+import { getDb } from './firebase-admin';
 import { unstable_noStore as noStore } from 'next/cache';
 
 export type WebsiteSettings = {
@@ -28,11 +28,7 @@ const defaultSettings: SettingsFormData = {
 };
 
 async function initializeSettingsIfNeeded() {
-  if (!dbAdmin) {
-    console.warn("Firestore Admin is not initialized. Skipping settings initialization.");
-    return;
-  }
-  
+  const dbAdmin = getDb();
   const settingsCollection = dbAdmin.collection('settings');
   const SETTINGS_DOC_ID = 'main-settings'; 
 
@@ -57,11 +53,7 @@ async function initializeSettingsIfNeeded() {
 
 export async function getSettings(): Promise<WebsiteSettings> {
     noStore();
-    
-    if (!dbAdmin) {
-      console.error("Firestore Admin is not initialized. Returning default settings.");
-      return { id: 'main-settings', ...defaultSettings };
-    }
+    const dbAdmin = getDb();
     await initializeSettingsIfNeeded();
     
     const docRef = dbAdmin.collection('settings').doc('main-settings');
@@ -76,10 +68,7 @@ export async function getSettings(): Promise<WebsiteSettings> {
 }
 
 export async function updateSettings(data: SettingsFormData): Promise<void> {
-    if (!dbAdmin) {
-        throw new Error("Firestore Admin not initialized.");
-    }
-
+    const dbAdmin = getDb();
     const docRef = dbAdmin.collection('settings').doc('main-settings');
     await docRef.update(data);
 }

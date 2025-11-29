@@ -25,6 +25,7 @@ export function ProductFilters({ onFilterChange, allProducts }: ProductFiltersPr
   const [sortOrder, setSortOrder] = useState('name-asc');
   
   const { allRoasts, allOrigins } = useMemo(() => {
+    if (!allProducts) return { allRoasts: [], allOrigins: [] };
     const roasts = [...new Set(allProducts.map(p => p.roast))];
     const origins = [...new Set(allProducts.map(p => p.origin))];
     return { allRoasts: roasts, allOrigins: origins };

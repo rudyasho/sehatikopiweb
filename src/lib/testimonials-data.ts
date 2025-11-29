@@ -1,7 +1,7 @@
 // src/lib/testimonials-data.ts
 'use server';
 
-import { dbAdmin } from './firebase-admin';
+import { getDb } from './firebase-admin';
 import { unstable_noStore as noStore } from 'next/cache';
 
 export type Testimonial = {
@@ -30,7 +30,7 @@ const initialTestimonials: Omit<Testimonial, 'id'>[] = [
   },
   {
     name: 'Siti K.',
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1287&auto=format&fit=crop&ixlib-rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1287&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     review: 'Sehati Kopi sudah menjadi ritual harian saya. Sangrai mereka konsisten dan pengirimannya selalu cepat. Sangat direkomendasikan!',
     rating: 5,
     status: 'published',
@@ -48,12 +48,7 @@ async function seedDatabaseIfNeeded() {
     return;
   }
   
-  if (!dbAdmin) {
-    console.warn("Firestore Admin is not initialized. Skipping seed operation.");
-    seedingCompleted = true; 
-    return;
-  }
-
+  const dbAdmin = getDb();
   isSeeding = true;
   const testimonialsCollection = dbAdmin.collection('testimonials');
 
@@ -79,10 +74,7 @@ async function seedDatabaseIfNeeded() {
 
 export async function getTestimonials(limit: number = 3, showPending: boolean = false): Promise<Testimonial[]> {
     noStore();
-
-    if (!dbAdmin) {
-      throw new Error("Firestore Admin is not initialized. Cannot get testimonials.");
-    }
+    const dbAdmin = getDb();
     await seedDatabaseIfNeeded();
     
     let query = dbAdmin.collection('testimonials').orderBy('date', 'desc');
@@ -109,22 +101,16 @@ export async function getTestimonials(limit: number = 3, showPending: boolean = 
 }
 
 export async function addTestimonial(testimonialData: NewTestimonialData): Promise<void> {
-    if (!dbAdmin) {
-        throw new Error("Firestore Admin not initialized.");
-    }
+    const dbAdmin = getDb();
     await dbAdmin.collection('testimonials').add(testimonialData);
 }
 
 export async function updateTestimonial(id: string, data: Partial<Testimonial>): Promise<void> {
-     if (!dbAdmin) {
-        throw new Error("Firestore Admin not initialized.");
-    }
+    const dbAdmin = getDb();
     await dbAdmin.collection('testimonials').doc(id).update(data);
 }
 
 export async function deleteTestimonial(id: string): Promise<void> {
-    if (!dbAdmin) {
-        throw new Error("Firestore Admin not initialized.");
-    }
+    const dbAdmin = getDb();
     await dbAdmin.collection('testimonials').doc(id).delete();
 }

@@ -1,7 +1,7 @@
 // src/lib/menu-data.ts
 'use server';
 
-import { dbAdmin } from './firebase-admin';
+import { getDb } from './firebase-admin';
 import { unstable_noStore as noStore } from 'next/cache';
 
 export type MenuItem = {
@@ -50,12 +50,7 @@ async function seedDatabaseIfNeeded() {
     return;
   }
 
-  if (!dbAdmin) {
-    console.warn("Firestore Admin is not initialized. Skipping seed operation.");
-    seedingCompleted = true; 
-    return;
-  }
-  
+  const dbAdmin = getDb();
   isSeeding = true;
   const menuCollection = dbAdmin.collection('menu');
 
@@ -79,35 +74,37 @@ async function seedDatabaseIfNeeded() {
   }
 }
 
-export async function getMenuItems(): Promise<MenuItems> {
+export async function getMenuItems(): Promise<MenuItems | null> {
     noStore();
+    try {
+        const dbAdmin = getDb();
+        await seedDatabaseIfNeeded();
 
-    if (!dbAdmin) {
-      throw new Error("Firestore Admin is not initialized. Cannot get menu items.");
+        const menuCollection = dbAdmin.collection('menu');
+        const menuSnapshot = await menuCollection.get();
+        const menuList = menuSnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        } as MenuItem));
+        
+        // Group items by category
+        const groupedItems = menuList.reduce((acc, item) => {
+            const category = item.category;
+            if (!acc[category]) {
+                acc[category] = [];
+            }
+            acc[category].push(item);
+            return acc;
+        }, {} as MenuItems);
+        
+        return {
+            hot: groupedItems.hot || [],
+            cold: groupedItems.cold || [],
+            manual: groupedItems.manual || [],
+            signature: groupedItems.signature || [],
+        };
+    } catch (error) {
+        console.error("Failed to get menu items:", error);
+        return null;
     }
-    await seedDatabaseIfNeeded();
-
-    const menuCollection = dbAdmin.collection('menu');
-    const menuSnapshot = await menuCollection.get();
-    const menuList = menuSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-    } as MenuItem));
-    
-    // Group items by category
-    const groupedItems = menuList.reduce((acc, item) => {
-        const category = item.category;
-        if (!acc[category]) {
-            acc[category] = [];
-        }
-        acc[category].push(item);
-        return acc;
-    }, {} as MenuItems);
-    
-    return {
-        hot: groupedItems.hot || [],
-        cold: groupedItems.cold || [],
-        manual: groupedItems.manual || [],
-        signature: groupedItems.signature || [],
-    };
 }

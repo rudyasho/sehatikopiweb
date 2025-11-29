@@ -9,5 +9,5 @@ export const metadata: Metadata = {
 
 export default async function ProductsPage() {
     const products = await getProducts();
-    return <ProductsClientPage initialProducts={products} />;
+    return <ProductsClientPage initialProducts={products || []} />;
 }
