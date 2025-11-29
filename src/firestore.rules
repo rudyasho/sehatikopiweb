@@ -1,0 +1,77 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      // Check for 'Admin' or 'Super Admin' role in the custom claims of the auth token.
+      return isAuth() && ('role' in request.auth.token && (request.auth.token.role == 'Admin' || request.auth.token.role == 'Super Admin'));
+    }
+
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /blog/{postId} {
+      allow read: if resource.data.status == 'published';
+      // Allow creation if user is authenticated, authorId matches their UID, and status is pending.
+      allow create: if isAuth() && request.resource.data.authorId == request.auth.uid && request.resource.data.status == 'pending';
+      // Allow update/delete only by admin, or by the author if the post is not yet published.
+      allow update, delete: if isAdmin() || (isAuth() && resource.data.authorId == request.auth.uid && resource.data.status != 'published');
+    }
+    
+    match /testimonials/{testimonialId} {
+      allow read: if resource.data.status == 'published';
+      // Allow creation if user is authenticated, userId matches their UID, and status is pending.
+      allow create: if isAuth() && request.resource.data.userId == request.auth.uid && request.resource.data.status == 'pending';
+      allow update, delete: if isAdmin();
+    }
+
+    match /events/{eventId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /menu/{itemId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /siteContent/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /orders/{orderId} {
+      // Anyone can create an order (even guests).
+      allow create: if true;
+      // Only the user who owns the order or an admin can read it.
+      allow read: if isAuth() && (resource.data.userId == request.auth.uid || isAdmin());
+      // Only admins can update (e.g., change status) or delete orders.
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /users/{userId} {
+      // A user can read and write to their own document.
+      allow read, write: if isAuth() && request.auth.uid == userId;
+      // Admins can list and get any user document.
+      allow list, get: if isAdmin();
+    }
+    
+    // Default deny all other reads/writes
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
