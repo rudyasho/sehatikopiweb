@@ -2,7 +2,7 @@
 import { Coffee, Star, Calendar, Newspaper } from 'lucide-react';
 
 import { getProducts } from '@/lib/products-data';
-import { getBlogPosts } from '@/lib/blog-data';
+import { getBlogPostsForAdmin } from '@/lib/blog-data';
 import { getEvents } from '@/lib/events-data';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -18,7 +18,7 @@ import { BarChart3 } from 'lucide-react';
 const AnalyticsOverview = async () => {
     const [productsData, blogPostsData, eventsData] = await Promise.all([
         getProducts(),
-        getBlogPosts(),
+        getBlogPostsForAdmin(),
         getEvents()
     ]);
     

@@ -140,7 +140,7 @@ const DashboardPage = () => {
                 </aside>
 
                 <main className="md:col-span-3 space-y-8">
-                  <Suspense fallback={<div className="flex h-96 w-full items-center justify-center"><Loader2 className="h-16 w-16 animate-spin text-primary" /></div>}>
+                  <Suspense fallback={<AnalyticsOverviewSkeleton />}>
                      <DashboardViewLoader view={activeView} currentUser={user} />
                   </Suspense>
                 </main>
@@ -173,25 +173,6 @@ const DashboardViewLoader = ({ view, currentUser }: { view: DashboardView; curre
   );
 
   switch (view) {
-    case 'manageOrders':
-      return <ManageOrdersView orders={data.orders} />;
-    case 'manageProducts':
-      return <ManageProductsView products={data.products || []} />;
-    case 'manageBlog':
-      return <ManageBlogPostsView posts={data.posts} />;
-    case 'manageEvents':
-      return <ManageEventsView events={data.events} />;
-    case 'manageTestimonials':
-      return <ManageTestimonialsView testimonials={data.testimonials} />;
-    case 'manageUsers':
-      if (currentUser.role !== 'Super Admin') {
-        return <p>You do not have permission to view this page.</p>;
-      }
-      return <ManageUsersView currentUser={currentUser} users={data.users} />;
-    case 'heroSettings':
-      return <HeroSettingsView />;
-    case 'settings':
-      return <SettingsView />;
     case 'overview':
     default:
       return <AnalyticsOverview />;

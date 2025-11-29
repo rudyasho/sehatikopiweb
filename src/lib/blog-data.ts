@@ -1,9 +1,8 @@
 // src/lib/blog-data.ts
 'use server';
 
-import admin from 'firebase-admin';
-import { unstable_noStore as noStore } from 'next/cache';
 import { getDb } from './firebase-admin';
+import { unstable_noStore as noStore } from 'next/cache';
 
 export type BlogPost = {
     id: string;
@@ -62,10 +61,6 @@ const initialBlogPosts: Omit<BlogPost, 'id' | 'slug' | 'date' | 'excerpt' | 'aut
 
 async function seedDatabaseIfNeeded() {
   const dbAdmin = getDb();
-  if (!dbAdmin) {
-    console.error("Firestore is not initialized. Skipping seed operation.");
-    return;
-  }
   const blogCollection = dbAdmin.collection('blog');
 
   try {
