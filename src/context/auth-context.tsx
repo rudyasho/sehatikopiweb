@@ -68,13 +68,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   
   const handleAuthSuccess = (firebaseUser: FirebaseUser | null) => {
       if (firebaseUser) {
-          // If the logged-in user is the super admin, always redirect to the dashboard.
-          if (firebaseUser.email === SUPER_ADMIN_EMAIL) {
-            router.push('/dashboard');
-          } else {
-            // For all other users, redirect to their profile page.
-            router.push('/profile');
-          }
+          // Redirect all authenticated users to the dashboard.
+          router.push('/dashboard');
       }
   }
 
@@ -146,10 +141,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLoading(true);
     try {
       const result = await signInWithPopup(auth, provider);
-      const isNewUser = result.user.metadata.creationTime === result.user.metadata.lastSignInTime;
       
-      // Create user doc in Firestore only if it's their first time.
-      // We use `set` with `merge:true` so it's safe to call even if doc exists.
+      // Create user doc in Firestore.
+      // We use set with merge:true, but since this also happens on creation, it's fine.
       await createUserInFirestore({
         uid: result.user.uid,
         email: result.user.email,
