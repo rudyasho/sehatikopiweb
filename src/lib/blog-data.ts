@@ -62,6 +62,10 @@ const initialBlogPosts: Omit<BlogPost, 'id' | 'slug' | 'date' | 'excerpt' | 'aut
 
 async function seedDatabaseIfNeeded() {
   const dbAdmin = getDb();
+  if (!dbAdmin) {
+    console.error("Firestore is not initialized. Skipping seed operation.");
+    return;
+  }
   const blogCollection = dbAdmin.collection('blog');
 
   try {
@@ -92,6 +96,7 @@ async function seedDatabaseIfNeeded() {
 export async function getBlogPostsForAdmin(): Promise<BlogPost[]> {
     noStore();
     const dbAdmin = getDb();
+    if (!dbAdmin) throw new Error("Firestore is not initialized.");
     await seedDatabaseIfNeeded();
     
     let query = dbAdmin.collection('blog').orderBy('date', 'desc');
@@ -112,6 +117,7 @@ export async function getBlogPostsForAdmin(): Promise<BlogPost[]> {
 export async function getBlogPosts(): Promise<BlogPost[]> {
     noStore();
     const dbAdmin = getDb();
+    if (!dbAdmin) throw new Error("Firestore is not initialized.");
     await seedDatabaseIfNeeded();
     
     let query = dbAdmin.collection('blog').where('status', '==', 'published').orderBy('date', 'desc');
@@ -131,16 +137,19 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
 export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
     noStore();
     const dbAdmin = getDb();
+    if (!dbAdmin) throw new Error("Firestore is not initialized.");
     const snapshot = await dbAdmin.collection('blog').where('slug', '==', slug).limit(1).get();
     if (snapshot.empty) {
         return null;
     }
     const doc = snapshot.docs[0];
-    return { id: doc.id, ...doc.data() } as BlogPost;
+    const postData = doc.data() as Omit<BlogPost, 'id'>;
+    return { id: doc.id, ...postData };
 }
 
 export async function addBlogPost(post: NewBlogPostData): Promise<BlogPost> {
     const dbAdmin = getDb();
+    if (!dbAdmin) throw new Error("Firestore is not initialized.");
     
     const { title, category, content, image, author, authorId } = post;
     const slug = title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
@@ -169,6 +178,7 @@ export async function addBlogPost(post: NewBlogPostData): Promise<BlogPost> {
 
 export async function updateBlogPost(id: string, data: Partial<NewBlogPostData>): Promise<void> {
     const dbAdmin = getDb();
+    if (!dbAdmin) throw new Error("Firestore is not initialized.");
     
     const postRef = dbAdmin.collection('blog').doc(id);
     const updateData: { [key: string]: any } = { ...data };
@@ -186,6 +196,7 @@ export async function updateBlogPost(id: string, data: Partial<NewBlogPostData>)
 
 export async function deleteBlogPost(id: string): Promise<void> {
     const dbAdmin = getDb();
+    if (!dbAdmin) throw new Error("Firestore is not initialized.");
     const postRef = dbAdmin.collection('blog').doc(id);
     await postRef.delete();
 }
