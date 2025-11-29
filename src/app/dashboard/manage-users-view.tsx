@@ -55,6 +55,7 @@ const ManageUsersView = ({ currentUser }: ManageUsersViewProps) => {
         try {
             await setUserRole(uid, role);
             toast({ title: 'Role Updated', description: `User role has been changed to ${role}.` });
+            refreshUsers(); // Refetch users to show updated role
             router.refresh();
         } catch (error: any) {
             toast({ variant: 'destructive', title: 'Error', description: error.message || 'Could not update user role.' });
@@ -65,6 +66,7 @@ const ManageUsersView = ({ currentUser }: ManageUsersViewProps) => {
         try {
             await updateUserDisabledStatus(uid, !disabled);
             toast({ title: 'User Updated', description: `User has been ${!disabled ? 'disabled' : 'enabled'}.` });
+            refreshUsers(); // Refetch users to show updated status
             router.refresh();
         } catch (error: any) {
             console.error("Failed to update user status:", error);
@@ -77,6 +79,7 @@ const ManageUsersView = ({ currentUser }: ManageUsersViewProps) => {
         try {
             await deleteUserAccount(userToDelete.uid);
             toast({ title: 'User Deleted', description: 'User account has been permanently deleted.' });
+            refreshUsers(); // Refetch users
             router.refresh();
         } catch (error: any) {
             console.error("Failed to delete user:", error);
@@ -88,6 +91,7 @@ const ManageUsersView = ({ currentUser }: ManageUsersViewProps) => {
     
     const handleFormSubmit = () => {
         setAddUserOpen(false);
+        refreshUsers(); // Refetch users after adding one
         router.refresh();
     };
 

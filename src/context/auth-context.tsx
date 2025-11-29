@@ -5,6 +5,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut, type User as FirebaseUser, createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPassword } from 'firebase/auth';
 import { app } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
+import { createUserInFirestore } from '@/lib/users-data';
 
 export const SUPER_ADMIN_EMAIL = 'rd.lapawawoi@gmail.com';
 
@@ -85,6 +86,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(userCredential.user, { displayName });
         
+        // Create user document in Firestore
+        await createUserInFirestore({
+          uid: userCredential.user.uid,
+          email: userCredential.user.email,
+          displayName: userCredential.user.displayName,
+          photoURL: userCredential.user.photoURL,
+          role: 'User'
+        });
+
         // Force token refresh to get custom claims if any are set on creation
         await userCredential.user.getIdToken(true);
 
@@ -135,8 +145,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const provider = new GoogleAuthProvider();
     setLoading(true);
     try {
-      const userCredential = await signInWithPopup(auth, provider);
-      handleAuthSuccess(userCredential.user);
+      const result = await signInWithPopup(auth, provider);
+      const isNewUser = result.user.metadata.creationTime === result.user.metadata.lastSignInTime;
+      
+      // Create user doc in Firestore only if it's their first time.
+      // We use `set` with `merge:true` so it's safe to call even if doc exists.
+      await createUserInFirestore({
+        uid: result.user.uid,
+        email: result.user.email,
+        displayName: result.user.displayName,
+        photoURL: result.user.photoURL,
+        role: 'User'
+      });
+
+      handleAuthSuccess(result.user);
     } catch (error) {
       console.error("Error during Google sign-in:", error);
       throw error;

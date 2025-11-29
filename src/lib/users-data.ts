@@ -1,7 +1,7 @@
 // src/lib/users-data.ts
 'use server';
 
-import { authAdmin } from './firebase-admin';
+import { authAdmin, dbAdmin } from './firebase-admin';
 import { SUPER_ADMIN_EMAIL, type AppUser } from '@/context/auth-context';
 
 export type { AppUser } from '@/context/auth-context';
@@ -11,6 +11,32 @@ export type CreateUserFormData = {
   email: string;
   password?: string;
 };
+
+// This type is for creating the document in Firestore
+type FirestoreUser = {
+  uid: string;
+  email?: string | null;
+  displayName?: string | null;
+  photoURL?: string | null;
+  role?: 'Super Admin' | 'Admin' | 'User';
+  createdAt?: string;
+};
+
+export async function createUserInFirestore(userData: FirestoreUser) {
+    if (!dbAdmin) {
+        throw new Error("Firestore Admin is not initialized.");
+    }
+    const userRef = dbAdmin.collection('users').doc(userData.uid);
+    const userDoc = await userRef.get();
+
+    // Only create the document if it doesn't already exist
+    if (!userDoc.exists) {
+        await userRef.set({
+            ...userData,
+            createdAt: new Date().toISOString(),
+        });
+    }
+}
 
 export async function listAllUsers(): Promise<AppUser[]> {
   if (!authAdmin) {
@@ -42,16 +68,25 @@ export async function listAllUsers(): Promise<AppUser[]> {
 }
 
 export async function createUser(userData: CreateUserFormData) {
-    if (!authAdmin) {
-        throw new Error("Firebase Admin SDK for Auth is not initialized.");
+    if (!authAdmin || !dbAdmin) {
+        throw new Error("Firebase Admin SDK for Auth or Firestore is not initialized.");
     }
     
     try {
-        await authAdmin.createUser({
+        const userRecord = await authAdmin.createUser({
             email: userData.email,
             password: userData.password,
             displayName: userData.displayName,
         });
+
+        // Also create the user document in Firestore
+        await createUserInFirestore({
+            uid: userRecord.uid,
+            email: userRecord.email,
+            displayName: userRecord.displayName,
+            role: 'User'
+        });
+
     } catch (error: any) {
         if (error.code === 'auth/email-already-exists') {
             throw new Error('A user with this email address already exists.');
@@ -61,8 +96,8 @@ export async function createUser(userData: CreateUserFormData) {
 }
 
 export async function setUserRole(uid: string, role: 'Admin' | 'User'): Promise<void> {
-    if (!authAdmin) {
-        throw new Error("Firebase Admin SDK for Auth is not initialized.");
+    if (!authAdmin || !dbAdmin) {
+        throw new Error("Firebase Admin SDK is not initialized.");
     }
     const userToUpdate = await authAdmin.getUser(uid);
     if (userToUpdate.email === SUPER_ADMIN_EMAIL) {
@@ -70,6 +105,10 @@ export async function setUserRole(uid: string, role: 'Admin' | 'User'): Promise<
     }
 
     await authAdmin.setCustomUserClaims(uid, { role });
+
+    // Also update the role in the Firestore document
+    const userRef = dbAdmin.collection('users').doc(uid);
+    await userRef.update({ role });
 }
 
 export async function updateUserDisabledStatus(uid: string, disabled: boolean) {
@@ -84,12 +123,15 @@ export async function updateUserDisabledStatus(uid: string, disabled: boolean) {
 }
 
 export async function deleteUserAccount(uid: string) {
-    if (!authAdmin) {
-        throw new Error("Firebase Admin SDK for Auth is not initialized.");
+    if (!authAdmin || !dbAdmin) {
+        throw new Error("Firebase Admin SDK is not initialized.");
     }
-     const userToDelete = await authAdmin.getUser(uid);
+    const userToDelete = await authAdmin.getUser(uid);
     if (userToDelete.email === SUPER_ADMIN_EMAIL) {
         throw new Error("Cannot delete the Super Admin account.");
     }
+    // Delete from Auth
     await authAdmin.deleteUser(uid);
+    // Delete from Firestore
+    await dbAdmin.collection('users').doc(uid).delete();
 }
