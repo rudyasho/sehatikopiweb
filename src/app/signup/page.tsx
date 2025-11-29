@@ -45,7 +45,7 @@ export default function SignUpPage() {
           title: "Account Created!",
           description: "Welcome to Sehati Kopi. You are now logged in.",
       });
-      router.push('/profile');
+      router.push('/dashboard');
     } catch (error: any) {
       toast({
         variant: 'destructive',
@@ -58,7 +58,7 @@ export default function SignUpPage() {
   const handleGoogleLogin = async () => {
     try {
       await loginWithGoogle();
-      // The auth context will redirect upon successful login
+      router.push('/dashboard');
     } catch (error: any) {
        toast({
         variant: 'destructive',

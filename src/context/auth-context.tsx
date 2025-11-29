@@ -66,13 +66,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
   
-  const handleAuthSuccess = (firebaseUser: FirebaseUser | null) => {
-      if (firebaseUser) {
-          // Redirect all authenticated users to the dashboard.
-          router.push('/dashboard');
-      }
-  }
-
   const signUpWithEmail = async (email: string, password: string, displayName: string) => {
       if (!app) throw new Error("Firebase not initialized.");
       const auth = getAuth(app);
@@ -103,7 +96,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             role: 'User',
         };
         setUser(appUser);
-        handleAuthSuccess(userCredential.user);
       } catch (error: any) {
         if (error.code === 'auth/email-already-in-use') {
             throw new Error('This email address is already in use.');
@@ -119,8 +111,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const auth = getAuth(app);
       setLoading(true);
       try {
-          const userCredential = await signInWithEmailAndPassword(auth, email, password);
-          handleAuthSuccess(userCredential.user);
+          await signInWithEmailAndPassword(auth, email, password);
       } catch (error: any) {
         if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
             throw new Error('Invalid email or password.');
@@ -151,8 +142,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         photoURL: result.user.photoURL,
         role: 'User'
       });
-
-      handleAuthSuccess(result.user);
     } catch (error) {
       console.error("Error during Google sign-in:", error);
       throw error;
