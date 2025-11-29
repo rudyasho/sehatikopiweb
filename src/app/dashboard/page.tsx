@@ -22,7 +22,7 @@ import HeroSettingsView from './hero-settings-view';
 import SettingsView from './settings-view';
 import ManageTestimonialsView from './manage-testimonials-view';
 import { getProducts, type Product } from '@/lib/products-data';
-import { getBlogPosts, type BlogPost } from '@/lib/blog-data';
+import { getBlogPostsForAdmin, type BlogPost } from '@/lib/blog-data';
 import { getEvents, type Event } from '@/lib/events-data';
 import { getAllOrders, type Order } from '@/lib/orders-data';
 import { getTestimonials, type Testimonial } from '@/lib/testimonials-data';
@@ -163,7 +163,7 @@ const DashboardViewLoader = async ({ view, currentUser }: { view: DashboardView;
       return <ManageProductsView products={products} />;
     }
     case 'manageBlog': {
-      const posts = await getBlogPosts(true); // Fetch all statuses for admin
+      const posts = await getBlogPostsForAdmin(); // Fetch all statuses for admin
       return <ManageBlogPostsView posts={posts} />;
     }
     case 'manageEvents': {

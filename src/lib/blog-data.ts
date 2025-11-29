@@ -93,7 +93,29 @@ async function seedDatabaseIfNeeded() {
   }
 }
 
-export async function getBlogPosts(showAllStatuses = false): Promise<BlogPost[]> {
+export async function getBlogPostsForAdmin(): Promise<BlogPost[]> {
+    noStore();
+    if (!dbAdmin) {
+        throw new Error("Firestore Admin is not initialized. Cannot get blog posts.");
+    }
+    await seedDatabaseIfNeeded();
+    
+    let query = dbAdmin.collection('blog').orderBy('date', 'desc');
+
+    const blogSnapshot = await query.get();
+    const blogList = blogSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data
+      } as BlogPost;
+    });
+
+    return blogList;
+}
+
+
+export async function getBlogPosts(): Promise<BlogPost[]> {
     noStore();
     
     if (!dbAdmin) {
@@ -101,13 +123,7 @@ export async function getBlogPosts(showAllStatuses = false): Promise<BlogPost[]>
     }
     await seedDatabaseIfNeeded();
     
-    let query: admin.firestore.Query<admin.firestore.DocumentData> = dbAdmin.collection('blog');
-
-    if (!showAllStatuses) {
-        query = query.where('status', '==', 'published');
-    }
-    
-    query = query.orderBy('date', 'desc');
+    let query = dbAdmin.collection('blog').where('status', '==', 'published').orderBy('date', 'desc');
 
     const blogSnapshot = await query.get();
     const blogList = blogSnapshot.docs.map(doc => {
@@ -133,6 +149,8 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
     const doc = snapshot.docs[0];
     const postData = { id: doc.id, ...doc.data() } as BlogPost;
 
+    // By security rules, only published posts are readable by the public.
+    // If we get here, it's either published or the request is from an admin.
     return postData;
 }
 

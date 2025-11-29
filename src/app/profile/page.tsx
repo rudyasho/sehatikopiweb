@@ -9,7 +9,7 @@ import { Loader2, Mail, LogOut, LayoutDashboard, ShoppingBag, FilePlus2, Star } 
 
 import { useAuth } from '@/context/auth-context';
 import { getOrdersByUserId, type Order } from '@/lib/orders-data';
-import { getBlogPosts, type BlogPost } from '@/lib/blog-data';
+import { getBlogPostsForAdmin, type BlogPost } from '@/lib/blog-data';
 import { getTestimonials, type Testimonial } from '@/lib/testimonials-data';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -124,7 +124,7 @@ const MyPosts = ({ userId }: { userId: string }) => {
         if (!user) return;
         setIsLoading(true);
         try {
-            const allPosts = await getBlogPosts(true); // show pending for the author
+            const allPosts = await getBlogPostsForAdmin(); // show pending for the author
             setPosts(allPosts.filter(p => p.authorId === user.uid));
         } catch(e) {
             console.error(e);
