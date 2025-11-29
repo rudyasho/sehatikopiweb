@@ -57,12 +57,12 @@ async function initializeSettingsIfNeeded() {
 
 export async function getSettings(): Promise<WebsiteSettings> {
     noStore();
-    await initializeSettingsIfNeeded();
     
     if (!dbAdmin) {
       console.error("Firestore Admin is not initialized. Returning default settings.");
       return { id: 'main-settings', ...defaultSettings };
     }
+    await initializeSettingsIfNeeded();
     
     const docRef = dbAdmin.collection('settings').doc('main-settings');
     const doc = await docRef.get();

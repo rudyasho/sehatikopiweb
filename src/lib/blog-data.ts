@@ -95,12 +95,12 @@ async function seedDatabaseIfNeeded() {
 
 export async function getBlogPosts(showAllStatuses = false): Promise<BlogPost[]> {
     noStore();
-    await seedDatabaseIfNeeded();
     
     if (!dbAdmin) {
         throw new Error("Firestore Admin is not initialized. Cannot get blog posts.");
     }
-
+    await seedDatabaseIfNeeded();
+    
     let query: admin.firestore.Query<admin.firestore.DocumentData> = dbAdmin.collection('blog');
 
     if (!showAllStatuses) {

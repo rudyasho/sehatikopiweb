@@ -43,12 +43,12 @@ async function initializeHeroDataIfNeeded() {
 
 export async function getHeroData(): Promise<HeroData> {
     noStore();
-    await initializeHeroDataIfNeeded();
     
     if (!dbAdmin) {
       console.error("Firestore Admin is not initialized. Returning default hero data.");
       return { id: 'homepage-hero', ...defaultHeroData };
     }
+    await initializeHeroDataIfNeeded();
     
     const docRef = dbAdmin.collection('siteContent').doc('homepage-hero');
     const doc = await docRef.get();

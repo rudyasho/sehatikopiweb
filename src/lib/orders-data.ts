@@ -77,7 +77,7 @@ export async function getAllOrders(): Promise<Order[]> {
     // Note: listUsers is more efficient for larger sets of UIDs if available/needed.
     // For smaller batches, individual lookups are fine.
     const userRecords = await Promise.all(
-      userIds.map(uid => authAdmin.getUser(uid).catch(() => null))
+      userIds.map(uid => authAdmin!.getUser(uid).catch(() => null))
     );
 
     const usersMap = userRecords.reduce((acc, user) => {

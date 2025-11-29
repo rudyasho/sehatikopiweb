@@ -81,11 +81,11 @@ async function seedDatabaseIfNeeded() {
 
 export async function getMenuItems(): Promise<MenuItems> {
     noStore();
-    await seedDatabaseIfNeeded();
 
     if (!dbAdmin) {
       throw new Error("Firestore Admin is not initialized. Cannot get menu items.");
     }
+    await seedDatabaseIfNeeded();
 
     const menuCollection = dbAdmin.collection('menu');
     const menuSnapshot = await menuCollection.get();

@@ -136,11 +136,11 @@ async function seedDatabaseIfNeeded() {
 
 export async function getProducts(): Promise<Product[]> {
   noStore();
-  await seedDatabaseIfNeeded();
 
   if (!dbAdmin) {
     throw new Error("Firestore Admin is not initialized. Cannot get products.");
   }
+  await seedDatabaseIfNeeded();
 
   const productsCollection = dbAdmin.collection('products');
   const productsSnapshot = await productsCollection.get();

@@ -24,17 +24,24 @@ type FirestoreUser = {
 
 export async function createUserInFirestore(userData: FirestoreUser) {
     if (!dbAdmin) {
-        throw new Error("Firestore Admin is not initialized.");
+        throw new Error("Firestore Admin is not initialized. Cannot create user in Firestore.");
     }
     const userRef = dbAdmin.collection('users').doc(userData.uid);
     const userDoc = await userRef.get();
 
     // Only create the document if it doesn't already exist
     if (!userDoc.exists) {
+        const role = userData.email === SUPER_ADMIN_EMAIL ? 'Super Admin' : (userData.role || 'User');
         await userRef.set({
             ...userData,
+            role: role,
             createdAt: new Date().toISOString(),
         });
+        
+        // Also set custom claims if it's the super admin
+        if (role === 'Super Admin' && authAdmin) {
+             await authAdmin.setCustomUserClaims(userData.uid, { role: 'Super Admin' });
+        }
     }
 }
 
@@ -68,8 +75,8 @@ export async function listAllUsers(): Promise<AppUser[]> {
 }
 
 export async function createUser(userData: CreateUserFormData) {
-    if (!authAdmin || !dbAdmin) {
-        throw new Error("Firebase Admin SDK for Auth or Firestore is not initialized.");
+    if (!authAdmin) {
+        throw new Error("Firebase Admin SDK for Auth is not initialized.");
     }
     
     try {

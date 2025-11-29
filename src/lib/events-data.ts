@@ -72,11 +72,11 @@ async function seedDatabaseIfNeeded() {
 
 export async function getEvents(): Promise<Event[]> {
     noStore();
-    await seedDatabaseIfNeeded();
     
     if (!dbAdmin) {
       throw new Error("Firestore Admin is not initialized. Cannot get events.");
     }
+    await seedDatabaseIfNeeded();
     
     const eventsCollection = dbAdmin.collection('events');
     const eventsSnapshot = await eventsCollection.orderBy('date').get();
