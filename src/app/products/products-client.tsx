@@ -24,7 +24,7 @@ import { Badge } from '@/components/ui/badge';
 
 export function ProductsClientPage({ initialProducts }: { initialProducts: Product[]}) {
   const [products] = useState<Product[]>(initialProducts);
-  const [isLoading] = useState(false); // Data is now pre-loaded
+  const [isLoading, setIsLoading] = useState(false);
   const { addToCart } = useCart();
   const { toast } = useToast();
   const [addedProducts, setAddedProducts] = useState<Record<string, boolean>>(
