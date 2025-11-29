@@ -2,10 +2,8 @@
 'use server';
 
 import { unstable_noStore as noStore } from 'next/cache';
+import admin from 'firebase-admin';
 import { dbAdmin } from './firebase-admin';
-import { authAdmin } from './firebase-admin';
-import { useAuth } from '@/context/auth-context';
-
 
 export type BlogPost = {
     id: string;
