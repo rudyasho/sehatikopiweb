@@ -23,6 +23,7 @@ export type Order = {
 
 export async function addOrder(orderData: Omit<Order, 'customerInfo'>) {
   const dbAdmin = getDb();
+  if (!dbAdmin) throw new Error("Firestore is not initialized.");
   const ordersCollection = dbAdmin.collection('orders');
   const orderRef = ordersCollection.doc(orderData.orderId);
 
@@ -39,6 +40,7 @@ export async function addOrder(orderData: Omit<Order, 'customerInfo'>) {
 export async function getOrdersByUserId(userId: string): Promise<Order[]> {
   noStore();
   const dbAdmin = getDb();
+  if (!dbAdmin) throw new Error("Firestore is not initialized.");
   
   try {
     const ordersSnapshot = await dbAdmin.collection('orders')
@@ -57,7 +59,9 @@ export async function getOrdersByUserId(userId: string): Promise<Order[]> {
 export async function getAllOrders(): Promise<Order[]> {
   noStore();
   const dbAdmin = getDb();
+  if (!dbAdmin) throw new Error("Firestore is not initialized.");
   const authAdmin = getAuth();
+  if (!authAdmin) throw new Error("Firebase Auth is not initialized.");
 
   try {
     const ordersSnapshot = await dbAdmin.collection('orders').orderBy('orderDate', 'desc').get();
@@ -98,6 +102,7 @@ export async function getAllOrders(): Promise<Order[]> {
 
 export async function updateOrderStatus(orderId: string, status: OrderStatus): Promise<void> {
   const dbAdmin = getDb();
+  if (!dbAdmin) throw new Error("Firestore is not initialized.");
   const orderRef = dbAdmin.collection('orders').doc(orderId);
   
   try {
