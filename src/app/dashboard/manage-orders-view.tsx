@@ -43,6 +43,7 @@ const ManageOrdersView = () => {
 
     useEffect(() => {
         fetchAndSetOrders();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {

@@ -67,7 +67,7 @@ export function BlogPostForm({ post, onFormSubmit, onFormCancel }: BlogPostFormP
                 toast({ title: "Post Updated!", description: `"${data.title}" has been updated.` });
             } else {
                 // For new posts, we add author details
-                const newPostData = {
+                const newPostData: NewBlogPostData = {
                     ...data,
                     author: user.displayName || 'Anonymous User',
                     authorId: user.uid,
