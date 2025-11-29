@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { 
     LayoutGrid, ShoppingBag, ListOrdered, BookText, CalendarCheck, 
-    Users, ImageUp, Settings, Loader2, Menu, Star
+    Users, ImageUp, Settings, Loader2, Menu
 } from 'lucide-react';
 
 import { useAuth } from '@/context/auth-context';
@@ -13,16 +13,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Sheet, SheetTrigger, SheetContent } from '@/components/ui/sheet';
 import AnalyticsOverview from './analytics-overview';
-import ManageOrdersView from './manage-orders-view';
 import ManageProductsView from './manage-products-view';
 import ManageBlogView from './manage-blog-view';
 import ManageEventsView from './manage-events-view';
 import ManageUsersView from './manage-users-view';
 import HeroSettingsView from './hero-settings-view';
 import SettingsView from './settings-view';
-import ManageTestimonialsView from './manage-testimonials-view';
 
-type DashboardView = 'overview' | 'manageOrders' | 'manageProducts' | 'manageBlog' | 'manageEvents' | 'manageUsers' | 'heroSettings' | 'settings' | 'manageTestimonials';
+type DashboardView = 'overview' | 'manageOrders' | 'manageProducts' | 'manageBlog' | 'manageEvents' | 'manageUsers' | 'heroSettings' | 'settings';
 
 const DashboardPage = () => {
   const { user, loading } = useAuth();
@@ -59,19 +57,13 @@ const DashboardPage = () => {
   
   const renderContent = () => {
     const view = searchParams.get('view') as DashboardView | null;
-    const editId = searchParams.get('edit');
-
     switch (view) {
-        case 'manageOrders':
-            return <ManageOrdersView />;
         case 'manageProducts':
             return <ManageProductsView />;
         case 'manageBlog':
-            return <ManageBlogView initialPostToEdit={editId} />;
+            return <ManageBlogView />;
         case 'manageEvents':
             return <ManageEventsView />;
-        case 'manageTestimonials':
-            return <ManageTestimonialsView />;
         case 'manageUsers':
             return user.role === 'Super Admin' ? <ManageUsersView currentUser={user} /> : null;
         case 'heroSettings':
@@ -86,10 +78,8 @@ const DashboardPage = () => {
   
   const sidebarNavItems = [
       { id: 'overview', label: 'Overview', icon: LayoutGrid },
-      { id: 'manageOrders', label: 'Manage Orders', icon: ShoppingBag },
       { id: 'manageProducts', label: 'Manage Products', icon: ListOrdered },
       { id: 'manageBlog', label: 'Manage Posts', icon: BookText },
-      { id: 'manageTestimonials', label: 'Testimonials', icon: Star },
       { id: 'manageEvents', label: 'Manage Events', icon: CalendarCheck },
       ...(user.role === 'Super Admin' ? [{ id: 'manageUsers' as const, label: 'Manage Users', icon: Users }] : []),
       { id: 'heroSettings', label: 'Hero Settings', icon: ImageUp },
