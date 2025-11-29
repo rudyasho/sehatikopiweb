@@ -6,11 +6,10 @@ import { format } from 'date-fns';
 import { useRouter } from 'next/navigation';
 import { ShoppingBag } from 'lucide-react';
 
-import { getAllOrders, updateOrderStatus, type Order, type OrderStatus } from '@/lib/orders-data';
+import { updateOrderStatus, type Order, type OrderStatus } from '@/lib/orders-data';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
@@ -19,32 +18,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 const formatCurrency = (amount: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
 
-const ManageOrdersView = () => {
-    const [orders, setOrders] = useState<Order[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+interface ManageOrdersViewProps {
+    orders: Order[];
+}
+
+const ManageOrdersView = ({ orders: initialOrders }: ManageOrdersViewProps) => {
+    const [orders, setOrders] = useState<Order[]>(initialOrders);
     const { toast } = useToast();
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState<string | null>(null); // Store orderId being submitted
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [isOrderDialogOpen, setOrderDialogOpen] = useState(false);
 
-    const fetchAndSetOrders = async () => {
-        setIsLoading(true);
-        try {
-            const ordersData = await getAllOrders();
-            setOrders(ordersData);
-        } catch (error) {
-            console.error("Failed to fetch orders:", error);
-            toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch orders.' });
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
     useEffect(() => {
-        fetchAndSetOrders();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+        setOrders(initialOrders);
+    }, [initialOrders]);
 
     const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {
         setIsSubmitting(orderId);
@@ -52,10 +40,8 @@ const ManageOrdersView = () => {
             await updateOrderStatus(orderId, newStatus);
             toast({ title: 'Status Updated', description: `Order ${orderId} is now "${newStatus}".` });
             
-            // Optimistically update UI
-            setOrders(prevOrders => prevOrders.map(o => o.orderId === orderId ? { ...o, status: newStatus } : o));
-
-            router.refresh(); // Invalidate server cache for profile pages
+            // This will be updated on router refresh
+            router.refresh();
         } catch (error) {
             console.error("Failed to update order status:", error);
             toast({ variant: 'destructive', title: 'Update Failed', description: 'Could not update order status.' });
@@ -64,15 +50,6 @@ const ManageOrdersView = () => {
         }
     };
     
-    if (isLoading) {
-        return (
-            <Card className="shadow-lg bg-background p-6">
-                <Skeleton className="h-8 w-1/4 mb-4" />
-                <Skeleton className="h-64 w-full" />
-            </Card>
-        );
-    }
-
     const handleViewClick = (order: Order) => {
         setSelectedOrder(order);
         setOrderDialogOpen(true);

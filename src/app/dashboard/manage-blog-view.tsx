@@ -1,53 +1,37 @@
 // src/app/dashboard/manage-blog-view.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { format } from 'date-fns';
 import { BookText, FilePlus2, Edit, Trash2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
-import { getBlogPosts, deleteBlogPost, type BlogPost } from '@/lib/blog-data';
+import { deleteBlogPost, type BlogPost } from '@/lib/blog-data';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { BlogPostForm } from './blog-form';
-import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 
-const ManageBlogPostsView = () => {
-    const [posts, setPosts] = useState<BlogPost[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+interface ManageBlogPostsViewProps {
+    posts: BlogPost[];
+}
+
+const ManageBlogPostsView = ({ posts }: ManageBlogPostsViewProps) => {
     const { toast } = useToast();
     const router = useRouter();
 
     const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
     const [isPostDialogOpen, setIsPostDialogOpen] = useState(false);
 
-    const fetchAndSetPosts = async () => {
-        setIsLoading(true);
-        try {
-            const postsData = await getBlogPosts(true); // Fetch all posts including pending
-            setPosts(postsData);
-        } catch (error) {
-            console.error("Failed to fetch blog posts for management:", error);
-            toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch blog posts.' });
-        } finally {
-            setIsLoading(false);
-        }
-    };
-    
-    useEffect(() => {
-        fetchAndSetPosts();
-    }, []);
 
     const handleDelete = async (postId: string, postTitle: string) => {
         try {
             await deleteBlogPost(postId);
             toast({ title: "Post Deleted", description: `"${postTitle}" has been removed.` });
-            fetchAndSetPosts();
             router.refresh();
         } catch (error) {
             console.error(`Failed to delete post ${postId}:`, error);
@@ -67,21 +51,8 @@ const ManageBlogPostsView = () => {
     
     const handleFormSubmit = () => {
         closeDialog();
-        fetchAndSetPosts();
         router.refresh();
     };
-
-    if (isLoading) {
-        return (
-            <Card className="shadow-lg bg-background p-6">
-                <div className="flex justify-between items-center mb-4">
-                    <Skeleton className="h-8 w-1/4" />
-                    <Skeleton className="h-10 w-32" />
-                </div>
-                <Skeleton className="h-64 w-full" />
-            </Card>
-        )
-    }
 
     return (
         <Card className="shadow-lg bg-background">

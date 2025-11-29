@@ -5,47 +5,35 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { CalendarCheck, CalendarPlus, Edit, Trash2 } from 'lucide-react';
 
-import { getEvents, deleteEvent, type Event } from '@/lib/events-data';
+import { deleteEvent, type Event } from '@/lib/events-data';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { EventForm } from './event-form';
 
-const ManageEventsView = () => {
-    const [events, setEvents] = useState<Event[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+interface ManageEventsViewProps {
+    events: Event[];
+}
+
+const ManageEventsView = ({ events: initialEvents }: ManageEventsViewProps) => {
+    const [events, setEvents] = useState<Event[]>(initialEvents);
     const { toast } = useToast();
     const router = useRouter();
 
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingEvent, setEditingEvent] = useState<Event | null>(null);
 
-    const fetchAndSetEvents = async () => {
-        setIsLoading(true);
-        try {
-            const eventsData = await getEvents();
-            setEvents(eventsData);
-        } catch (error) {
-            console.error("Failed to fetch events:", error);
-            toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch events.' });
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
     useEffect(() => {
-        fetchAndSetEvents();
-    }, []);
+        setEvents(initialEvents);
+    }, [initialEvents]);
 
     const handleDelete = async (eventId: string, eventTitle: string) => {
         try {
             await deleteEvent(eventId);
             toast({ title: "Event Deleted", description: `"${eventTitle}" has been removed.` });
-            fetchAndSetEvents(); // Refetch
             router.refresh();
         } catch (error) {
             console.error(`Failed to delete event ${eventId}:`, error);
@@ -65,21 +53,8 @@ const ManageEventsView = () => {
 
     const handleFormSubmit = () => {
         closeForm();
-        fetchAndSetEvents();
         router.refresh();
     };
-
-    if (isLoading) {
-        return (
-            <Card className="shadow-lg bg-background p-6">
-                <div className="flex justify-between items-center mb-4">
-                    <Skeleton className="h-8 w-1/4" />
-                    <Skeleton className="h-10 w-32" />
-                </div>
-                <Skeleton className="h-64 w-full" />
-            </Card>
-        );
-    }
 
     return (
         <Card className="shadow-lg bg-background">

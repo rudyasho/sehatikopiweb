@@ -1,3 +1,4 @@
+// src/app/search/client-page.tsx
 'use client';
 
 import { useState, useEffect, useTransition } from 'react';

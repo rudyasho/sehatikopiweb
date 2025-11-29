@@ -6,44 +6,31 @@ import { useRouter } from 'next/navigation';
 import { Star, CheckCircle, Clock, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 
-import { getTestimonials, updateTestimonial, deleteTestimonial, type Testimonial } from '@/lib/testimonials-data';
+import { updateTestimonial, deleteTestimonial, type Testimonial } from '@/lib/testimonials-data';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
+interface ManageTestimonialsViewProps {
+    testimonials: Testimonial[];
+}
 
-const ManageTestimonialsView = () => {
-    const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+const ManageTestimonialsView = ({ testimonials: initialTestimonials }: ManageTestimonialsViewProps) => {
+    const [testimonials, setTestimonials] = useState<Testimonial[]>(initialTestimonials);
     const { toast } = useToast();
     const router = useRouter();
 
-    const fetchAndSetTestimonials = async () => {
-        setIsLoading(true);
-        try {
-            const testimonialsData = await getTestimonials(0, true); // Fetch all, including pending
-            setTestimonials(testimonialsData);
-        } catch (error) {
-            console.error("Failed to fetch testimonials:", error);
-            toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch testimonials.' });
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
     useEffect(() => {
-        fetchAndSetTestimonials();
-    }, []);
+        setTestimonials(initialTestimonials);
+    }, [initialTestimonials]);
 
     const handlePublish = async (testimonial: Testimonial) => {
         try {
             await updateTestimonial(testimonial.id, { status: 'published' });
             toast({ title: 'Testimonial Published!', description: `Review from ${testimonial.name} is now live.`});
-            fetchAndSetTestimonials();
             router.refresh();
         } catch (error) {
             toast({ variant: 'destructive', title: 'Error', description: 'Could not publish testimonial.'});
@@ -54,7 +41,6 @@ const ManageTestimonialsView = () => {
         try {
             await deleteTestimonial(id);
             toast({ title: "Testimonial Deleted", description: "The testimonial has been removed." });
-            fetchAndSetTestimonials();
             router.refresh();
         } catch (error) {
             toast({ variant: 'destructive', title: 'Error', description: 'Could not delete the testimonial.' });
@@ -114,15 +100,6 @@ const ManageTestimonialsView = () => {
             ))}
         </div>
     );
-
-    if (isLoading) {
-        return (
-            <Card className="shadow-lg bg-background p-6">
-                <Skeleton className="h-8 w-1/4 mb-4" />
-                <Skeleton className="h-64 w-full" />
-            </Card>
-        );
-    }
 
     return (
         <Card className="shadow-lg bg-background">

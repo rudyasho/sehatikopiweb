@@ -1,18 +1,17 @@
 // src/app/dashboard/manage-users-view.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
     Users, UserPlus, ChevronDown, UserCog, Shield, 
     UserCheck, Trash2 
 } from 'lucide-react';
 
-import { listAllUsers, updateUserDisabledStatus, deleteUserAccount, setUserRole, type AppUser } from '@/lib/users-data';
+import { updateUserDisabledStatus, deleteUserAccount, setUserRole, type AppUser } from '@/lib/users-data';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
@@ -22,40 +21,23 @@ import { AddUserForm } from './add-user-form';
 
 interface ManageUsersViewProps {
     currentUser: AppUser;
+    users: AppUser[];
 }
 
-const ManageUsersView = ({ currentUser }: ManageUsersViewProps) => {
-    const [users, setUsers] = useState<AppUser[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+const ManageUsersView = ({ currentUser, users: initialUsers }: ManageUsersViewProps) => {
     const { toast } = useToast();
     const router = useRouter();
     
     const [isAddUserOpen, setAddUserOpen] = useState(false);
     const [userToDelete, setUserToDelete] = useState<AppUser | null>(null);
 
-    const refreshUsers = async () => {
-        setIsLoading(true);
-        try {
-            const usersData = await listAllUsers();
-            setUsers(usersData.filter(u => u.uid !== currentUser.uid));
-        } catch (error) {
-            console.error("Failed to fetch users:", error);
-            toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch users.' });
-        } finally {
-            setIsLoading(false);
-        }
-    };
-    
-    useEffect(() => {
-        refreshUsers();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    // Filter out the current user from the list
+    const users = initialUsers.filter(u => u.uid !== currentUser.uid);
 
     const handleSetRole = async (uid: string, role: 'Admin' | 'User') => {
         try {
             await setUserRole(uid, role);
             toast({ title: 'Role Updated', description: `User role has been changed to ${role}.` });
-            refreshUsers(); // Refetch users to show updated role
             router.refresh();
         } catch (error: any) {
             toast({ variant: 'destructive', title: 'Error', description: error.message || 'Could not update user role.' });
@@ -66,7 +48,6 @@ const ManageUsersView = ({ currentUser }: ManageUsersViewProps) => {
         try {
             await updateUserDisabledStatus(uid, !disabled);
             toast({ title: 'User Updated', description: `User has been ${!disabled ? 'disabled' : 'enabled'}.` });
-            refreshUsers(); // Refetch users to show updated status
             router.refresh();
         } catch (error: any) {
             console.error("Failed to update user status:", error);
@@ -79,7 +60,6 @@ const ManageUsersView = ({ currentUser }: ManageUsersViewProps) => {
         try {
             await deleteUserAccount(userToDelete.uid);
             toast({ title: 'User Deleted', description: 'User account has been permanently deleted.' });
-            refreshUsers(); // Refetch users
             router.refresh();
         } catch (error: any) {
             console.error("Failed to delete user:", error);
@@ -91,22 +71,9 @@ const ManageUsersView = ({ currentUser }: ManageUsersViewProps) => {
     
     const handleFormSubmit = () => {
         setAddUserOpen(false);
-        refreshUsers(); // Refetch users after adding one
         router.refresh();
     };
 
-    if (isLoading) {
-        return (
-            <Card className="shadow-lg bg-background p-6">
-                <div className="flex justify-between items-center mb-4">
-                    <Skeleton className="h-8 w-1/4" />
-                    <Skeleton className="h-10 w-32" />
-                </div>
-                <Skeleton className="h-64 w-full" />
-            </Card>
-        );
-    }
-    
     return (
         <>
             <AlertDialog open={!!userToDelete} onOpenChange={(open) => !open && setUserToDelete(null)}>

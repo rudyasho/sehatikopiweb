@@ -3,14 +3,12 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { format } from 'date-fns';
 import { ListOrdered, PlusCircle, Edit, Trash2 } from 'lucide-react';
 
-import { getProducts, deleteProduct, type Product } from '@/lib/products-data';
+import { deleteProduct, type Product } from '@/lib/products-data';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -18,37 +16,26 @@ import { ProductForm } from './product-form';
 
 const formatCurrency = (amount: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
 
-const ManageProductsView = () => {
-    const [products, setProducts] = useState<Product[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+interface ManageProductsViewProps {
+    products: Product[];
+}
+
+const ManageProductsView = ({ products: initialProducts }: ManageProductsViewProps) => {
+    const [products, setProducts] = useState<Product[]>(initialProducts);
     const { toast } = useToast();
     const router = useRouter();
     
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [isProductDialogOpen, setIsProductDialogOpen] = useState(false);
     
-    const fetchAndSetProducts = async () => {
-        setIsLoading(true);
-        try {
-            const productsData = await getProducts();
-            setProducts(productsData);
-        } catch (error) {
-            console.error("Failed to fetch products for management:", error);
-            toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch products.' });
-        } finally {
-            setIsLoading(false);
-        }
-    }
-
     useEffect(() => {
-        fetchAndSetProducts();
-    }, []);
+        setProducts(initialProducts);
+    }, [initialProducts]);
 
     const handleDelete = async (productId: string, productName: string) => {
         try {
             await deleteProduct(productId);
             toast({ title: "Product Deleted", description: `"${productName}" has been removed.` });
-            fetchAndSetProducts(); // Refetch
             router.refresh();
         } catch (error) {
             console.error(`Failed to delete product ${productId}:`, error);
@@ -68,21 +55,8 @@ const ManageProductsView = () => {
     
     const handleFormSubmit = () => {
         closeDialog();
-        fetchAndSetProducts(); // Refetch data
-        router.refresh(); // Revalidate server components
+        router.refresh(); 
     };
-
-    if (isLoading) {
-        return (
-            <Card className="shadow-lg bg-background p-6">
-                <div className="flex justify-between items-center mb-4">
-                    <Skeleton className="h-8 w-1/4" />
-                    <Skeleton className="h-10 w-32" />
-                </div>
-                <Skeleton className="h-64 w-full" />
-            </Card>
-        )
-    }
 
     return (
         <Card className="shadow-lg bg-background">

@@ -1,7 +1,7 @@
 // src/app/dashboard/page.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { 
     LayoutGrid, ShoppingBag, ListOrdered, BookText, CalendarCheck, 
@@ -12,17 +12,24 @@ import { useAuth } from '@/context/auth-context';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Sheet, SheetTrigger, SheetContent } from '@/components/ui/sheet';
-import AnalyticsOverview from './analytics-overview';
+import AnalyticsOverview, { AnalyticsOverviewSkeleton } from './analytics-overview';
 import ManageOrdersView from './manage-orders-view';
 import ManageProductsView from './manage-products-view';
-import ManageBlogView from './manage-blog-view';
+import ManageBlogPostsView from './manage-blog-view';
 import ManageEventsView from './manage-events-view';
 import ManageUsersView from './manage-users-view';
 import HeroSettingsView from './hero-settings-view';
 import SettingsView from './settings-view';
 import ManageTestimonialsView from './manage-testimonials-view';
+import { getProducts, type Product } from '@/lib/products-data';
+import { getBlogPosts, type BlogPost } from '@/lib/blog-data';
+import { getEvents, type Event } from '@/lib/events-data';
+import { getAllOrders, type Order } from '@/lib/orders-data';
+import { getTestimonials, type Testimonial } from '@/lib/testimonials-data';
+import { listAllUsers, type AppUser } from '@/lib/users-data';
 
 type DashboardView = 'overview' | 'manageOrders' | 'manageProducts' | 'manageBlog' | 'manageEvents' | 'manageUsers' | 'manageTestimonials' | 'heroSettings' | 'settings';
+
 
 const DashboardPage = () => {
   const { user, loading } = useAuth();
@@ -55,31 +62,6 @@ const DashboardPage = () => {
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
       </div>
     );
-  }
-  
-  const renderContent = () => {
-    const view = searchParams.get('view') as DashboardView | null;
-    switch (view) {
-        case 'manageOrders':
-            return <ManageOrdersView />;
-        case 'manageProducts':
-            return <ManageProductsView />;
-        case 'manageBlog':
-            return <ManageBlogView />;
-        case 'manageEvents':
-            return <ManageEventsView />;
-        case 'manageUsers':
-            return user.role === 'Super Admin' ? <ManageUsersView currentUser={user} /> : null;
-        case 'manageTestimonials':
-            return <ManageTestimonialsView />;
-        case 'heroSettings':
-            return <HeroSettingsView />;
-        case 'settings':
-            return <SettingsView />;
-        case 'overview':
-        default:
-            return <AnalyticsOverview />;
-    }
   }
   
   const sidebarNavItems = [
@@ -158,7 +140,9 @@ const DashboardPage = () => {
                 </aside>
 
                 <main className="md:col-span-3 space-y-8">
-                    {renderContent()}
+                  <Suspense fallback={<div className="flex h-96 w-full items-center justify-center"><Loader2 className="h-16 w-16 animate-spin text-primary" /></div>}>
+                     <DashboardViewLoader view={activeView} currentUser={user} />
+                  </Suspense>
                 </main>
             </div>
         </div>
@@ -167,8 +151,54 @@ const DashboardPage = () => {
 };
 
 
+// This new Server Component handles data fetching based on the active view
+const DashboardViewLoader = async ({ view, currentUser }: { view: DashboardView; currentUser: AppUser }) => {
+  switch (view) {
+    case 'manageOrders': {
+      const orders = await getAllOrders();
+      return <ManageOrdersView orders={orders} />;
+    }
+    case 'manageProducts': {
+      const products = await getProducts();
+      return <ManageProductsView products={products} />;
+    }
+    case 'manageBlog': {
+      const posts = await getBlogPosts(true); // Fetch all statuses for admin
+      return <ManageBlogPostsView posts={posts} />;
+    }
+    case 'manageEvents': {
+      const events = await getEvents();
+      return <ManageEventsView events={events} />;
+    }
+    case 'manageTestimonials': {
+      const testimonials = await getTestimonials(0, true);
+      return <ManageTestimonialsView testimonials={testimonials} />;
+    }
+    case 'manageUsers': {
+      if (currentUser.role !== 'Super Admin') {
+        return <p>You do not have permission to view this page.</p>;
+      }
+      const users = await listAllUsers();
+      return <ManageUsersView currentUser={currentUser} users={users} />;
+    }
+    case 'heroSettings': {
+      return <HeroSettingsView />;
+    }
+    case 'settings': {
+      return <SettingsView />;
+    }
+    case 'overview':
+    default: {
+      return <AnalyticsOverview />;
+    }
+  }
+};
+
+
 export default function DashboardPageWithSuspense() {
     return (
-        <DashboardPage />
+        <Suspense fallback={<div className="flex h-screen items-center justify-center bg-secondary/50"><Loader2 className="h-16 w-16 animate-spin text-primary" /></div>}>
+            <DashboardPage />
+        </Suspense>
     );
 }

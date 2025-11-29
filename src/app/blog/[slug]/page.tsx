@@ -26,7 +26,7 @@ marked.setOptions({
   langPrefix: 'hljs language-',
   breaks: true,
   gfm: true,
-} as any);
+});
 
 
 type Props = {

@@ -1,7 +1,7 @@
 // src/app/profile/page.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { format } from 'date-fns';
@@ -117,15 +117,15 @@ const MyPosts = ({ userId }: { userId: string }) => {
     const [posts, setPosts] = useState<BlogPost[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const { user } = useAuth();
+    const router = useRouter();
     const [isFormOpen, setFormOpen] = useState(false);
 
     const fetchPosts = async () => {
+        if (!user) return;
         setIsLoading(true);
         try {
             const allPosts = await getBlogPosts(true); // show pending for the author
-            if (user) {
-              setPosts(allPosts.filter(p => p.authorId === user.uid));
-            }
+            setPosts(allPosts.filter(p => p.authorId === user.uid));
         } catch(e) {
             console.error(e);
         } finally {
@@ -134,11 +134,15 @@ const MyPosts = ({ userId }: { userId: string }) => {
     };
     
     useEffect(() => {
-      if (user) {
         fetchPosts();
-      }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user]);
+    
+    const handleFormSubmit = () => {
+        setFormOpen(false);
+        fetchPosts(); // Refetch posts after submission
+        router.refresh();
+    };
 
     if (isLoading) {
         return <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
@@ -159,10 +163,7 @@ const MyPosts = ({ userId }: { userId: string }) => {
                     </DialogHeader>
                     <BlogPostForm
                         post={null} 
-                        onFormSubmit={() => {
-                            setFormOpen(false);
-                            fetchPosts();
-                        }}
+                        onFormSubmit={handleFormSubmit}
                         onFormCancel={() => setFormOpen(false)}
                     />
                 </DialogContent>
@@ -316,13 +317,19 @@ const ProfilePage = () => {
                         <TabsTrigger value="testimonials">My Reviews</TabsTrigger>
                     </TabsList>
                     <TabsContent value="orders" className="pt-6">
-                        <OrderHistory userId={user.uid} />
+                        <Suspense fallback={<Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />}>
+                            <OrderHistory userId={user.uid} />
+                        </Suspense>
                     </TabsContent>
                     <TabsContent value="posts" className="pt-6">
-                        <MyPosts userId={user.uid} />
+                         <Suspense fallback={<Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />}>
+                            <MyPosts userId={user.uid} />
+                        </Suspense>
                     </TabsContent>
                     <TabsContent value="testimonials" className="pt-6">
-                        <MyTestimonials userId={user.uid} />
+                         <Suspense fallback={<Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />}>
+                            <MyTestimonials userId={user.uid} />
+                        </Suspense>
                     </TabsContent>
                  </Tabs>
             </CardContent>
