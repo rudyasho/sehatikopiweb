@@ -131,7 +131,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
         return null;
     }
     const doc = snapshot.docs[0];
-    const postData = doc.data() as BlogPost;
+    const postData = { id: doc.id, ...doc.data() } as BlogPost;
 
     // A user can view their own non-published posts if they know the slug,
     // but the general public can only see published posts.
@@ -141,7 +141,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
         return null;
     }
 
-    return { id: doc.id, ...postData };
+    return postData;
 }
 
 export async function addBlogPost(post: NewBlogPostData): Promise<BlogPost> {
