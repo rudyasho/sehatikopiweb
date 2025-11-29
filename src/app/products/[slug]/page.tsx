@@ -61,7 +61,7 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
     notFound();
   }
 
-  const reviews = await getTestimonials(100); // Fetch all for reviews section
+  const reviews = await getTestimonials(0, true); // Fetch all (including pending) for reviews section
 
   return (
       <>

@@ -123,7 +123,9 @@ const MyPosts = ({ userId }: { userId: string }) => {
         setIsLoading(true);
         try {
             const allPosts = await getBlogPosts(true); // show pending for the author
-            setPosts(allPosts.filter(p => p.authorId === userId));
+            if (user) {
+              setPosts(allPosts.filter(p => p.authorId === user.uid));
+            }
         } catch(e) {
             console.error(e);
         } finally {
@@ -132,13 +134,17 @@ const MyPosts = ({ userId }: { userId: string }) => {
     };
     
     useEffect(() => {
+      if (user) {
         fetchPosts();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [userId]);
+      }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user]);
 
     if (isLoading) {
         return <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
     }
+    
+    if (!user) return null;
 
     return (
         <div className="space-y-4">
@@ -151,8 +157,8 @@ const MyPosts = ({ userId }: { userId: string }) => {
                         <DialogTitle>Submit a New Blog Post</DialogTitle>
                         <CardDescription>Your post will be reviewed by an admin before publication.</CardDescription>
                     </DialogHeader>
-                    <BlogPostForm 
-                        currentUser={user}
+                    <BlogPostForm
+                        post={null} 
                         onFormSubmit={() => {
                             setFormOpen(false);
                             fetchPosts();

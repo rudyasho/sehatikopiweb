@@ -28,7 +28,7 @@ const reviewFormSchema = z.object({
   rating: z.number().min(1, { message: "Please select a rating."}).max(5),
 });
 
-const ReviewForm = ({ productId }: { productId: string }) => {
+const ReviewForm = ({ productId, productName }: { productId: string, productName: string }) => {
     const { user } = useAuth();
     const { toast } = useToast();
     const router = useRouter();
@@ -55,12 +55,14 @@ const ReviewForm = ({ productId }: { productId: string }) => {
                 status: 'pending',
                 date: new Date().toISOString(),
                 productId: productId,
+                userId: user.uid,
             });
             toast({
                 title: "Review Submitted!",
                 description: "Thank you! Your review is pending approval from our team.",
             });
             form.reset();
+            router.refresh(); // To show new pending review in profile
         } catch (error) {
             toast({
                 variant: 'destructive',
@@ -100,7 +102,7 @@ const ReviewForm = ({ productId }: { productId: string }) => {
                         <FormItem>
                             <FormLabel>Your Review</FormLabel>
                             <FormControl>
-                                <Textarea placeholder={`What did you think of the ${name}?`} {...field} />
+                                <Textarea placeholder={`What did you think of the ${productName}?`} {...field} />
                             </FormControl>
                              <FormMessage />
                         </FormItem>
@@ -160,7 +162,7 @@ export function ReviewsSection({ initialReviews, productName, productId }: Revie
                         )}
                     </div>
                      <div>
-                        <ReviewForm productId={productId} />
+                        <ReviewForm productId={productId} productName={productName} />
                     </div>
                 </div>
             </div>

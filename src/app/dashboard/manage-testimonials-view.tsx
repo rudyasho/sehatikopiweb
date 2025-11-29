@@ -25,7 +25,7 @@ const ManageTestimonialsView = () => {
     const fetchAndSetTestimonials = async () => {
         setIsLoading(true);
         try {
-            const testimonialsData = await getTestimonials(100); // Fetch all
+            const testimonialsData = await getTestimonials(0, true); // Fetch all, including pending
             setTestimonials(testimonialsData);
         } catch (error) {
             console.error("Failed to fetch testimonials:", error);

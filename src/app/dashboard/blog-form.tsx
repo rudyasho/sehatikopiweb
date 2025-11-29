@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from '@/components/ui/textarea';
+import { useAuth } from '@/context/auth-context';
 
 
 const blogPostFormSchema = z.object({
@@ -35,6 +36,7 @@ interface BlogPostFormProps {
 export function BlogPostForm({ post, onFormSubmit, onFormCancel }: BlogPostFormProps) {
     const { toast } = useToast();
     const router = useRouter();
+    const { user } = useAuth();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const form = useForm<BlogPostFormValues>({
@@ -48,14 +50,30 @@ export function BlogPostForm({ post, onFormSubmit, onFormCancel }: BlogPostFormP
     });
 
     const onSubmit = async (data: BlogPostFormValues) => {
+        if (!user) {
+            toast({
+                variant: 'destructive',
+                title: "Authentication Error",
+                description: "You must be logged in to create or update a post.",
+            });
+            return;
+        }
+
         setIsSubmitting(true);
         try {
             if (post) {
+                // For updates, we don't change the author
                 await updateBlogPost(post.id, data);
                 toast({ title: "Post Updated!", description: `"${data.title}" has been updated.` });
             } else {
-                await addBlogPost(data as NewBlogPostData);
-                toast({ title: "Post Created!", description: `"${data.title}" has been created.` });
+                // For new posts, we add author details
+                const newPostData = {
+                    ...data,
+                    author: user.displayName || 'Anonymous User',
+                    authorId: user.uid,
+                };
+                await addBlogPost(newPostData);
+                toast({ title: "Post Submitted!", description: `Your post "${data.title}" is pending review.` });
             }
             onFormSubmit();
             router.refresh();
@@ -119,7 +137,7 @@ export function BlogPostForm({ post, onFormSubmit, onFormCancel }: BlogPostFormP
                     <Button type="button" variant="outline" onClick={onFormCancel}>Cancel</Button>
                     <Button type="submit" disabled={isSubmitting}>
                         {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        {post ? 'Update Post' : 'Create Post'}
+                        {post ? 'Update Post' : 'Submit for Review'}
                     </Button>
                 </div>
             </form>

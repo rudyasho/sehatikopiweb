@@ -11,10 +11,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { BlogPostForm } from './blog-form';
 import { useRouter } from 'next/navigation';
+import { Badge } from '@/components/ui/badge';
 
 const ManageBlogPostsView = () => {
     const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -28,7 +29,7 @@ const ManageBlogPostsView = () => {
     const fetchAndSetPosts = async () => {
         setIsLoading(true);
         try {
-            const postsData = await getBlogPosts();
+            const postsData = await getBlogPosts(true); // Fetch all posts including pending
             setPosts(postsData);
         } catch (error) {
             console.error("Failed to fetch blog posts for management:", error);
@@ -100,6 +101,9 @@ const ManageBlogPostsView = () => {
                     <DialogContent className="max-w-4xl">
                          <DialogHeader>
                             <DialogTitle className="font-headline text-2xl text-primary">{editingPost ? 'Edit Blog Post' : 'Create New Post'}</DialogTitle>
+                            <DialogDescription>
+                                {editingPost ? 'Update the details of this post.' : 'Create a new article for your blog.'}
+                            </DialogDescription>
                          </DialogHeader>
                          <BlogPostForm 
                             post={editingPost} 
@@ -115,6 +119,7 @@ const ManageBlogPostsView = () => {
                                 <TableHead>Title</TableHead>
                                 <TableHead>Category</TableHead>
                                 <TableHead>Date</TableHead>
+                                <TableHead>Status</TableHead>
                                 <TableHead className="text-center">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -124,6 +129,9 @@ const ManageBlogPostsView = () => {
                                     <TableCell className="font-medium">{post.title}</TableCell>
                                     <TableCell className="text-muted-foreground">{post.category}</TableCell>
                                     <TableCell>{post.date ? format(new Date(post.date), "MMM d, yyyy") : 'N/A'}</TableCell>
+                                    <TableCell>
+                                        <Badge variant={post.status === 'published' ? 'secondary' : 'outline'}>{post.status}</Badge>
+                                    </TableCell>
                                     <TableCell className="text-center space-x-2">
                                         <Button variant="outline" size="icon" onClick={() => openDialog(post)} aria-label={`Edit ${post.title}`}>
                                             <Edit className="h-4 w-4" />

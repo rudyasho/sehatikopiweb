@@ -26,14 +26,16 @@ const initialTestimonials: Omit<Testimonial, 'id'>[] = [
     rating: 5,
     status: 'published',
     date: new Date().toISOString(),
+    productId: 'seeded-product-1',
   },
   {
     name: 'Siti K.',
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1287&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1287&auto=format&fit=crop&ixlib-rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     review: 'Sehati Kopi sudah menjadi ritual harian saya. Sangrai mereka konsisten dan pengirimannya selalu cepat. Sangat direkomendasikan!',
     rating: 5,
     status: 'published',
     date: new Date().toISOString(),
+    productId: 'seeded-product-2',
   },
 ];
 

@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { 
     LayoutGrid, ShoppingBag, ListOrdered, BookText, CalendarCheck, 
-    Users, ImageUp, Settings, Loader2, Menu
+    Users, ImageUp, Settings, Loader2, Menu, Star
 } from 'lucide-react';
 
 import { useAuth } from '@/context/auth-context';
@@ -20,8 +20,9 @@ import ManageEventsView from './manage-events-view';
 import ManageUsersView from './manage-users-view';
 import HeroSettingsView from './hero-settings-view';
 import SettingsView from './settings-view';
+import ManageTestimonialsView from './manage-testimonials-view';
 
-type DashboardView = 'overview' | 'manageOrders' | 'manageProducts' | 'manageBlog' | 'manageEvents' | 'manageUsers' | 'heroSettings' | 'settings';
+type DashboardView = 'overview' | 'manageOrders' | 'manageProducts' | 'manageBlog' | 'manageEvents' | 'manageUsers' | 'manageTestimonials' | 'heroSettings' | 'settings';
 
 const DashboardPage = () => {
   const { user, loading } = useAuth();
@@ -69,6 +70,8 @@ const DashboardPage = () => {
             return <ManageEventsView />;
         case 'manageUsers':
             return user.role === 'Super Admin' ? <ManageUsersView currentUser={user} /> : null;
+        case 'manageTestimonials':
+            return <ManageTestimonialsView />;
         case 'heroSettings':
             return <HeroSettingsView />;
         case 'settings':
@@ -85,6 +88,7 @@ const DashboardPage = () => {
       { id: 'manageProducts', label: 'Manage Products', icon: ListOrdered },
       { id: 'manageBlog', label: 'Manage Posts', icon: BookText },
       { id: 'manageEvents', label: 'Manage Events', icon: CalendarCheck },
+      { id: 'manageTestimonials', label: 'Manage Testimonials', icon: Star },
       ...(user.role === 'Super Admin' ? [{ id: 'manageUsers' as const, label: 'Manage Users', icon: Users }] : []),
       { id: 'heroSettings', label: 'Hero Settings', icon: ImageUp },
       { id: 'settings', label: 'Website Settings', icon: Settings },

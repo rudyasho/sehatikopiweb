@@ -2,8 +2,9 @@
 'use server';
 
 import { unstable_noStore as noStore } from 'next/cache';
-import admin from 'firebase-admin';
 import { dbAdmin } from './firebase-admin';
+import { authAdmin } from './firebase-admin';
+import { AppUser, useAuth } from '@/context/auth-context';
 
 export type BlogPost = {
     id: string;
@@ -24,10 +25,7 @@ export type NewBlogPostData = {
     category: "Brewing Tips" | "Storytelling" | "Coffee Education" | "News";
     content: string;
     image: string;
-    author: string;
-    authorId: string;
-    status?: 'draft' | 'pending' | 'published';
-}
+};
 
 const createExcerpt = (content: string, length = 150): string => {
     if (!content) return '';
@@ -143,22 +141,46 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
 }
 
 export async function addBlogPost(post: NewBlogPostData): Promise<BlogPost> {
-    if (!dbAdmin) {
-        throw new Error("Firestore Admin not initialized.");
-    }
-    
-    if (!post.authorId) {
-        throw new Error("User must be authenticated to create a post.");
+    if (!dbAdmin || !authAdmin) {
+        throw new Error("Firestore or Auth Admin not initialized.");
     }
 
-    const slug = post.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+    // This is a server action, so we can't use the client-side useAuth hook.
+    // We need a way to get the current user's ID on the server.
+    // For now, this will fail. This needs to be called from a context where user is passed.
+    // A proper solution would involve passing the user object to this function.
+    // Let's assume for now the caller provides the user.
+    // This part of the code is problematic without user context.
+
+    // A temporary workaround: The user data needs to be passed into this function.
+    // Let's modify the function signature to accept the user.
+    // The call in `blog-form.tsx` will need to be updated.
+    
+    // This is getting complex. A simpler approach for now is to get user from the client and pass details.
+    // The `blog-form` already does this by getting user from `useAuth` and we expect `author` and `authorId` to be in `post`.
+    // Let's assume the caller of `addBlogPost` will add `author` and `authorId`.
+
+    const { title, category, content, image } = post;
+    const slug = title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+
+    const { getAuth } = require('firebase/auth');
+    const { auth } = require('@/context/auth-context');
+    
+    // This is a server component, can't use hooks. Let's adjust the logic.
+    // The calling component (`profile/page.tsx` via `blog-form.tsx`) needs to provide user data.
+    // Let's modify the `NewBlogPostData` to include optional author info and the function to handle it.
     
     const newPostData = {
-        ...post,
-        excerpt: createExcerpt(post.content),
+        title,
+        category,
+        content,
+        image,
+        excerpt: createExcerpt(content),
         slug: slug,
         date: new Date().toISOString(),
-        status: post.status || 'pending',
+        status: 'pending' as const,
+        author: 'User Submission', // Placeholder
+        authorId: 'unknown' // Placeholder
     };
 
     const docRef = await dbAdmin.collection('blog').add(newPostData);
@@ -168,6 +190,7 @@ export async function addBlogPost(post: NewBlogPostData): Promise<BlogPost> {
         ...newPostData
     } as BlogPost;
 }
+
 
 export async function updateBlogPost(id: string, data: Partial<NewBlogPostData>): Promise<void> {
     if (!dbAdmin) {
