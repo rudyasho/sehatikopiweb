@@ -61,7 +61,7 @@ export async function getOrdersByUserId(userId: string): Promise<Order[]> {
 
 export async function getAllOrders(): Promise<Order[]> {
   noStore();
-  if (!dbAdmin || !authAdmin) {
+  if (!dbAdmin) {
     throw new Error('Database or Auth admin instance is not initialized.');
   }
 
@@ -74,10 +74,15 @@ export async function getAllOrders(): Promise<Order[]> {
         return orders.map(order => ({ ...order, customerInfo: undefined }));
     }
 
+    if (!authAdmin) {
+        console.warn("Auth Admin not available, cannot fetch user info for orders.");
+        return orders.map(order => ({ ...order, customerInfo: undefined }));
+    }
+
     // Note: listUsers is more efficient for larger sets of UIDs if available/needed.
     // For smaller batches, individual lookups are fine.
     const userRecords = await Promise.all(
-      userIds.map(uid => authAdmin!.getUser(uid).catch(() => null))
+      userIds.map(uid => authAdmin.getUser(uid).catch(() => null))
     );
 
     const usersMap = userRecords.reduce((acc, user) => {

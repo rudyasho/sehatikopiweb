@@ -23,7 +23,7 @@ const loginFormSchema = z.object({
 type LoginFormValues = z.infer<typeof loginFormSchema>;
 
 export default function LoginPage() {
-  const { loginWithEmail, loginWithGoogle, loading } = useAuth();
+  const { loginWithEmail, loginWithGoogle, loading, user } = useAuth();
   const { toast } = useToast();
   const router = useRouter();
 
@@ -35,10 +35,18 @@ export default function LoginPage() {
     },
   });
 
+  const handleAuthSuccess = () => {
+    toast({
+        title: "Login Successful!",
+        description: `Welcome back!`,
+    });
+    router.push('/dashboard');
+  }
+
   const handleEmailLogin = async (data: LoginFormValues) => {
     try {
       await loginWithEmail(data.email, data.password);
-      router.push('/dashboard');
+      handleAuthSuccess();
     } catch (error: any) {
       toast({
         variant: 'destructive',
@@ -51,7 +59,7 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     try {
       await loginWithGoogle();
-      router.push('/dashboard');
+      handleAuthSuccess();
     } catch (error: any) {
        toast({
         variant: 'destructive',

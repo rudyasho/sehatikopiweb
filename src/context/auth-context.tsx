@@ -66,6 +66,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
   
+  const handleAuthSuccess = async (firebaseUser: FirebaseUser) => {
+    // Create user doc in Firestore.
+    // We use set with merge:true, but since this also happens on creation, it's fine.
+    await createUserInFirestore({
+      uid: firebaseUser.uid,
+      email: firebaseUser.email,
+      displayName: firebaseUser.displayName,
+      photoURL: firebaseUser.photoURL,
+      role: 'User'
+    });
+
+    // Force token refresh to get custom claims if any are set on creation
+    await firebaseUser.getIdToken(true);
+
+    const tokenResult = await firebaseUser.getIdTokenResult();
+    const claims = tokenResult.claims;
+    const userRole = claims.role ? (claims.role as 'Admin' | 'User') : 'User';
+    
+    const appUser: AppUser = {
+      uid: firebaseUser.uid,
+      email: firebaseUser.email,
+      displayName: firebaseUser.displayName,
+      photoURL: firebaseUser.photoURL,
+      emailVerified: firebaseUser.emailVerified,
+      disabled: false, // This is not reliably detectable on client
+      role: firebaseUser.email === SUPER_ADMIN_EMAIL ? 'Super Admin' : userRole,
+    };
+
+    setUser(appUser);
+  };
+  
   const signUpWithEmail = async (email: string, password: string, displayName: string) => {
       if (!app) throw new Error("Firebase not initialized.");
       const auth = getAuth(app);
@@ -74,28 +105,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(userCredential.user, { displayName });
         
-        // Create user document in Firestore
-        await createUserInFirestore({
-          uid: userCredential.user.uid,
-          email: userCredential.user.email,
-          displayName: userCredential.user.displayName,
-          photoURL: userCredential.user.photoURL,
-          role: 'User'
-        });
-
-        // Force token refresh to get custom claims if any are set on creation
-        await userCredential.user.getIdToken(true);
-
-        const appUser: AppUser = {
-            uid: userCredential.user.uid,
-            email: userCredential.user.email,
-            displayName: userCredential.user.displayName,
-            photoURL: userCredential.user.photoURL,
-            emailVerified: userCredential.user.emailVerified,
-            disabled: false,
-            role: 'User',
-        };
-        setUser(appUser);
+        await handleAuthSuccess(userCredential.user);
       } catch (error: any) {
         if (error.code === 'auth/email-already-in-use') {
             throw new Error('This email address is already in use.');
@@ -111,7 +121,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const auth = getAuth(app);
       setLoading(true);
       try {
-          await signInWithEmailAndPassword(auth, email, password);
+          const userCredential = await signInWithEmailAndPassword(auth, email, password);
+          await handleAuthSuccess(userCredential.user);
       } catch (error: any) {
         if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
             throw new Error('Invalid email or password.');
@@ -132,16 +143,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLoading(true);
     try {
       const result = await signInWithPopup(auth, provider);
-      
-      // Create user doc in Firestore.
-      // We use set with merge:true, but since this also happens on creation, it's fine.
-      await createUserInFirestore({
-        uid: result.user.uid,
-        email: result.user.email,
-        displayName: result.user.displayName,
-        photoURL: result.user.photoURL,
-        role: 'User'
-      });
+      await handleAuthSuccess(result.user);
     } catch (error) {
       console.error("Error during Google sign-in:", error);
       throw error;

@@ -38,14 +38,18 @@ export default function SignUpPage() {
     },
   });
 
+  const handleAuthSuccess = () => {
+    toast({
+      title: "Account Created!",
+      description: "Welcome to Sehati Kopi. You are now logged in.",
+    });
+    router.push('/dashboard');
+  }
+
   const handleEmailSignUp = async (data: SignUpFormValues) => {
     try {
       await signUpWithEmail(data.email, data.password, data.name);
-      toast({
-          title: "Account Created!",
-          description: "Welcome to Sehati Kopi. You are now logged in.",
-      });
-      router.push('/dashboard');
+      handleAuthSuccess();
     } catch (error: any) {
       toast({
         variant: 'destructive',
@@ -58,7 +62,7 @@ export default function SignUpPage() {
   const handleGoogleLogin = async () => {
     try {
       await loginWithGoogle();
-      router.push('/dashboard');
+      handleAuthSuccess();
     } catch (error: any) {
        toast({
         variant: 'destructive',
