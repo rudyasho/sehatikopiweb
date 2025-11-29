@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Sheet, SheetTrigger, SheetContent } from '@/components/ui/sheet';
 import AnalyticsOverview from './analytics-overview';
+import ManageOrdersView from './manage-orders-view';
 import ManageProductsView from './manage-products-view';
 import ManageBlogView from './manage-blog-view';
 import ManageEventsView from './manage-events-view';
@@ -58,6 +59,8 @@ const DashboardPage = () => {
   const renderContent = () => {
     const view = searchParams.get('view') as DashboardView | null;
     switch (view) {
+        case 'manageOrders':
+            return <ManageOrdersView />;
         case 'manageProducts':
             return <ManageProductsView />;
         case 'manageBlog':
@@ -78,6 +81,7 @@ const DashboardPage = () => {
   
   const sidebarNavItems = [
       { id: 'overview', label: 'Overview', icon: LayoutGrid },
+      { id: 'manageOrders', label: 'Manage Orders', icon: ShoppingBag },
       { id: 'manageProducts', label: 'Manage Products', icon: ListOrdered },
       { id: 'manageBlog', label: 'Manage Posts', icon: BookText },
       { id: 'manageEvents', label: 'Manage Events', icon: CalendarCheck },
