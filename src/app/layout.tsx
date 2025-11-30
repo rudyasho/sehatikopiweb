@@ -1,4 +1,4 @@
-import { PT_Sans, Playfair_Display, Roboto } from 'next/font/google';
+import { Poppins, Roboto, Inter } from 'next/font/google';
 
 import './globals.css';
 import { cn } from '@/lib/utils';
@@ -8,17 +8,16 @@ import { Footer } from '@/components/layout/footer';
 import { getSettings } from '@/lib/settings-data';
 import type { Metadata } from 'next';
 
-const ptSans = PT_Sans({
-  subsets: ['latin'],
-  weight: ['400', '700'],
-  variable: '--font-body',
-  display: 'swap',
-});
-
-const playfairDisplay = Playfair_Display({
+const poppins = Poppins({
   subsets: ['latin'],
   weight: ['400', '700'],
   variable: '--font-headline',
+  display: 'swap',
+});
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-body',
   display: 'swap',
 });
 
@@ -51,7 +50,7 @@ export default async function RootLayout({
 
   return (
     <html lang="id" suppressHydrationWarning>
-      <body className={cn('min-h-screen bg-background font-body antialiased', ptSans.variable, playfairDisplay.variable, roboto.variable)}>
+      <body className={cn('min-h-screen bg-background font-body antialiased', poppins.variable, inter.variable, roboto.variable)}>
         <Providers
             attribute="class"
             defaultTheme="light"
