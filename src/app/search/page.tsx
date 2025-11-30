@@ -8,8 +8,8 @@ export const metadata: Metadata = {
   title: 'Pencarian',
   description: 'Cari produk kopi dan artikel blog favorit Anda dari Sehati Kopi.',
   robots: {
-    index: true,
-    follow: true,
+    index: false,
+    follow: false,
   }
 };
 

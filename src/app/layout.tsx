@@ -32,6 +32,7 @@ const roboto = Roboto({
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSettings();
   return {
+      metadataBase: new URL('https://sehatikopi.id'),
       title: {
           template: `%s | ${settings.siteName}`,
           default: `${settings.siteName} - Jual Kopi Arabika & Robusta Indonesia`,
