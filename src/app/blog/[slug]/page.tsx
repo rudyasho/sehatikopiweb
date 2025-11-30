@@ -21,11 +21,14 @@ import { PostFooter } from './client-page';
 marked.use({
   gfm: true,
   breaks: true,
+  langPrefix: 'hljs language-',
+});
+
+marked.use({
   highlight: (code, lang) => {
     const language = hljs.getLanguage(lang) ? lang : 'plaintext';
     return hljs.highlight(code, { language }).value;
-  },
-  langPrefix: 'hljs language-',
+  }
 });
 
 
