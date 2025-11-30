@@ -22,9 +22,6 @@ import { PostFooter } from './client-page';
 marked.use({
   gfm: true,
   breaks: true,
-});
-
-marked.setOptions({
   langPrefix: 'hljs language-',
   highlight: (code, lang) => {
     const language = hljs.getLanguage(lang) ? lang : 'plaintext';
