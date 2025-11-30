@@ -3,6 +3,7 @@
 
 import { unstable_noStore as noStore } from 'next/cache';
 import { getDb } from './firebase-admin';
+import { createSlug } from './utils';
 
 export interface Product {
   id: string;
@@ -120,7 +121,7 @@ async function seedDatabaseIfNeeded() {
       const batch = dbAdmin.batch();
       initialProducts.forEach(productData => {
           const docRef = productsCollection.doc();
-          const slug = productData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+          const slug = createSlug(productData.name);
           batch.set(docRef, {...productData, slug });
       });
       await batch.commit();
@@ -166,11 +167,10 @@ export async function addProduct(productData: Omit<ProductFormData, 'tags'> & { 
   const dbAdmin = getDb();
   if (!dbAdmin) throw new Error("Firestore is not initialized.");
   const productsCollection = dbAdmin.collection('products');
-  const slug = productData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
   
   const newProductData = {
     ...productData,
-    slug,
+    slug: createSlug(productData.name),
     rating: Math.round((Math.random() * (5 - 4) + 4) * 10) / 10,
     reviews: Math.floor(Math.random() * (100 - 10 + 1) + 10),
     tags: productData.tags.split(',').map(tag => tag.trim()),
@@ -192,7 +192,7 @@ export async function updateProduct(id: string, productData: Omit<ProductFormDat
     const updatedData = {
         ...productData,
         tags: productData.tags.split(',').map(tag => tag.trim()),
-        slug: productData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, ''),
+        slug: createSlug(productData.name),
     };
     await productRef.update(updatedData);
 }

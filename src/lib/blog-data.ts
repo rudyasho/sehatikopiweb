@@ -3,6 +3,7 @@
 
 import { getDb } from './firebase-admin';
 import { unstable_noStore as noStore } from 'next/cache';
+import { createSlug } from './utils';
 
 export type BlogPost = {
     id: string;
@@ -71,7 +72,7 @@ async function seedDatabaseIfNeeded() {
       const batch = dbAdmin.batch();
       initialBlogPosts.forEach(postData => {
           const docRef = blogCollection.doc();
-          const slug = postData.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+          const slug = createSlug(postData.title);
           const excerpt = createExcerpt(postData.content);
           batch.set(docRef, { 
               ...postData, 
@@ -148,7 +149,6 @@ export async function addBlogPost(post: NewBlogPostData): Promise<BlogPost> {
     if (!dbAdmin) throw new Error("Firestore is not initialized.");
     
     const { title, category, content, image, author, authorId } = post;
-    const slug = title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
 
     const newPostData = {
         title,
@@ -156,7 +156,7 @@ export async function addBlogPost(post: NewBlogPostData): Promise<BlogPost> {
         content,
         image,
         excerpt: createExcerpt(content),
-        slug: slug,
+        slug: createSlug(title),
         date: new Date().toISOString(),
         status: 'pending' as const,
         author,
@@ -180,7 +180,7 @@ export async function updateBlogPost(id: string, data: Partial<NewBlogPostData>)
     const updateData: { [key: string]: any } = { ...data };
     
     if (data.title) {
-        updateData.slug = data.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+        updateData.slug = createSlug(data.title);
     }
     
     if (data.content) {
