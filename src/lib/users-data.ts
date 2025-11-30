@@ -24,7 +24,9 @@ type FirestoreUser = {
 
 export async function createUserInFirestore(userData: FirestoreUser) {
     const dbAdmin = getDb();
+    if (!dbAdmin) throw new Error("Firestore is not initialized.");
     const authAdmin = getAuth();
+    if (!authAdmin) throw new Error("Firebase Auth is not initialized.");
     const userRef = dbAdmin.collection('users').doc(userData.uid);
     const userDoc = await userRef.get();
 
@@ -46,6 +48,7 @@ export async function createUserInFirestore(userData: FirestoreUser) {
 
 export async function listAllUsers(): Promise<AppUser[]> {
   const authAdmin = getAuth();
+  if (!authAdmin) throw new Error("Firebase Auth is not initialized.");
   
   const userRecords = await authAdmin.listUsers();
   
@@ -73,6 +76,7 @@ export async function listAllUsers(): Promise<AppUser[]> {
 
 export async function createUser(userData: CreateUserFormData) {
     const authAdmin = getAuth();
+    if (!authAdmin) throw new Error("Firebase Auth is not initialized.");
     
     try {
         const userRecord = await authAdmin.createUser({
@@ -99,7 +103,9 @@ export async function createUser(userData: CreateUserFormData) {
 
 export async function setUserRole(uid: string, role: 'Admin' | 'User'): Promise<void> {
     const dbAdmin = getDb();
+    if (!dbAdmin) throw new Error("Firestore is not initialized.");
     const authAdmin = getAuth();
+    if (!authAdmin) throw new Error("Firebase Auth is not initialized.");
     const userToUpdate = await authAdmin.getUser(uid);
     if (userToUpdate.email === SUPER_ADMIN_EMAIL) {
         throw new Error("Cannot change the role of the Super Admin account.");
@@ -114,6 +120,7 @@ export async function setUserRole(uid: string, role: 'Admin' | 'User'): Promise<
 
 export async function updateUserDisabledStatus(uid: string, disabled: boolean) {
     const authAdmin = getAuth();
+    if (!authAdmin) throw new Error("Firebase Auth is not initialized.");
     const userToUpdate = await authAdmin.getUser(uid);
     if (userToUpdate.email === SUPER_ADMIN_EMAIL) {
         throw new Error("Cannot modify the Super Admin account.");
@@ -123,7 +130,9 @@ export async function updateUserDisabledStatus(uid: string, disabled: boolean) {
 
 export async function deleteUserAccount(uid: string) {
     const dbAdmin = getDb();
+    if (!dbAdmin) throw new Error("Firestore is not initialized.");
     const authAdmin = getAuth();
+    if (!authAdmin) throw new Error("Firebase Auth is not initialized.");
     const userToDelete = await authAdmin.getUser(uid);
     if (userToDelete.email === SUPER_ADMIN_EMAIL) {
         throw new Error("Cannot delete the Super Admin account.");
@@ -133,3 +142,5 @@ export async function deleteUserAccount(uid: string) {
     // Delete from Firestore
     await dbAdmin.collection('users').doc(uid).delete();
 }
+
+    

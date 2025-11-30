@@ -61,6 +61,7 @@ const initialBlogPosts: Omit<BlogPost, 'id' | 'slug' | 'date' | 'excerpt' | 'aut
 
 async function seedDatabaseIfNeeded() {
   const dbAdmin = getDb();
+  if (!dbAdmin) return;
   const blogCollection = dbAdmin.collection('blog');
 
   try {
@@ -195,3 +196,5 @@ export async function deleteBlogPost(id: string): Promise<void> {
     const postRef = dbAdmin.collection('blog').doc(id);
     await postRef.delete();
 }
+
+    

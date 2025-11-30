@@ -51,6 +51,7 @@ async function seedDatabaseIfNeeded() {
   }
 
   const dbAdmin = getDb();
+  if (!dbAdmin) return;
   isSeeding = true;
   const menuCollection = dbAdmin.collection('menu');
 
@@ -78,6 +79,7 @@ export async function getMenuItems(): Promise<MenuItems | null> {
     noStore();
     try {
         const dbAdmin = getDb();
+        if (!dbAdmin) throw new Error("Firestore is not initialized.");
         await seedDatabaseIfNeeded();
 
         const menuCollection = dbAdmin.collection('menu');
@@ -108,3 +110,5 @@ export async function getMenuItems(): Promise<MenuItems | null> {
         return null;
     }
 }
+
+    

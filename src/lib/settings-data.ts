@@ -29,6 +29,7 @@ const defaultSettings: SettingsFormData = {
 
 async function initializeSettingsIfNeeded() {
   const dbAdmin = getDb();
+  if (!dbAdmin) return;
   const settingsCollection = dbAdmin.collection('settings');
   const SETTINGS_DOC_ID = 'main-settings'; 
 
@@ -54,6 +55,7 @@ async function initializeSettingsIfNeeded() {
 export async function getSettings(): Promise<WebsiteSettings> {
     noStore();
     const dbAdmin = getDb();
+    if (!dbAdmin) throw new Error("Firestore is not initialized.");
     await initializeSettingsIfNeeded();
     
     const docRef = dbAdmin.collection('settings').doc('main-settings');
@@ -69,6 +71,9 @@ export async function getSettings(): Promise<WebsiteSettings> {
 
 export async function updateSettings(data: SettingsFormData): Promise<void> {
     const dbAdmin = getDb();
+    if (!dbAdmin) throw new Error("Firestore is not initialized.");
     const docRef = dbAdmin.collection('settings').doc('main-settings');
     await docRef.update(data);
 }
+
+    

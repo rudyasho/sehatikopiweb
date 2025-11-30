@@ -1,4 +1,6 @@
 {
-  "firebase_hosting": {},
+  "firebase_hosting": {
+    "deploymentHostingUrl": "https://sehati-kopi-digital-fy12l.web.app"
+  },
   "secrets_manager": {}
 }

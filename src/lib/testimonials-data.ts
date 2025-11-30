@@ -49,6 +49,7 @@ async function seedDatabaseIfNeeded() {
   }
   
   const dbAdmin = getDb();
+  if (!dbAdmin) return;
   isSeeding = true;
   const testimonialsCollection = dbAdmin.collection('testimonials');
 
@@ -75,6 +76,7 @@ async function seedDatabaseIfNeeded() {
 export async function getTestimonials(limit: number = 3, showPending: boolean = false): Promise<Testimonial[]> {
     noStore();
     const dbAdmin = getDb();
+    if (!dbAdmin) throw new Error("Firestore is not initialized.");
     await seedDatabaseIfNeeded();
     
     let query = dbAdmin.collection('testimonials').orderBy('date', 'desc');
@@ -102,15 +104,20 @@ export async function getTestimonials(limit: number = 3, showPending: boolean = 
 
 export async function addTestimonial(testimonialData: NewTestimonialData): Promise<void> {
     const dbAdmin = getDb();
+    if (!dbAdmin) throw new Error("Firestore is not initialized.");
     await dbAdmin.collection('testimonials').add(testimonialData);
 }
 
 export async function updateTestimonial(id: string, data: Partial<Testimonial>): Promise<void> {
     const dbAdmin = getDb();
+    if (!dbAdmin) throw new Error("Firestore is not initialized.");
     await dbAdmin.collection('testimonials').doc(id).update(data);
 }
 
 export async function deleteTestimonial(id: string): Promise<void> {
     const dbAdmin = getDb();
+    if (!dbAdmin) throw new Error("Firestore is not initialized.");
     await dbAdmin.collection('testimonials').doc(id).delete();
 }
+
+    
