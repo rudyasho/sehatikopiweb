@@ -6,7 +6,7 @@ import { format } from 'date-fns';
 import { BookText, FilePlus2, Edit, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
-import { deleteBlogPost, type BlogPost } from '@/lib/blog-data';
+import { deleteBlogPost, updateBlogPost, type BlogPost } from '@/lib/blog-data';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -53,6 +53,17 @@ const ManageBlogPostsView = ({ posts }: ManageBlogPostsViewProps) => {
         closeDialog();
         router.refresh();
     };
+    
+    const handlePublishToggle = async (post: BlogPost) => {
+        const newStatus = post.status === 'published' ? 'pending' : 'published';
+        try {
+            await updateBlogPost(post.id, { status: newStatus });
+            toast({ title: "Status Updated", description: `"${post.title}" has been ${newStatus}.` });
+            router.refresh();
+        } catch (error) {
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not update post status.' });
+        }
+    }
 
     return (
         <Card className="shadow-lg bg-background">
@@ -104,6 +115,11 @@ const ManageBlogPostsView = ({ posts }: ManageBlogPostsViewProps) => {
                                         <Badge variant={post.status === 'published' ? 'secondary' : 'outline'}>{post.status}</Badge>
                                     </TableCell>
                                     <TableCell className="text-center space-x-2">
+                                        {post.status !== 'published' && (
+                                            <Button variant="secondary" size="sm" onClick={() => handlePublishToggle(post)}>
+                                                Publish
+                                            </Button>
+                                        )}
                                         <Button variant="outline" size="icon" onClick={() => openDialog(post)} aria-label={`Edit ${post.title}`}>
                                             <Edit className="h-4 w-4" />
                                         </Button>

@@ -172,7 +172,7 @@ export async function addBlogPost(post: NewBlogPostData): Promise<BlogPost> {
 }
 
 
-export async function updateBlogPost(id: string, data: Partial<NewBlogPostData>): Promise<void> {
+export async function updateBlogPost(id: string, data: Partial<NewBlogPostData & { status: BlogPost['status'] }>): Promise<void> {
     const dbAdmin = getDb();
     if (!dbAdmin) throw new Error("Firestore is not initialized.");
     
