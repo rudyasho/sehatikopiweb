@@ -1,6 +1,7 @@
 // src/app/blog/[slug]/page.tsx
 import Image from 'next/image';
 import Link from 'next/link';
+
 import { notFound } from 'next/navigation';
 import { Metadata, ResolvingMetadata } from 'next';
 import { marked } from 'marked';
@@ -23,7 +24,7 @@ import { PostFooter } from './client-page';
 marked.use({
   gfm: true,
   breaks: true,
-  highlight: (code, lang) => {
+  highlight: (code: string, lang: string) => {
     const language = hljs.getLanguage(lang) ? lang : 'plaintext';
     return hljs.highlight(code, { language }).value;
   },
@@ -150,3 +151,7 @@ export default async function BlogPostPage({ params }: Props) {
         </div>
     );
 }
+function noStore() {
+    throw new Error('Function not implemented.');
+}
+

@@ -5,7 +5,7 @@ import { useEffect, useState, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { format } from 'date-fns';
-import { Loader2, Mail, LogOut, LayoutDashboard, ShoppingBag, FilePlus2, Star, Edit } from 'lucide-react';
+import { Loader2, Mail, LogOut, LayoutDashboard, ShoppingBag, FilePlus2, Star, Edit, Newspaper } from 'lucide-react';
 
 import { useAuth } from '@/context/auth-context';
 import { getOrdersByUserId, type Order } from '@/lib/orders-data';
@@ -19,7 +19,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { BlogPostForm } from '@/app/dashboard/blog-form';
 
 const formatCurrency = (amount: number) => {
