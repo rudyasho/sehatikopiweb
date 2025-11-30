@@ -156,12 +156,13 @@ export const BlogEditor: React.FC<BlogEditorProps> = ({ value, onChange }) => {
 
     markedInstance.use({
         renderer: {
-            code(code, lang) {
+            code(token) {
+                const { text, lang } = token;
                 const language = hljs.getLanguages().includes(lang || '') ? lang : 'plaintext';
                 if (!language) {
-                    return `<pre><code>${code}</code></pre>`;
+                    return `<pre><code>${text}</code></pre>`;
                 }
-                const highlighted = hljs.highlight(code, { language, ignoreIllegals: true }).value;
+                const highlighted = hljs.highlight(text, { language, ignoreIllegals: true }).value;
                 return `<pre><code class="hljs language-${language}">${highlighted}</code></pre>`;
             }
         }
