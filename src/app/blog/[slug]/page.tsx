@@ -9,6 +9,7 @@ import hljs from 'highlight.js';
 import 'highlight.js/styles/atom-one-dark.css';
 import { format } from 'date-fns';
 import { ArrowLeft } from 'lucide-react';
+import { unstable_noStore as noStore } from 'next/cache';
 
 import { getBlogPosts, getPostBySlug } from '@/lib/blog-data';
 import { getProducts } from '@/lib/products-data';
@@ -19,16 +20,14 @@ import { Separator } from '@/components/ui/separator';
 import { PostFooter } from './client-page';
 
 // ----------------------
-// MARKED CONFIG FIXED
+// MARKED CONFIG
 // ----------------------
-marked.use({
-  gfm: true,
-  breaks: true,
-  highlight: (code: string, lang: string) => {
+marked.setOptions({
+  langPrefix: 'hljs language-',
+  highlight: (code, lang) => {
     const language = hljs.getLanguage(lang) ? lang : 'plaintext';
     return hljs.highlight(code, { language }).value;
   },
-  langPrefix: 'hljs language-',
 });
 
 type Props = {
@@ -151,7 +150,3 @@ export default async function BlogPostPage({ params }: Props) {
         </div>
     );
 }
-function noStore() {
-    throw new Error('Function not implemented.');
-}
-
