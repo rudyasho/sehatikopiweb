@@ -95,5 +95,3 @@ export default async function DashboardPage({
         </DashboardClientPage>
     );
 }
-
-    
