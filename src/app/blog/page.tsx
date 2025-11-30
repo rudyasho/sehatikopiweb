@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { getBlogPosts, type BlogPost } from '@/lib/blog-data';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
