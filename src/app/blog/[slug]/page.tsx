@@ -1,3 +1,4 @@
+
 // src/app/blog/[slug]/page.tsx
 import Image from 'next/image';
 import Link from 'next/link';
@@ -21,10 +22,10 @@ import { PostFooter } from './client-page';
 marked.use({
   gfm: true,
   breaks: true,
-  langPrefix: 'hljs language-',
 });
 
-marked.use({
+marked.setOptions({
+  langPrefix: 'hljs language-',
   highlight: (code, lang) => {
     const language = hljs.getLanguage(lang) ? lang : 'plaintext';
     return hljs.highlight(code, { language }).value;
