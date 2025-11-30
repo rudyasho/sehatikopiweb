@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { Twitter, Facebook, MessageCircle } from 'lucide-react';
+import { unstable_noStore as noStore } from 'next/cache';
 
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -39,6 +40,7 @@ const StaticShare = ({ slug, title }: { slug: string, title: string }) => (
 )
 
 export default async function BlogPage() {
+  noStore();
   const blogPosts = await getBlogPosts();
   
   if (!blogPosts || blogPosts.length === 0) {

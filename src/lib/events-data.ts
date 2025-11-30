@@ -32,7 +32,7 @@ const initialEvents: Omit<Event, 'id'>[] = [
     time: '2:00 PM - 4:00 PM',
     location: 'Sehati Kopi Flagship Store',
     description: 'Unleash your inner artist! Our expert baristas will guide you through the basics of milk steaming and pouring techniques to create beautiful latte art. All materials provided.',
-    image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=1470&auto=format&fit=crop&ixlib-rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
   },
   {
     title: 'Meet the Farmer: Gayo Highlands',
@@ -112,5 +112,3 @@ export async function deleteEvent(id: string): Promise<void> {
     const eventRef = eventsCollection.doc(id);
     await eventRef.delete();
 }
-
-    

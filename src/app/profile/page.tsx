@@ -5,7 +5,7 @@ import { useEffect, useState, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { format } from 'date-fns';
-import { Loader2, Mail, LogOut, LayoutDashboard, ShoppingBag, FilePlus2, Star } from 'lucide-react';
+import { Loader2, Mail, LogOut, LayoutDashboard, ShoppingBag, FilePlus2, Star, Edit } from 'lucide-react';
 
 import { useAuth } from '@/context/auth-context';
 import { getOrdersByUserId, type Order } from '@/lib/orders-data';
@@ -115,6 +115,7 @@ const OrderHistory = ({ userId }: { userId: string }) => {
 
 const MyPosts = ({ userId }: { userId: string }) => {
     const [posts, setPosts] = useState<BlogPost[]>([]);
+    const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const { user } = useAuth();
     const router = useRouter();
@@ -140,9 +141,15 @@ const MyPosts = ({ userId }: { userId: string }) => {
     
     const handleFormSubmit = () => {
         setFormOpen(false);
+        setEditingPost(null);
         fetchPosts(); // Refetch posts after submission
         router.refresh();
     };
+
+    const openDialog = (post: BlogPost | null) => {
+        setEditingPost(post);
+        setFormOpen(true);
+    }
 
     if (isLoading) {
         return <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
@@ -153,24 +160,30 @@ const MyPosts = ({ userId }: { userId: string }) => {
     return (
         <div className="space-y-4">
              <Dialog open={isFormOpen} onOpenChange={setFormOpen}>
-                <DialogTrigger asChild>
-                    <Button><FilePlus2 className="mr-2 h-4 w-4"/> Write New Post</Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-4xl">
-                    <DialogHeader>
-                        <DialogTitle>Submit a New Blog Post</DialogTitle>
-                        <CardDescription>Your post will be reviewed by an admin before publication.</CardDescription>
-                    </DialogHeader>
-                    <BlogPostForm
-                        post={null} 
-                        onFormSubmit={handleFormSubmit}
-                        onFormCancel={() => setFormOpen(false)}
-                    />
+                <DialogContent className="max-w-6xl w-full">
+                         <DialogHeader>
+                            <DialogTitle className="font-headline text-2xl text-primary">{editingPost ? 'Edit Your Post' : 'Submit a New Blog Post'}</DialogTitle>
+                            <DialogDescription>
+                                {editingPost ? 'Update the details of your post.' : 'Your post will be reviewed by an admin before publication.'}
+                            </DialogDescription>
+                         </DialogHeader>
+                         <BlogPostForm 
+                            post={editingPost} 
+                            onFormSubmit={handleFormSubmit}
+                            onFormCancel={() => { setEditingPost(null); setFormOpen(false); }}
+                        />
                 </DialogContent>
              </Dialog>
             {posts.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">You haven't written any posts yet.</p>
+                <div className="text-center py-12">
+                    <Newspaper className="mx-auto h-16 w-16 text-foreground/30" />
+                    <h3 className="mt-4 text-xl font-semibold">You Haven't Written Any Posts</h3>
+                    <p className="mt-1 text-foreground/60">Share your coffee stories with the community.</p>
+                    <Button onClick={() => openDialog(null)} size="sm" className="mt-4"><FilePlus2 className="mr-2 h-4 w-4"/> Write New Post</Button>
+                </div>
             ) : (
+                <>
+                <Button onClick={() => openDialog(null)}><FilePlus2 className="mr-2 h-4 w-4"/> Write New Post</Button>
                 <div className="border rounded-lg">
                     <Table>
                         <TableHeader>
@@ -178,6 +191,7 @@ const MyPosts = ({ userId }: { userId: string }) => {
                                 <TableHead>Title</TableHead>
                                 <TableHead>Date</TableHead>
                                 <TableHead>Status</TableHead>
+                                <TableHead className="text-center">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -190,11 +204,17 @@ const MyPosts = ({ userId }: { userId: string }) => {
                                             {post.status}
                                         </Badge>
                                     </TableCell>
+                                    <TableCell className="text-center">
+                                         <Button variant="outline" size="icon" onClick={() => openDialog(post)} disabled={post.status === 'published'}>
+                                            <Edit className="h-4 w-4" />
+                                        </Button>
+                                    </TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
                     </Table>
                 </div>
+                </>
             )}
         </div>
     )
@@ -224,7 +244,16 @@ const MyTestimonials = ({ userId }: { userId: string }) => {
     }
 
      if (testimonials.length === 0) {
-        return <p className="text-center text-muted-foreground py-8">You haven't written any reviews yet.</p>
+        return (
+             <div className="text-center py-12">
+                <Star className="mx-auto h-16 w-16 text-foreground/30" />
+                <h3 className="mt-4 text-xl font-semibold">No Reviews Yet</h3>
+                <p className="mt-1 text-foreground/60">Your product reviews will appear here.</p>
+                <Button asChild size="sm" className="mt-4">
+                    <Link href="/products">Review a Product</Link>
+                </Button>
+            </div>
+        )
     }
 
     return (
@@ -317,17 +346,17 @@ const ProfilePage = () => {
                         <TabsTrigger value="testimonials">My Reviews</TabsTrigger>
                     </TabsList>
                     <TabsContent value="orders" className="pt-6">
-                        <Suspense fallback={<Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />}>
+                        <Suspense fallback={<div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
                             <OrderHistory userId={user.uid} />
                         </Suspense>
                     </TabsContent>
                     <TabsContent value="posts" className="pt-6">
-                         <Suspense fallback={<Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />}>
+                         <Suspense fallback={<div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
                             <MyPosts userId={user.uid} />
                         </Suspense>
                     </TabsContent>
                     <TabsContent value="testimonials" className="pt-6">
-                         <Suspense fallback={<Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />}>
+                         <Suspense fallback={<div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
                             <MyTestimonials userId={user.uid} />
                         </Suspense>
                     </TabsContent>

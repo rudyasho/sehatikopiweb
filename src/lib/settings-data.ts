@@ -55,7 +55,10 @@ async function initializeSettingsIfNeeded() {
 export async function getSettings(): Promise<WebsiteSettings> {
     noStore();
     const dbAdmin = getDb();
-    if (!dbAdmin) throw new Error("Firestore is not initialized.");
+    if (!dbAdmin) {
+        console.warn("Firestore is not initialized. Returning default settings.");
+        return { id: 'main-settings', ...defaultSettings };
+    }
     await initializeSettingsIfNeeded();
     
     const docRef = dbAdmin.collection('settings').doc('main-settings');
@@ -75,5 +78,3 @@ export async function updateSettings(data: SettingsFormData): Promise<void> {
     const docRef = dbAdmin.collection('settings').doc('main-settings');
     await docRef.update(data);
 }
-
-    

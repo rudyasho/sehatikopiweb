@@ -204,5 +204,3 @@ export async function deleteProduct(id: string): Promise<void> {
     const productRef = productsCollection.doc(id);
     await productRef.delete();
 }
-
-    

@@ -196,5 +196,3 @@ export async function deleteBlogPost(id: string): Promise<void> {
     const postRef = dbAdmin.collection('blog').doc(id);
     await postRef.delete();
 }
-
-    
