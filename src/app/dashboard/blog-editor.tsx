@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { marked } from 'marked';
+import { marked, Marked } from 'marked';
 import hljs from 'highlight.js';
 import 'highlight.js/styles/atom-one-dark.css';
 import { Bold, Italic, Link, List, Quote, Code, Image as ImageIcon } from 'lucide-react';
@@ -12,17 +12,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
-
-
-// Configure marked to use highlight.js
-marked.setOptions({
-  highlight: (code, lang) => {
-    const language = hljs.getLanguage(lang) ? lang : 'plaintext';
-    return hljs.highlight(code, { language }).value;
-  },
-  langPrefix: 'hljs language-',
-});
-
 
 interface BlogEditorProps {
   value: string;
@@ -160,9 +149,27 @@ export const BlogEditor: React.FC<BlogEditorProps> = ({ value, onChange }) => {
   }, [value]);
 
   useEffect(() => {
+    const markedInstance = new Marked({
+        gfm: true,
+        breaks: true,
+    });
+
+    markedInstance.use({
+        renderer: {
+            code(code, lang) {
+                const language = hljs.getLanguages().includes(lang || '') ? lang : 'plaintext';
+                if (!language) {
+                    return `<pre><code>${code}</code></pre>`;
+                }
+                const highlighted = hljs.highlight(code, { language, ignoreIllegals: true }).value;
+                return `<pre><code class="hljs language-${language}">${highlighted}</code></pre>`;
+            }
+        }
+    });
+
     const renderMarkdown = async () => {
         try {
-            const html = await marked.parse(content || '');
+            const html = await markedInstance.parse(content || '');
             setRenderedHtml(html);
         } catch (error) {
             console.error("Markdown parsing error:", error);
