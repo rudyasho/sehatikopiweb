@@ -5,8 +5,6 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Metadata, ResolvingMetadata } from 'next';
 import { marked } from 'marked';
-import hljs from 'highlight.js';
-import 'highlight.js/styles/atom-one-dark.css';
 import { format } from 'date-fns';
 import { ArrowLeft } from 'lucide-react';
 import { unstable_noStore as noStore } from 'next/cache';
@@ -16,19 +14,7 @@ import { getProducts } from '@/lib/products-data';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardTitle, CardDescription, CardFooter, CardHeader } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import { PostFooter } from './client-page';
-
-// ----------------------
-// MARKED CONFIG
-// ----------------------
-marked.setOptions({
-  langPrefix: 'hljs language-',
-  highlight: (code, lang) => {
-    const language = hljs.getLanguage(lang) ? lang : 'plaintext';
-    return hljs.highlight(code, { language }).value;
-  },
-});
 
 type Props = {
   params: { slug: string };
@@ -86,7 +72,6 @@ export default async function BlogPostPage({ params }: Props) {
     const allProducts = await getProducts();
     const recommendedProducts = allProducts.sort(() => 0.5 - Math.random()).slice(0, 2);
     
-    // Sanitize the HTML content rendered from Markdown
     const cleanHtml = marked.parse(post.content) as string;
 
     return (
