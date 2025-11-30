@@ -158,7 +158,7 @@ export const BlogEditor: React.FC<BlogEditorProps> = ({ value, onChange }) => {
         renderer: {
             code(token) {
                 const { text, lang } = token;
-                const language = hljs.getLanguages().includes(lang || '') ? lang : 'plaintext';
+                const language = hljs.getLanguage(lang || '') ? lang : 'plaintext';
                 if (!language) {
                     return `<pre><code>${text}</code></pre>`;
                 }
