@@ -18,14 +18,14 @@ import { Separator } from '@/components/ui/separator';
 import { PostFooter } from './client-page';
 
 
-marked.setOptions({
-  highlight: function (code: string, lang: string) {
+marked.use({
+  gfm: true,
+  breaks: true,
+  highlight: (code, lang) => {
     const language = hljs.getLanguage(lang) ? lang : 'plaintext';
     return hljs.highlight(code, { language }).value;
   },
   langPrefix: 'hljs language-',
-  breaks: true,
-  gfm: true,
 });
 
 
