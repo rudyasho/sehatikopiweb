@@ -7,7 +7,11 @@ import { getSettings } from '@/lib/settings-data';
 import { getTestimonials } from '@/lib/testimonials-data';
 import { ReviewsSection } from './reviews-section';
 
+export const revalidate = 0;
 
+/*
+// Disabling for Vercel build fix. This was causing issues because it runs at build time
+// when environment variables for Firebase Admin SDK are not available.
 export async function generateStaticParams() {
   const products = await getProducts();
   if (!products) return [];
@@ -15,6 +19,7 @@ export async function generateStaticParams() {
     slug: product.slug,
   }));
 }
+*/
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const product = await getProductBySlug(params.slug);

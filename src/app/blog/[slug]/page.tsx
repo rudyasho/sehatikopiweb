@@ -16,10 +16,15 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardTitle, CardDescription, CardFooter, CardHeader } from '@/components/ui/card';
 import { PostFooter } from './client-page';
 
+export const revalidate = 0;
+
 type Props = {
   params: { slug: string };
 };
 
+/*
+// Disabling for Vercel build fix. This was causing issues because it runs at build time
+// when environment variables for Firebase Admin SDK are not available.
 export async function generateStaticParams() {
   const posts = await getBlogPosts();
   if (!posts) return [];
@@ -27,6 +32,7 @@ export async function generateStaticParams() {
     slug: post.slug,
   }));
 }
+*/
 
 export async function generateMetadata(
   { params }: Props,
