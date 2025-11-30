@@ -2,66 +2,9 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    function isAuth() {
-      return request.auth != null;
-    }
-
-    function isAdmin() {
-      return isAuth() && ('role' in request.auth.token && (request.auth.token.role == 'Admin' || request.auth.token.role == 'Super Admin'));
-    }
-
-    match /products/{productId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    match /blog/{postId} {
-      allow read: if resource.data.status == 'published';
-      allow create: if isAuth() && request.resource.data.authorId == request.auth.uid && request.resource.data.status == 'pending';
-      allow update, delete: if isAdmin() || (isAuth() && resource.data.authorId == request.auth.uid && resource.data.status != 'published');
-    }
-    
-    match /testimonials/{testimonialId} {
-      allow read: if resource.data.status == 'published';
-      allow create: if isAuth() && request.resource.data.userId == request.auth.uid && request.resource.data.status == 'pending';
-      allow update, delete: if isAdmin();
-    }
-
-    match /events/{eventId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    match /menu/{itemId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    match /siteContent/{docId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    match /settings/{docId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    match /orders/{orderId} {
-      allow create: if true;
-      allow read: if isAuth() && (resource.data.userId == request.auth.uid || isAdmin());
-      allow update: if isAdmin();
-      allow delete: if isAdmin();
-    }
-
-    match /users/{userId} {
-      allow read, write: if isAuth() && request.auth.uid == userId;
-      allow list, get: if isAdmin();
-    }
-    
     match /{document=**} {
-      allow read, write: if false;
+      // Allow all reads and writes during development
+      allow read, write: if true;
     }
   }
 }
