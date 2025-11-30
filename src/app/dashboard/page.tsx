@@ -1,9 +1,6 @@
 // src/app/dashboard/page.tsx
 import { Suspense } from 'react';
-import { 
-    LayoutGrid, ShoppingBag, ListOrdered, BookText, CalendarCheck, 
-    Users, ImageUp, Settings, Loader2, Star
-} from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { unstable_noStore as noStore } from 'next/cache';
 
 import { getProducts } from '@/lib/products-data';
@@ -26,18 +23,6 @@ import ManageTestimonialsView from './manage-testimonials-view';
 import { DashboardClientPage } from './dashboard-client';
 
 type DashboardView = 'overview' | 'manageOrders' | 'manageProducts' | 'manageBlog' | 'manageEvents' | 'manageUsers' | 'manageTestimonials' | 'heroSettings' | 'settings';
-
-const sidebarNavItems = [
-    { id: 'overview', label: 'Overview', icon: LayoutGrid },
-    { id: 'manageOrders', label: 'Manage Orders', icon: ShoppingBag },
-    { id: 'manageProducts', label: 'Manage Products', icon: ListOrdered },
-    { id: 'manageBlog', label: 'Manage Posts', icon: BookText },
-    { id: 'manageEvents', label: 'Manage Events', icon: CalendarCheck },
-    { id: 'manageTestimonials', label: 'Manage Testimonials', icon: Star },
-    { id: 'manageUsers', label: 'Manage Users', icon: Users, role: 'Super Admin' },
-    { id: 'heroSettings', label: 'Hero Settings', icon: ImageUp },
-    { id: 'settings', label: 'Website Settings', icon: Settings },
-];
 
 // This new Server Component handles data fetching based on the active view
 const DashboardViewLoader = async ({ view, currentUser }: { view: DashboardView; currentUser: AppUser }) => {
@@ -99,7 +84,7 @@ export default async function DashboardPage({
     const view = searchParams.view || 'overview';
 
     return (
-        <DashboardClientPage sidebarNavItems={sidebarNavItems} activeView={view} user={mockUser}>
+        <DashboardClientPage activeView={view} user={mockUser}>
             <Suspense fallback={
                 <div className="flex items-center justify-center p-8">
                     <Loader2 className="h-16 w-16 animate-spin text-primary" />

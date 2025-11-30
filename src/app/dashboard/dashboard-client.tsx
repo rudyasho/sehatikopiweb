@@ -2,8 +2,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Menu } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { 
+    Menu, LayoutGrid, ShoppingBag, ListOrdered, BookText, 
+    CalendarCheck, Star, Users, ImageUp, Settings 
+} from 'lucide-react';
 
 import { useAuth } from '@/context/auth-context';
 import { Button } from '@/components/ui/button';
@@ -20,15 +23,25 @@ interface SidebarItem {
     role?: 'Super Admin';
 }
 
+const sidebarNavItems: SidebarItem[] = [
+    { id: 'overview', label: 'Overview', icon: LayoutGrid },
+    { id: 'manageOrders', label: 'Manage Orders', icon: ShoppingBag },
+    { id: 'manageProducts', label: 'Manage Products', icon: ListOrdered },
+    { id: 'manageBlog', label: 'Manage Posts', icon: BookText },
+    { id: 'manageEvents', label: 'Manage Events', icon: CalendarCheck },
+    { id: 'manageTestimonials', label: 'Manage Testimonials', icon: Star },
+    { id: 'manageUsers', label: 'Manage Users', icon: Users, role: 'Super Admin' },
+    { id: 'heroSettings', label: 'Hero Settings', icon: ImageUp },
+    { id: 'settings', label: 'Website Settings', icon: Settings },
+];
+
 interface DashboardClientPageProps {
-    sidebarNavItems: SidebarItem[];
     activeView: DashboardView;
     user: AppUser;
     children: React.ReactNode;
 }
 
 export function DashboardClientPage({
-    sidebarNavItems,
     activeView,
     user,
     children
@@ -108,5 +121,3 @@ export function DashboardClientPage({
         </div>
     );
 }
-
-    
