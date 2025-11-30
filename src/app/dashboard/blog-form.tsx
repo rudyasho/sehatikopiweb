@@ -14,8 +14,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/context/auth-context';
+import { BlogEditor } from './blog-editor';
 
 
 const blogPostFormSchema = z.object({
@@ -92,33 +92,35 @@ export function BlogPostForm({ post, onFormSubmit, onFormCancel }: BlogPostFormP
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto p-1">
-                <FormField control={form.control} name="title" render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Post Title</FormLabel>
-                        <FormControl><Input placeholder="e.g., The Ultimate Guide to V60" {...field} /></FormControl>
-                        <FormMessage />
-                    </FormItem>
-                )} />
-                 <FormField control={form.control} name="category" render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Category</FormLabel>
-                         <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select a category" />
-                            </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                            <SelectItem value="Brewing Tips">Brewing Tips</SelectItem>
-                            <SelectItem value="Storytelling">Storytelling</SelectItem>
-                            <SelectItem value="Coffee Education">Coffee Education</SelectItem>
-                            <SelectItem value="News">News</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        <FormMessage />
-                    </FormItem>
-                )} />
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[80vh] overflow-y-auto p-1">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField control={form.control} name="title" render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Post Title</FormLabel>
+                            <FormControl><Input placeholder="e.g., The Ultimate Guide to V60" {...field} /></FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )} />
+                     <FormField control={form.control} name="category" render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Category</FormLabel>
+                             <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select a category" />
+                                </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                <SelectItem value="Brewing Tips">Brewing Tips</SelectItem>
+                                <SelectItem value="Storytelling">Storytelling</SelectItem>
+                                <SelectItem value="Coffee Education">Coffee Education</SelectItem>
+                                <SelectItem value="News">News</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                    )} />
+                </div>
                 <FormField control={form.control} name="image" render={({ field }) => (
                     <FormItem>
                         <FormLabel>Image URL</FormLabel>
@@ -128,8 +130,10 @@ export function BlogPostForm({ post, onFormSubmit, onFormCancel }: BlogPostFormP
                 )} />
                 <FormField control={form.control} name="content" render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Content (Markdown)</FormLabel>
-                        <FormControl><Textarea placeholder="Write your post content here..." {...field} rows={12} /></FormControl>
+                        <FormLabel>Content</FormLabel>
+                        <FormControl>
+                            <BlogEditor value={field.value} onChange={field.onChange} />
+                        </FormControl>
                         <FormMessage />
                     </FormItem>
                 )} />

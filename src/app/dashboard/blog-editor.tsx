@@ -9,7 +9,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 
 interface BlogEditorProps {
   value: string;
@@ -47,7 +47,9 @@ const ImageInsertionDialog = ({ onInsertImage }: { onInsertImage: (url: string, 
                         />
                     </div>
                 </div>
-                 <Button onClick={handleInsert} disabled={!imageUrl}>Insert Image</Button>
+                 <DialogClose asChild>
+                    <Button onClick={handleInsert} disabled={!imageUrl}>Insert Image</Button>
+                 </DialogClose>
             </div>
         </DialogContent>
     )

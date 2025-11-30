@@ -11,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { BlogPostForm } from './blog-form';
 import { Badge } from '@/components/ui/badge';
@@ -69,7 +69,7 @@ const ManageBlogPostsView = ({ posts }: ManageBlogPostsViewProps) => {
             </CardHeader>
             <CardContent>
                 <Dialog open={isPostDialogOpen} onOpenChange={setIsPostDialogOpen}>
-                    <DialogContent className="max-w-4xl">
+                    <DialogContent className="max-w-6xl w-full">
                          <DialogHeader>
                             <DialogTitle className="font-headline text-2xl text-primary">{editingPost ? 'Edit Blog Post' : 'Create New Post'}</DialogTitle>
                             <DialogDescription>
